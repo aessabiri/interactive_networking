@@ -65,15 +65,15 @@ export default function Navbar({ activeTab, setActiveTab, appMode = 'clean', set
               </button>
 
               <button
-                onClick={() => setAppMode('expert')}
+                onClick={() => setAppMode('detailed')}
                 className={`px-3.5 py-1.5 rounded-full font-black flex items-center gap-1.5 transition-all cursor-pointer ${
-                  appMode === 'expert'
+                  appMode === 'detailed' || appMode === 'expert'
                     ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/25 scale-102 border border-cyan-400'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
                 <Sliders className="w-3.5 h-3.5" />
-                <span>⚡ Expert</span>
+                <span>🔍 Detailed Mode</span>
               </button>
             </div>
           )}

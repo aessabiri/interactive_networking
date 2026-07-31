@@ -397,7 +397,7 @@ export default function DNSModule({ appMode = 'clean' }) {
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
       {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
-      {appMode !== 'expert' && (
+      {appMode !== 'detailed' && appMode !== 'expert' && (
         <CleanWidget
           title="DNS Hostname Lookup Made Simple"
           subtitle={`Translating website "${targetDomain}" into numerical IP address (${currDomain.resolvedIp})`}
@@ -415,8 +415,8 @@ export default function DNSModule({ appMode = 'clean' }) {
         />
       )}
 
-      {/* FLOATING MODAL POPUP FOR PACKET & NAT PAYLOAD INSPECTOR (EXPERT MODE ONLY) */}
-      {appMode === 'expert' && modalPayloadStep && activeModalData && (
+      {/* FLOATING MODAL POPUP FOR PACKET & NAT PAYLOAD INSPECTOR (DETAILED MODE ONLY) */}
+      {(appMode === 'detailed' || appMode === 'expert') && modalPayloadStep && activeModalData && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
           <div className="glass-panel max-w-2xl w-full p-7 rounded-3xl border border-slate-700 shadow-2xl space-y-6 bg-slate-900/95 relative text-slate-100 max-h-[90vh] overflow-y-auto">
             
@@ -565,8 +565,8 @@ export default function DNSModule({ appMode = 'clean' }) {
           </div>
         </div>
 
-        {/* Dynamic Action Status Banner (EXPERT MODE ONLY) */}
-        {appMode === 'expert' && (
+        {/* Dynamic Action Status Banner (DETAILED MODE ONLY) */}
+        {(appMode === 'detailed' || appMode === 'expert') && (
           <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 ${currentMeta.badgeColor}`}>
             <div className="flex items-center gap-3">
               <span className="px-3 py-1 rounded-xl text-xs font-mono font-black uppercase bg-slate-950/80 border border-white/10 shadow flex items-center gap-1.5">
@@ -580,8 +580,8 @@ export default function DNSModule({ appMode = 'clean' }) {
         )}
 
         {/* WORKSPACE STAGE CANVAS (TOGGLEABLE VIA ICON IN CLEAN MODE) */}
-        {(showAnimation || appMode === 'expert') && (
-          <div className={`py-6 px-4 relative bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden ${appMode !== 'expert' ? 'min-h-[340px]' : 'min-h-[520px]'}`}>
+        {(showAnimation || appMode === 'detailed' || appMode === 'expert') && (
+          <div className={`py-6 px-4 relative bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden ${appMode !== 'detailed' && appMode !== 'expert' ? 'min-h-[340px]' : 'min-h-[520px]'}`}>
           
           {/* VISIBLE NETWORK CONNECTION LINES (WIRES) */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
@@ -754,8 +754,8 @@ export default function DNSModule({ appMode = 'clean' }) {
         </div>
         )}
 
-        {/* STEP INSPECTION BUTTONS & DETAILS (EXPERT MODE ONLY) */}
-        {appMode === 'expert' && (
+        {/* STEP INSPECTION BUTTONS & DETAILS (DETAILED MODE ONLY) */}
+        {(appMode === 'detailed' || appMode === 'expert') && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2">
             {(isExternalDomain ? [1, 2, 3, 4] : [1, 2, 3]).map((stepNum) => {
               const meta = stepMeta[stepNum];
@@ -780,8 +780,8 @@ export default function DNSModule({ appMode = 'clean' }) {
         )}
       </div>
 
-      {/* TECHNICAL PACKET INSPECTOR & EVENT LOGS (EXPERT MODE ONLY) */}
-      {appMode === 'expert' && (
+      {/* TECHNICAL PACKET INSPECTOR & EVENT LOGS (DETAILED MODE ONLY) */}
+      {(appMode === 'detailed' || appMode === 'expert') && (
         <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
             

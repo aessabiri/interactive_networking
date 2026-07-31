@@ -312,7 +312,7 @@ export default function ADModule({ appMode = 'clean' }) {
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
 
       {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
-      {appMode !== 'expert' && (
+      {appMode !== 'detailed' && appMode !== 'expert' && (
         <CleanWidget
           title="Active Directory & Kerberos Security Made Simple"
           subtitle="Understand how Windows Domain Controllers log in users securely using encrypted digital tickets"
@@ -330,8 +330,8 @@ export default function ADModule({ appMode = 'clean' }) {
         />
       )}
 
-      {/* FLOATING MODAL POPUP FOR PACKET & TICKET PAYLOAD INSPECTOR (EXPERT MODE ONLY) */}
-      {appMode === 'expert' && modalPayloadStep && activeModalData && (
+      {/* FLOATING MODAL POPUP FOR PACKET & TICKET PAYLOAD INSPECTOR (DETAILED MODE ONLY) */}
+      {(appMode === 'detailed' || appMode === 'expert') && modalPayloadStep && activeModalData && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
           <div className="glass-panel max-w-2xl w-full p-7 rounded-3xl border border-slate-700 shadow-2xl space-y-6 bg-slate-900/95 relative text-slate-100 max-h-[90vh] overflow-y-auto">
             
@@ -798,8 +798,8 @@ export default function ADModule({ appMode = 'clean' }) {
         </div>
       </div>
 
-      {/* SIDE-BY-SIDE TICKET CACHE SUMMARY & LOGS (EXPERT MODE ONLY) */}
-      {appMode === 'expert' && (
+      {/* SIDE-BY-SIDE TICKET CACHE SUMMARY & LOGS (DETAILED MODE ONLY) */}
+      {(appMode === 'detailed' || appMode === 'expert') && (
         <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
             

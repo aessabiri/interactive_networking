@@ -11,7 +11,7 @@ import LabNotebook from './components/notebook/LabNotebook';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dhcp');
-  const [appMode, setAppMode] = useState('clean'); // 'clean' or 'expert'
+  const [appMode, setAppMode] = useState('clean'); // 'clean' or 'detailed'
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950">

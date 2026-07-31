@@ -632,7 +632,7 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
 
       {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
-      {appMode !== 'expert' && (
+      {appMode !== 'detailed' && appMode !== 'expert' && (
         <CleanWidget
           title="Interactive Network Topology Sandbox"
           subtitle="Drag devices onto the canvas, wire cables together, and send test traffic between computers"
@@ -1188,8 +1188,8 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
           })}
         </div>
 
-        {/* LIVE PACKET CONTENT INSPECTOR PANEL (EXPERT MODE ONLY) */}
-        {appMode === 'expert' && (
+        {/* LIVE PACKET CONTENT INSPECTOR PANEL (DETAILED MODE ONLY) */}
+        {(appMode === 'detailed' || appMode === 'expert') && (
           <SlideOutInspector title="Slide Out Sandbox Technical Deep Dive & Wire Logs">
             <div className="space-y-4">
               <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">

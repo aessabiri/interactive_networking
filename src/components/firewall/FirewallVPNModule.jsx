@@ -162,7 +162,7 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
       {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
-      {appMode !== 'expert' && (
+      {appMode !== 'detailed' && appMode !== 'expert' && (
         <CleanWidget
           title="Firewall, NAT & VPN Security Made Simple"
           subtitle="Understand how Firewalls block dangerous traffic and how VPN Tunnels encrypt data over the Internet"
@@ -636,8 +636,8 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
         </div>
       )}
 
-      {/* TERMINAL EVENT LOGS (EXPERT MODE ONLY) */}
-      {appMode === 'expert' && (
+      {/* TERMINAL EVENT LOGS (DETAILED MODE ONLY) */}
+      {(appMode === 'detailed' || appMode === 'expert') && (
         <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
           <TerminalLog logs={logs} onClear={() => setLogs([])} />
         </SlideOutInspector>
