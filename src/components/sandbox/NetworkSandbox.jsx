@@ -3,13 +3,13 @@ import { Network, Laptop, Server, Router, ShieldCheck, Globe, Play, Trash2, Plus
 import TerminalLog from '../common/TerminalLog';
 
 export default function NetworkSandbox() {
-  // Initial Nodes on Canvas
+  // Initial Nodes on Canvas (Includes connected INTERNET-ISP node)
   const [nodes, setNodes] = useState([
     {
       id: 'lap1',
       name: 'LAPTOP-01',
       type: 'laptop',
-      x: 100,
+      x: 80,
       y: 160,
       ip: '192.168.1.105',
       mac: '00:50:56:A1:B2:C1',
@@ -20,7 +20,7 @@ export default function NetworkSandbox() {
       id: 'sw1',
       name: 'L2-SWITCH-01',
       type: 'switch',
-      x: 380,
+      x: 320,
       y: 200,
       ip: 'N/A (L2 Switch)',
       mac: '00:11:22:33:44:00',
@@ -31,7 +31,7 @@ export default function NetworkSandbox() {
       id: 'srv1',
       name: 'DC01-SERVER',
       type: 'server',
-      x: 680,
+      x: 580,
       y: 100,
       ip: '192.168.1.10',
       mac: '00:0C:29:8E:7F:11',
@@ -42,20 +42,32 @@ export default function NetworkSandbox() {
       id: 'r1',
       name: 'ISP-ROUTER',
       type: 'router',
-      x: 680,
+      x: 580,
       y: 320,
       ip: '192.168.1.1',
       mac: '00:00:0C:07:AC:01',
       os: 'Enterprise Gateway OS',
       roles: ['nat']
     },
+    {
+      id: 'isp1',
+      name: 'INTERNET-ISP 🌐',
+      type: 'cloud',
+      x: 820,
+      y: 320,
+      ip: '8.8.8.8 (WAN)',
+      mac: '00:FE:88:99:AA:BB',
+      os: 'Public WAN Gateway ISP',
+      roles: []
+    }
   ]);
 
-  // Cable Connections
+  // Cable Connections (All hosts connected through Switch & Router to ISP Cloud)
   const [links, setLinks] = useState([
     { id: 'link1', from: 'lap1', to: 'sw1', cableType: 'straight' },
     { id: 'link2', from: 'sw1', to: 'srv1', cableType: 'straight' },
     { id: 'link3', from: 'sw1', to: 'r1', cableType: 'straight' },
+    { id: 'link4', from: 'r1', to: 'isp1', cableType: 'straight' },
   ]);
 
   const [selectedNodeId, setSelectedNodeId] = useState('lap1');
@@ -72,8 +84,8 @@ export default function NetworkSandbox() {
 
   // Traffic Simulation Controls
   const [simSource, setSimSource] = useState('lap1');
-  const [simTarget, setSimTarget] = useState('srv1');
-  const [simType, setSimType] = useState('dhcp');
+  const [simTarget, setSimTarget] = useState('isp1');
+  const [simType, setSimType] = useState('http');
   const [speed, setSpeed] = useState(1);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simPacketPos, setSimPacketPos] = useState(null); // { x, y, isReturn }
@@ -84,10 +96,16 @@ export default function NetworkSandbox() {
   });
 
   const [logs, setLogs] = useState([
-    { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: 'Interactive Network Topology Sandbox ready. Devices and Generic Servers active.' }
+    { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: 'Interactive Network Topology Sandbox ready. ISP Cloud active & green cables connected.' }
   ]);
 
   const canvasRef = useRef(null);
+
+  // Helper to test if a node is an ISP / Internet Cloud
+  const isISPNode = (node) => {
+    if (!node) return false;
+    return node.type === 'cloud' || node.type === 'isp' || node.name.toUpperCase().includes('ISP') || node.name.toUpperCase().includes('INTERNET');
+  };
 
   // BFS CABLE NETWORK RECOVERY & DYNAMIC COLORING (Green = WAN/ISP Internet, Blue = LAN Network, Red = Disconnected/No LAN)
   const getLinkStatus = (link, nodeList, linkList) => {
@@ -113,7 +131,8 @@ export default function NetworkSandbox() {
     while (queue.length > 0) {
       const currId = queue.shift();
       const currNode = nodeList.find(n => n.id === currId);
-      if (currNode?.type === 'cloud') {
+      
+      if (isISPNode(currNode)) {
         hasCloudISP = true;
       }
 
@@ -474,8 +493,11 @@ export default function NetworkSandbox() {
   };
 
   // Node Icon Helper (With Glowing Green Internet ISP Icon)
-  const getNodeIcon = (type, roles = []) => {
+  const getNodeIcon = (type, roles = [], name = '') => {
     if (roles.includes('esxi')) return <Cpu className="w-10 h-10 text-emerald-400" />;
+    if (type === 'cloud' || name.toUpperCase().includes('ISP') || name.toUpperCase().includes('INTERNET')) {
+      return <Globe className="w-10 h-10 text-emerald-400 animate-pulse drop-shadow-[0_0_15px_rgba(16,185,129,1)]" />;
+    }
     switch(type) {
       case 'laptop': return <Laptop className="w-10 h-10 text-cyan-400" />;
       case 'desktop': return <Laptop className="w-10 h-10 text-blue-400" />;
@@ -486,7 +508,6 @@ export default function NetworkSandbox() {
       case 'printer': return <Printer className="w-10 h-10 text-slate-300" />;
       case 'wifi': return <Wifi className="w-10 h-10 text-teal-400" />;
       case 'storage': return <Database className="w-10 h-10 text-amber-300" />;
-      case 'cloud': return <Globe className="w-10 h-10 text-emerald-400 animate-pulse drop-shadow-[0_0_12px_rgba(16,185,129,0.9)]" />;
       default: return <Server className="w-10 h-10 text-slate-400" />;
     }
   };
@@ -981,7 +1002,7 @@ export default function NetworkSandbox() {
           {nodes.map(node => {
             const isSelected = selectedNodeId === node.id;
             const isServer = node.type === 'server';
-            const isCloudISP = node.type === 'cloud';
+            const isCloudISP = isISPNode(node);
             const rolesText = (node.roles || []).join(', ').toUpperCase();
 
             return (
@@ -991,7 +1012,7 @@ export default function NetworkSandbox() {
                 style={{ left: `${node.x}px`, top: `${node.y}px` }}
                 className={`absolute p-4 rounded-3xl border-4 transition-all cursor-grab active:cursor-grabbing z-20 flex flex-col items-center gap-1.5 font-mono text-xs ${
                   isCloudISP
-                    ? 'bg-emerald-950/90 border-emerald-400 shadow-2xl shadow-emerald-500/50 scale-105 animate-pulse'
+                    ? 'bg-emerald-950/90 border-emerald-400 shadow-2xl shadow-emerald-500/60 scale-105 animate-pulse'
                     : isSelected
                     ? 'bg-cyan-950 border-cyan-400 shadow-2xl shadow-cyan-500/30 scale-105'
                     : 'bg-slate-900/95 border-slate-700 hover:border-slate-500 shadow-lg'
@@ -1008,12 +1029,12 @@ export default function NetworkSandbox() {
                   </button>
                 )}
 
-                {getNodeIcon(node.type, node.roles)}
+                {getNodeIcon(node.type, node.roles, node.name)}
 
                 <span className={`font-extrabold text-xs truncate max-w-[130px] ${isCloudISP ? 'text-emerald-300' : 'text-slate-100'}`}>
                   {node.name}
                 </span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${isCloudISP ? 'bg-emerald-900/80 text-emerald-200 border-emerald-500' : 'bg-slate-800 text-cyan-300 border-slate-700'}`}>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${isCloudISP ? 'bg-emerald-900/80 text-emerald-200 border-emerald-400 font-black' : 'bg-slate-800 text-cyan-300 border-slate-700'}`}>
                   {node.ip}
                 </span>
 
@@ -1024,7 +1045,7 @@ export default function NetworkSandbox() {
                   </span>
                 )}
                 {isCloudISP && (
-                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700 font-extrabold">
+                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-500 font-black">
                     GLOBAL WAN ISP 🌐
                   </span>
                 )}
