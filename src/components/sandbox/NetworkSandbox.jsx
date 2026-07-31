@@ -89,6 +89,54 @@ export default function NetworkSandbox() {
 
   const canvasRef = useRef(null);
 
+  // BFS CABLE NETWORK RECOVERY & COLORING (Green = WAN/ISP Internet, Blue = LAN Network, Red = Disconnected/No LAN)
+  const getLinkStatus = (link, nodeList, linkList) => {
+    const n1 = nodeList.find(n => n.id === link.from);
+    const n2 = nodeList.find(n => n.id === link.to);
+    if (!n1 || !n2) return { color: '#ef4444', label: 'Disconnected / Damaged Cable' };
+
+    const adj = {};
+    nodeList.forEach(n => { adj[n.id] = []; });
+    linkList.forEach(l => {
+      if (adj[l.from] && adj[l.to]) {
+        adj[l.from].push(l.to);
+        adj[l.to].push(l.from);
+      }
+    });
+
+    const visited = new Set();
+    const queue = [link.from];
+    visited.add(link.from);
+
+    let hasCloudISP = false;
+
+    while (queue.length > 0) {
+      const currId = queue.shift();
+      const currNode = nodeList.find(n => n.id === currId);
+      if (currNode?.type === 'cloud') {
+        hasCloudISP = true;
+      }
+
+      for (const neighborId of (adj[currId] || [])) {
+        if (!visited.has(neighborId)) {
+          visited.add(neighborId);
+          queue.push(neighborId);
+        }
+      }
+    }
+
+    if (hasCloudISP) {
+      // 🟢 GREEN: Connected to Internet Cloud / ISP Provider
+      return { color: '#10b981', label: 'WAN / ISP Internet Connected' };
+    } else if (visited.size >= 2) {
+      // 🔵 BLUE: Connected to LAN Network (Local devices/switches/servers)
+      return { color: '#3b82f6', label: 'LAN Network Connected' };
+    } else {
+      // 🔴 RED: Not connected to any active LAN network / Dangling wire
+      return { color: '#ef4444', label: 'Disconnected / Isolated' };
+    }
+  };
+
   // BFS GRAPH PATHFINDING ALGORITHM (Finds shortest connected cable path through switches & routers)
   const findShortestCablePath = (startId, endId, nodeList, linkList) => {
     if (startId === endId) return [startId];
@@ -723,9 +771,29 @@ export default function NetworkSandbox() {
 
       {/* TOPOLOGY CANVAS STAGE */}
       <div className="glass-panel rounded-3xl border border-slate-800 p-6 space-y-4 shadow-2xl relative">
-        <div className="p-4 rounded-2xl bg-cyan-950/60 border border-cyan-500/40 flex items-center justify-between pr-36">
-          <h3 className="font-extrabold text-cyan-300 text-base">{statusBanner.title}</h3>
-          <p className="text-xs text-slate-300">{statusBanner.subtitle}</p>
+        
+        {/* Status Banner with Dynamic Cable Color Legend */}
+        <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-3 font-mono">
+          <div>
+            <h3 className="font-extrabold text-cyan-300 text-base">{statusBanner.title}</h3>
+            <p className="text-xs text-slate-300">{statusBanner.subtitle}</p>
+          </div>
+
+          {/* DYNAMIC CABLE COLOR LEGEND */}
+          <div className="flex items-center gap-3 text-[11px] font-bold bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800 text-slate-300">
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500"></span>
+              <span>🟢 WAN (Internet ISP)</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-500"></span>
+              <span>🔵 LAN Network</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 rounded-full bg-rose-500 shadow-sm shadow-rose-500"></span>
+              <span>🔴 Disconnected / No LAN</span>
+            </span>
+          </div>
         </div>
 
         <div
@@ -834,14 +902,15 @@ export default function NetworkSandbox() {
             )}
           </div>
 
-          {/* CABLES SVG */}
+          {/* CABLES SVG WITH DYNAMIC NETWORK STATUS COLORING (GREEN = WAN ISP, BLUE = LAN, RED = DISCONNECTED) */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none">
             {links.map(link => {
               const n1 = nodes.find(n => n.id === link.from);
               const n2 = nodes.find(n => n.id === link.to);
               if (!n1 || !n2) return null;
 
-              const strokeColor = link.cableType === 'fiber' ? '#38bdf8' : link.cableType === 'crossover' ? '#f59e0b' : '#06b6d4';
+              const status = getLinkStatus(link, nodes, links);
+
               return (
                 <line
                   key={link.id}
@@ -849,9 +918,9 @@ export default function NetworkSandbox() {
                   y1={n1.y + 45}
                   x2={n2.x + 60}
                   y2={n2.y + 45}
-                  stroke={strokeColor}
+                  stroke={status.color}
                   strokeWidth="4"
-                  strokeOpacity="0.8"
+                  strokeOpacity="0.9"
                   className="animate-wire-dash"
                 />
               );
