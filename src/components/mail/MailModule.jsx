@@ -9,6 +9,7 @@ export default function MailModule() {
   const [speed, setSpeed] = useState(0.5);
   const [mailProtocol, setMailProtocol] = useState('smtp_imap'); // 'smtp_imap' or 'smtp_pop3'
   const [serverStack, setServerStack] = useState('exchange'); // 'exchange' or 'postfix_dovecot'
+  const [domainMode, setDomainMode] = useState('cross'); // 'intra' (Same Domain) or 'cross' (Different Domains)
   const [packetProgress, setPacketProgress] = useState(0);
   const [modalPayloadStep, setModalPayloadStep] = useState(null);
   const [activeOsTab, setActiveOsTab] = useState('exchange');
@@ -17,11 +18,18 @@ export default function MailModule() {
     { time: new Date().toLocaleTimeString(), tag: 'MAIL', message: 'Multi-Tier Enterprise Mail Architecture (MUA ➔ MSA ➔ Routers ➔ ISP ➔ MDA ➔ MRA) initialized.' }
   ]);
 
+  // Dynamic Domain Parameters
+  const senderEmail = domainMode === 'cross' ? 'student@dts-herford.de' : 'student@dts.local';
+  const recipientEmail = domainMode === 'cross' ? 'alex@company-partner.com' : 'boss@dts.local';
+  const senderDomain = domainMode === 'cross' ? 'dts-herford.de' : 'dts.local';
+  const recipientDomain = domainMode === 'cross' ? 'company-partner.com' : 'dts.local';
+  const mxHost = domainMode === 'cross' ? 'mx01.company-partner.com' : 'mx01.dts.local';
+
   // Step Metadata for Multi-Tier Architectural Flow
   const stepMeta = {
     0: {
-      title: 'Ready for Multi-Tier Mail Architecture (MUA ➔ MSA ➔ Routers ➔ ISP ➔ MDA ➔ MRA)',
-      subtitle: 'Watch how emails travel from Sender MUA ➔ Local MSA ➔ Local Router ➔ ISP Internet Backbone ➔ Remote Router ➔ MDA Store ➔ Recipient MUA!',
+      title: `Ready for ${domainMode === 'cross' ? 'Cross-Domain (Inter-Domain)' : 'Same-Domain (Intra-Domain)'} Mail Traversal`,
+      subtitle: `Watch how emails travel from ${senderEmail} ➔ Local MSA ➔ Local Router ➔ ISP WAN ➔ Remote Router ➔ ${recipientEmail}!`,
       badge: 'IDLE',
       badgeColor: 'bg-slate-800 text-slate-400 border-slate-700',
       sender: null,
@@ -29,7 +37,7 @@ export default function MailModule() {
     },
     1: {
       title: '📩 STEP 1: MUA ➔ LOCAL MSA/MTA (PORT 587 STARTTLS)',
-      subtitle: 'Sender MUA (Outlook) connects across LAN Switch to local MSA/MTA via SMTP Port 587 with STARTTLS encryption and AUTH PLAIN credentials.',
+      subtitle: `Sender MUA (Outlook) connects across LAN Switch to local MSA/MTA via SMTP Port 587 with STARTTLS encryption for ${senderEmail}.`,
       badge: 'MUA ➔ MSA SUBMISSION (TCP 587)',
       badgeColor: 'bg-amber-950 text-amber-400 border-amber-500 animate-pulse',
       sender: 'CLIENT',
@@ -40,53 +48,53 @@ export default function MailModule() {
         l2Header: 'Src MAC: 00:50:56:A1:B2:C3 → Dst MAC: 00:0C:29:88:77:66 (MSA Server)',
         l3Header: 'Src IP: 192.168.1.105 (Private) → Dst IP: 192.168.1.50 (MSA Server)',
         l4Header: 'TCP Src Port: 59124 → Dst Port: 587 (SMTP Submission STARTTLS)',
-        cmdHandshake: 'EHLO mail.dts.local ➔ STARTTLS ➔ AUTH PLAIN ➔ MAIL FROM:<student@dts.local> ➔ RCPT TO:<boss@dts.local>',
-        archComponents: 'Sender MUA (Outlook) ➔ LAN Switch ➔ Local MSA (Mail Submission Agent)',
+        cmdHandshake: `EHLO mail.${senderDomain} ➔ STARTTLS ➔ AUTH PLAIN ➔ MAIL FROM:<${senderEmail}> ➔ RCPT TO:<${recipientEmail}>`,
+        archComponents: `Sender MUA (Outlook) ➔ LAN Switch ➔ Local MSA (Mail Submission Agent for ${senderDomain})`,
         dataBody: [
-          'From: "Student Trainee" <student@dts.local>',
-          'To: "Department Boss" <boss@dts.local>',
-          'Subject: DTS Herford Multi-Tier Mail Architecture Lab',
-          'Date: Sat, 01 Aug 2026 00:35:00 +0200',
+          `From: "Student Trainee" <${senderEmail}>`,
+          `To: "${domainMode === 'cross' ? 'Alex Partner' : 'Department Boss'}" <${recipientEmail}>`,
+          `Subject: ${domainMode === 'cross' ? 'Inter-Domain B2B Contract & Infrastructure Report' : 'Intra-Domain Internal Department Report'}`,
+          'Date: Sat, 01 Aug 2026 00:37:00 +0200',
           'MIME-Version: 1.0',
           'Content-Type: text/plain; charset=utf-8',
-          'DKIM-Signature: v=1; a=rsa-sha256; d=dts.local; s=202608...',
+          `DKIM-Signature: v=1; a=rsa-sha256; d=${senderDomain}; s=202608...`,
           '',
-          'Hello Boss, the Multi-Tier Mail Server architecture with Routers & ISP is operational!'
+          `Hello, this email was sent across ${domainMode === 'cross' ? 'different domains (Inter-Domain)' : 'the same local domain (Intra-Domain)'} via NetPulse Visualizer!`
         ]
       }
     },
     2: {
-      title: '🌐 STEP 2: LOCAL MTA ➔ LOCAL ROUTER ➔ ISP POP ➔ REMOTE ROUTER ➔ REMOTE MTA (PORT 25)',
-      subtitle: 'Local MTA queries DNS for MX record, sends packet through Local Gateway Router ➔ ISP WAN ➔ Remote Gateway Router ➔ Inbound MTA (Port 25)!',
-      badge: 'MTA RELAY VIA ROUTERS & ISP (PORT 25)',
+      title: `🌐 STEP 2: ${senderDomain.toUpperCase()} MTA ➔ ROUTERS ➔ ISP POP ➔ ${recipientDomain.toUpperCase()} MTA (PORT 25)`,
+      subtitle: `Outbound MTA queries DNS for MX of ${recipientDomain} (${mxHost}), relays mail over Port 25 via ISP WAN. Passes SPF & DKIM validation!`,
+      badge: `MTA RELAY (${senderDomain} ➔ ${recipientDomain})`,
       badgeColor: 'bg-blue-950 text-blue-400 border-blue-500 animate-pulse',
       sender: 'MTA_LOCAL',
       target: 'MTA_REMOTE',
       payload: {
-        stepName: '2. Multi-Hop MTA Relay via Gateway Routers & ISP',
+        stepName: `2. Cross-Domain MTA Relay (${senderDomain} ➔ ${recipientDomain})`,
         protocol: 'MTA Server Relay (RFC 5321)',
         l2Header: 'Src MAC: 00:0C:29:88:77:66 → Dst MAC: 00:11:22:33:44:01 (Local Router Gateway)',
-        l3Header: 'Src IP: 203.0.113.50 (Public WAN) → Dst IP: 198.51.100.60 (Remote Public MTA)',
+        l3Header: `Src IP: 203.0.113.50 (Public WAN) → Dst IP: 198.51.100.60 (${mxHost})`,
         l4Header: 'TCP Src Port: 42100 → Dst Port: 25 (SMTP Server Relay)',
-        cmdHandshake: 'DNS MX Query: dts.local ➔ MX 10 mail.dts.local ➔ MAIL FROM:<student@dts.local> ➔ 250 2.0.0 OK Queued',
-        archComponents: 'Outbound MTA ➔ Local Router Gateway ➔ ISP Telecom POP ➔ Remote Router Gateway ➔ Inbound MTA',
+        cmdHandshake: `DNS MX Query: ${recipientDomain} ➔ MX 10 ${mxHost} ➔ MAIL FROM:<${senderEmail}> ➔ 250 2.0.0 OK Queued`,
+        archComponents: `Outbound MTA (${senderDomain}) ➔ Local Router ➔ ISP WAN ➔ Remote Router ➔ Inbound MTA (${recipientDomain})`,
         dataBody: [
-          'Received: from mail.dts.local (203.0.113.50) by mx01.dts.local (198.51.100.60) via ISP WAN with ESMTP id m20260801',
+          `Received: from mail.${senderDomain} (203.0.113.50) by ${mxHost} (198.51.100.60) via ISP WAN with ESMTP id m20260801`,
           'X-Spam-Status: No, score=-1.0 required=5.0 (Rspamd / SpamAssassin)',
           'X-Virus-Scanned: ClamAV / Exchange Anti-Malware Engine',
-          'Authentication-Results: spf=pass (sender IP 203.0.113.50) dkim=pass',
-          'Return-Path: <student@dts.local>',
-          'Subject: DTS Herford Multi-Tier Mail Architecture Lab'
+          `Authentication-Results: spf=pass (IP 203.0.113.50 for ${senderDomain}) dkim=pass (${senderDomain}) dmarc=pass`,
+          `Return-Path: <${senderEmail}>`,
+          `Subject: ${domainMode === 'cross' ? 'Inter-Domain B2B Contract & Infrastructure Report' : 'Intra-Domain Internal Department Report'}`
         ]
       }
     },
     3: {
       title: mailProtocol === 'smtp_imap' 
-        ? '📬 STEP 3: MDA STORES EMAIL ➔ MRA SERVES RECIPIENT MUA (IMAP4 PORT 993)'
-        : '📥 STEP 3: MDA STORES EMAIL ➔ MRA SERVES RECIPIENT MUA (POP3 PORT 995)',
+        ? `📬 STEP 3: MDA DELIVERS TO ${recipientDomain.toUpperCase()} STORAGE ➔ MRA SERVES RECIPIENT MUA (IMAP4 993)`
+        : `📥 STEP 3: MDA DELIVERS TO ${recipientDomain.toUpperCase()} STORAGE ➔ MRA SERVES RECIPIENT MUA (POP3 995)`,
       subtitle: mailProtocol === 'smtp_imap'
-        ? 'MDA writes mail to storage (Maildir/.edb). Recipient MUA connects to MRA via IMAP4 Port 993 (IMAPS) for multi-device sync.'
-        : 'MDA writes mail to storage (Maildir/.edb). Recipient MUA connects to MRA via POP3 Port 995 (POP3S) to download email.',
+        ? `MDA writes mail to ${recipientDomain} storage. Recipient MUA (${recipientEmail}) connects to MRA via IMAP4 Port 993 (IMAPS).`
+        : `MDA writes mail to ${recipientDomain} storage. Recipient MUA (${recipientEmail}) connects to MRA via POP3 Port 995 (POP3S).`,
       badge: mailProtocol === 'smtp_imap' ? 'MDA STORE ➔ MRA IMAP4 (PORT 993)' : 'MDA STORE ➔ MRA POP3 (PORT 995)',
       badgeColor: 'bg-emerald-950 text-emerald-400 border-emerald-500',
       sender: 'MTA_REMOTE',
@@ -98,16 +106,16 @@ export default function MailModule() {
         l3Header: 'Src IP: 10.0.0.60 (Mailbox Server) → Dst IP: 10.0.0.110 (Recipient PC)',
         l4Header: mailProtocol === 'smtp_imap' ? 'TCP Src Port: 993 (IMAPS TLS) → Dst Port: 60100' : 'TCP Src Port: 995 (POP3S TLS) → Dst Port: 60101',
         cmdHandshake: mailProtocol === 'smtp_imap'
-          ? 'A1 LOGIN boss@dts.local **** ➔ A2 SELECT INBOX ➔ A3 FETCH 1 (FLAGS BODY[TEXT])'
-          : 'USER boss@dts.local ➔ PASS **** ➔ STAT ➔ RETR 1 ➔ DELE 1 ➔ QUIT',
-        archComponents: 'Inbound MTA ➔ MDA (Mail Delivery Agent) ➔ Storage ➔ MRA (Mail Retrieval Agent) ➔ Recipient MUA',
+          ? `A1 LOGIN ${recipientEmail} **** ➔ A2 SELECT INBOX ➔ A3 FETCH 1 (FLAGS BODY[TEXT])`
+          : `USER ${recipientEmail} ➔ PASS **** ➔ STAT ➔ RETR 1 ➔ DELE 1 ➔ QUIT`,
+        archComponents: `Inbound MTA (${recipientDomain}) ➔ MDA ➔ Storage ➔ MRA ➔ Recipient MUA (${recipientEmail})`,
         dataBody: [
           mailProtocol === 'smtp_imap'
-            ? 'IMAP4 MRA: Multi-device sync enabled. Message stored in folder INBOX.'
-            : 'POP3 MRA: Downloaded to local client storage. Server copy marked for deletion.',
-          `MDA Delivery Database: ${serverStack === 'exchange' ? 'Microsoft Exchange ESE (.edb) Store' : 'Linux Dovecot LDA (Maildir /home/user/Maildir/)'}`,
-          'Status: Read / Unseen Synced',
-          'Body Payload: Hello Boss, the Multi-Tier Mail Server architecture with Routers & ISP is operational!'
+            ? `IMAP4 MRA: Multi-device sync enabled for ${recipientEmail}. Message stored in INBOX.`
+            : `POP3 MRA: Downloaded to local storage for ${recipientEmail}. Server copy marked for deletion.`,
+          `MDA Delivery Database: ${serverStack === 'exchange' ? 'Microsoft Exchange ESE (.edb) Store' : 'Linux Dovecot LDA (Maildir)'}`,
+          `Status: Read / Unseen Synced (${domainMode === 'cross' ? 'Inter-Domain Verified' : 'Intra-Domain Local'})`,
+          `Body Payload: Hello, this email was sent across ${domainMode === 'cross' ? 'different domains' : 'the same domain'}!`
         ]
       }
     }
@@ -149,7 +157,7 @@ export default function MailModule() {
       clearInterval(animInterval);
       clearTimeout(timer);
     };
-  }, [isPlaying, activeStep, speed, isSingleStep, mailProtocol, serverStack]);
+  }, [isPlaying, activeStep, speed, isSingleStep, mailProtocol, serverStack, domainMode]);
 
   const handlePlayFull = () => {
     if (activeStep === 3) setActiveStep(1);
@@ -176,7 +184,7 @@ export default function MailModule() {
     setIsSingleStep(false);
     setActiveStep(0);
     setPacketProgress(0);
-    setLogs([{ time: new Date().toLocaleTimeString(), tag: 'MAIL', message: 'Mail queues & TCP connections reset.' }]);
+    setLogs([{ time: new Date().toLocaleTimeString(), tag: 'MAIL', message: `Mail state reset. Active Mode: ${domainMode === 'cross' ? 'Cross-Domain (@dts-herford.de ➔ @company-partner.com)' : 'Same-Domain (@dts.local)'}` }]);
   };
 
   const currentMeta = stepMeta[activeStep] || stepMeta[0];
@@ -184,22 +192,21 @@ export default function MailModule() {
   const activeModalData = modalPayloadStep ? stepMeta[modalPayloadStep]?.payload : null;
   const currentPayload = currentMeta.payload;
 
-  // MULTI-TIER STAGGERED TOPOLOGY NODE COORDINATES (% of stage width/height):
-  // Sender MUA: (10%, 68%) [Bottom-Left]
-  // Local Switch: (19%, 40%) [Middle-Left]
-  // Local MSA/MTA: (28%, 68%) [Bottom-Center-Left]
-  // Local Gateway Router: (38%, 20%) [Top-Left-Center]
-  // ISP Telecom POP Cloud: (55%, 20%) [Top-Center]
-  // Remote Gateway Router: (72%, 20%) [Top-Right]
-  // Remote MDA/MRA Server: (72%, 68%) [Bottom-Center-Right]
-  // Recipient MUA: (90%, 68%) [Bottom-Right]
+  // MULTI-TIER STAGGERED TOPOLOGY NODE COORDINATES:
+  // Sender MUA: (10%, 68%)
+  // Local Switch: (19%, 40%)
+  // Local MSA/MTA: (28%, 68%)
+  // Local Gateway Router: (38%, 20%)
+  // ISP Telecom POP Cloud: (55%, 20%)
+  // Remote Gateway Router: (72%, 20%)
+  // Remote MDA/MRA Server: (72%, 68%)
+  // Recipient MUA: (90%, 68%)
 
   const getPacketPos = () => {
     if (!isPlaying && activeStep === 0) return null;
     const p = packetProgress / 100; // 0 to 1
 
     if (activeStep === 1) {
-      // Step 1: Sender MUA (10%, 68%) -> Local Switch (19%, 40%) -> Local MSA/MTA (28%, 68%)
       if (packetProgress <= 50) {
         const t = packetProgress / 50;
         return {
@@ -218,11 +225,6 @@ export default function MailModule() {
         };
       }
     } else if (activeStep === 2) {
-      // Step 2: Multi-Hop Server Relay across Routers & ISP:
-      // Subphase 1 (0-25%): Local MTA (28%, 68%) -> Local Router (38%, 20%)
-      // Subphase 2 (25-50%): Local Router (38%, 20%) -> ISP Telecom POP (55%, 20%)
-      // Subphase 3 (50-75%): ISP POP (55%, 20%) -> Remote Router (72%, 20%)
-      // Subphase 4 (75-100%): Remote Router (72%, 20%) -> Remote MDA Server (72%, 68%)
       if (packetProgress <= 25) {
         const t = packetProgress / 25;
         return {
@@ -236,7 +238,7 @@ export default function MailModule() {
         return {
           left: `${38 + t * 17}%`,
           top: '20%',
-          label: 'WAN Relay ➔ ISP Backbone',
+          label: `WAN Relay (${senderDomain} ➔ ${recipientDomain})`,
           bgColor: 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-amber-500/50 animate-pulse'
         };
       } else if (packetProgress <= 75) {
@@ -244,7 +246,7 @@ export default function MailModule() {
         return {
           left: `${55 + t * 17}%`,
           top: '20%',
-          label: 'ISP ➔ Remote Router Gateway',
+          label: `ISP ➔ ${mxHost}`,
           bgColor: 'bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 shadow-blue-500/50'
         };
       } else {
@@ -252,12 +254,11 @@ export default function MailModule() {
         return {
           left: '72%',
           top: `${20 + t * 48}%`,
-          label: 'Remote Router ➔ Inbound MTA/MDA',
+          label: `Remote Router ➔ ${recipientDomain} MTA`,
           bgColor: 'bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 shadow-blue-500/50'
         };
       }
     } else if (activeStep === 3) {
-      // Step 3: Remote MDA/MRA (72%, 68%) -> Recipient MUA (90%, 68%) (IMAP 993 / POP3 995)
       return {
         left: `${72 + p * 18}%`,
         top: '68%',
@@ -348,49 +349,70 @@ export default function MailModule() {
         </div>
       )}
 
-      {/* TOP BAR: ARCHITECTURE TOGGLE & PROTOCOL SELECTOR */}
-      <div className="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl bg-slate-900/90 font-mono text-xs">
+      {/* TOP BAR: DOMAIN ROUTING TOGGLE (SAME DOMAIN VS CROSS-DOMAIN), SERVER STACK & RETRIEVAL PROTOCOL */}
+      <div className="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-wrap items-center justify-between gap-4 shadow-2xl bg-slate-900/90 font-mono text-xs">
         
-        {/* Left: Server Stack Toggle */}
+        {/* Group 1: Domain Routing Scenario Toggle (INTRA vs INTER DOMAIN) */}
         <div className="flex items-center gap-2">
-          <span className="text-slate-400 font-bold">Mail Architecture:</span>
+          <span className="text-slate-400 font-bold">Mail Domain Mode:</span>
           <div className="flex items-center bg-slate-950 p-1 rounded-2xl border border-slate-800">
             <button
-              onClick={() => setServerStack('exchange')}
+              onClick={() => { setDomainMode('intra'); handleReset(); }}
               className={`px-3 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
-                serverStack === 'exchange'
-                  ? 'bg-blue-600 text-white shadow-md'
+                domainMode === 'intra'
+                  ? 'bg-purple-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <Server className="w-3.5 h-3.5" />
-              <span>🪟 Microsoft Exchange 2019</span>
+              <span>🏢 Same Domain (@dts.local)</span>
             </button>
 
             <button
-              onClick={() => setServerStack('postfix_dovecot')}
+              onClick={() => { setDomainMode('cross'); handleReset(); }}
               className={`px-3 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
-                serverStack === 'postfix_dovecot'
-                  ? 'bg-amber-500 text-slate-950 shadow-md'
+                domainMode === 'cross'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-md'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <Cpu className="w-3.5 h-3.5" />
-              <span>🐧 Linux (Postfix + Dovecot)</span>
+              <Globe className="w-3.5 h-3.5" />
+              <span>🌐 Cross-Domain (@dts-herford.de ➔ @company-partner.com)</span>
             </button>
           </div>
         </div>
 
-        {/* Right: Retrieval Protocol Mode */}
+        {/* Group 2: Server Architecture Toggle */}
         <div className="flex items-center gap-2">
-          <span className="text-slate-400 font-bold">Retrieval Protocol:</span>
+          <span className="text-slate-400 font-bold">Stack:</span>
+          <div className="flex items-center bg-slate-950 p-1 rounded-2xl border border-slate-800">
+            <button
+              onClick={() => setServerStack('exchange')}
+              className={`px-2.5 py-1 rounded-xl font-extrabold transition-all cursor-pointer ${
+                serverStack === 'exchange' ? 'bg-blue-600 text-white' : 'text-slate-400'
+              }`}
+            >
+              🪟 Exchange 2019
+            </button>
+            <button
+              onClick={() => setServerStack('postfix_dovecot')}
+              className={`px-2.5 py-1 rounded-xl font-extrabold transition-all cursor-pointer ${
+                serverStack === 'postfix_dovecot' ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
+              }`}
+            >
+              🐧 Linux Stack
+            </button>
+          </div>
+        </div>
+
+        {/* Group 3: Retrieval Protocol Mode */}
+        <div className="flex items-center gap-2">
           <select
             value={mailProtocol}
             onChange={(e) => setMailProtocol(e.target.value)}
             className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-cyan-300 font-bold focus:outline-none cursor-pointer"
           >
-            <option value="smtp_imap">IMAP4 (Port 993 IMAPS - Multi-Device MRA Sync)</option>
-            <option value="smtp_pop3">POP3 (Port 995 POP3S - Local MUA Download)</option>
+            <option value="smtp_imap">IMAP4 (Port 993 IMAPS - MRA Sync)</option>
+            <option value="smtp_pop3">POP3 (Port 995 POP3S - MUA Download)</option>
           </select>
         </div>
       </div>
@@ -522,21 +544,21 @@ export default function MailModule() {
         {/* Private Subnet A Container */}
         <div className="absolute left-[2%] top-[34%] w-[33%] h-[62%] border-2 border-dashed border-amber-800/40 rounded-3xl pointer-events-none p-3">
           <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/80 text-amber-400 border border-amber-800">
-            SENDER LAN SUBNET A (192.168.1.0/24)
+            SENDER SUBNET A (@{senderDomain})
           </span>
         </div>
 
         {/* Public WAN & ISP Transit Container */}
         <div className="absolute left-[36%] top-[4%] w-[42%] h-[38%] border-2 border-dashed border-amber-500/40 rounded-3xl pointer-events-none p-3 text-center">
           <span className="px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/90 text-amber-300 border border-amber-600 shadow">
-            PUBLIC WAN & ISP INTERNET BACKBONE (203.0.113.0/24 ➔ 198.51.100.0/24)
+            PUBLIC WAN & ISP BACKBONE (DNS MX: {recipientDomain} ➔ {mxHost})
           </span>
         </div>
 
         {/* Private Subnet B Container */}
         <div className="absolute right-[2%] top-[34%] w-[27%] h-[62%] border-2 border-dashed border-emerald-800/40 rounded-3xl pointer-events-none p-3 text-right">
           <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800">
-            RECIPIENT LAN SUBNET B (10.0.0.0/24)
+            RECIPIENT SUBNET B (@{recipientDomain})
           </span>
         </div>
 
@@ -576,14 +598,14 @@ export default function MailModule() {
           </div>
           <div className="text-center space-y-0.5">
             <p className="text-xs font-extrabold text-slate-100">SENDER-MUA-01</p>
-            <p className="text-[10px] text-amber-300 font-bold">student@dts.local</p>
+            <p className="text-[10px] text-amber-300 font-bold max-w-[130px] truncate">{senderEmail}</p>
           </div>
         </div>
 
         {/* 2. LOCAL L2 SWITCH (MIDDLE-LEFT: 19%, 40%) */}
         <div className="absolute left-[19%] top-[40%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 z-10">
           <span className="px-2.5 py-0.5 rounded-full text-[9px] bg-blue-950 text-blue-300 border border-blue-700 shadow font-bold">
-            Subnet A L2 Switch
+            Subnet A Switch
           </span>
           <div className="p-4 rounded-2xl border-2 bg-slate-900 border-slate-700">
             <Layers className="w-9 h-9 text-blue-400" />
@@ -607,7 +629,7 @@ export default function MailModule() {
             <p className="text-xs font-extrabold text-blue-300">
               {serverStack === 'exchange' ? 'EXCHANGE-MSA-MTA' : 'POSTFIX-MSA-MTA'}
             </p>
-            <p className="text-[10px] text-slate-400">192.168.1.50 (MSA/MTA)</p>
+            <p className="text-[10px] text-slate-400">192.168.1.50 (mail.{senderDomain})</p>
           </div>
         </div>
 
@@ -664,7 +686,7 @@ export default function MailModule() {
         {/* 7. DESTINATION INBOUND MDA / MRA SERVER (BOTTOM-CENTER-RIGHT: 72%, 68%) */}
         <div className="absolute left-[72%] top-[68%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 z-10">
           <span className="px-2.5 py-0.5 rounded-full text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-700 shadow font-extrabold">
-            {serverStack === 'exchange' ? 'Exchange MDA (EDB) & MRA' : 'Dovecot MDA & MRA (993/995)'}
+            {serverStack === 'exchange' ? `Exchange MDA (${recipientDomain})` : `Dovecot MDA/MRA (${recipientDomain})`}
           </span>
           <div className={`p-5 rounded-3xl border-4 transition-all duration-300 ${
             activeStep === 2 || activeStep === 3 ? 'bg-emerald-950 border-emerald-400 shadow-2xl scale-105' : 'bg-slate-900 border-slate-700'
@@ -675,7 +697,7 @@ export default function MailModule() {
             <p className="text-xs font-extrabold text-emerald-300">
               {serverStack === 'exchange' ? 'EXCHANGE-MDA-MRA' : 'DOVECOT-MDA-MRA'}
             </p>
-            <p className="text-[10px] text-slate-400">10.0.0.60 ({mailProtocol === 'smtp_imap' ? 'MRA 993' : 'MRA 995'})</p>
+            <p className="text-[10px] text-slate-400">10.0.0.60 ({mxHost})</p>
           </div>
         </div>
 
@@ -691,7 +713,7 @@ export default function MailModule() {
           </div>
           <div className="text-center space-y-0.5">
             <p className="text-xs font-extrabold text-slate-100">RECIPIENT-MUA-02</p>
-            <p className="text-[10px] text-emerald-300 font-bold">boss@dts.local</p>
+            <p className="text-[10px] text-emerald-300 font-bold max-w-[130px] truncate">{recipientEmail}</p>
           </div>
         </div>
 
