@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Network, Laptop, Server, Router, ShieldCheck, Globe, Play, Trash2, Plus, Zap, Gauge, CheckCircle2, Settings, Cpu, FileCode, Terminal, X, Radio, HardDrive, Mail, Layers, Activity, AlertTriangle } from 'lucide-react';
+import { Network, Laptop, Server, Router, ShieldCheck, Globe, Play, Trash2, Plus, Zap, Gauge, CheckCircle2, Settings, Cpu, FileCode, Terminal, X, Radio, HardDrive, Mail, Layers, Activity, Printer, Wifi, Database } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 
 export default function NetworkSandbox() {
@@ -67,7 +67,7 @@ export default function NetworkSandbox() {
   
   // Cable Creation State
   const [isCableMode, setIsCableMode] = useState(false);
-  const [selectedCableType, setSelectedCableType] = useState('straight'); // straight, crossover, fiber, serial
+  const [selectedCableType, setSelectedCableType] = useState('straight'); // straight, crossover, fiber, serial, coax
   const [connectingFromId, setConnectingFromId] = useState(null);
 
   // Traffic Simulation Controls
@@ -79,12 +79,12 @@ export default function NetworkSandbox() {
   const [simPacketPos, setSimPacketPos] = useState(null);
   const [livePacketData, setLivePacketData] = useState(null); // Real-time packet inspector details
   const [statusBanner, setStatusBanner] = useState({
-    title: 'Sandbox Ready',
-    subtitle: 'Drag devices, configure Generic Servers via ⚙️ Gear icon, and run traffic simulations!'
+    title: 'Network Topology Sandbox',
+    subtitle: 'Wire devices, configure Generic Servers via ⚙️ Gear icon, and run live traffic simulations!'
   });
 
   const [logs, setLogs] = useState([
-    { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: 'Interactive Network Topology Sandbox ready. Laptop and Generic Servers active.' }
+    { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: 'Interactive Network Topology Sandbox ready. Devices and Generic Servers active.' }
   ]);
 
   const canvasRef = useRef(null);
@@ -127,23 +127,34 @@ export default function NetworkSandbox() {
     const id = `node_${Date.now()}`;
     const labels = {
       laptop: 'LAPTOP',
+      desktop: 'DESKTOP',
       server: 'GENERIC-SERVER',
       switch: 'L2-SWITCH',
       router: 'GATEWAY-ROUTER',
+      firewall: 'FIREWALL',
+      printer: 'NET-PRINTER',
+      wifi: 'WIFI-AP',
+      storage: 'SAN-STORAGE',
       cloud: 'INTERNET-POP'
     };
 
     const defaultOs = {
       laptop: 'Windows 11 Enterprise',
+      desktop: 'Windows 11 Pro',
       server: 'Windows Server 2022 Datacenter',
       switch: 'Cisco IOS L2 Switch',
       router: 'RouterOS Gateway',
+      firewall: 'FortiGate PAN-OS Firewall',
+      printer: 'Network Print Firmware',
+      wifi: 'Enterprise AP Firmware',
+      storage: 'TrueNAS CORE Storage OS',
       cloud: 'Public WAN ISP'
     };
 
     const defaultRoles = {
       server: ['dhcp'],
-      router: ['nat']
+      router: ['nat'],
+      firewall: ['firewall']
     };
 
     const newNode = {
@@ -270,7 +281,9 @@ export default function NetworkSandbox() {
       dns: 'DNS Hostname Resolution',
       kerberos: 'Kerberos Ticket Exchange (AS/TGS)',
       ping: 'ICMP Echo Ping Request',
-      esxi: 'VMware ESXi Host vSphere Management'
+      esxi: 'VMware ESXi Host vSphere Management',
+      http: 'HTTPS Web Application Traffic',
+      smb: 'SMB/CIFS Network File Transfer'
     };
 
     const packetPayloadTemplates = {
@@ -308,6 +321,20 @@ export default function NetworkSandbox() {
         l3: `Src IP: ${srcNode?.ip} ➔ Dst IP: ${dstNode?.ip}`,
         l4: `TCP Port 443 (vSphere HTTPS Client)`,
         payload: `ESXi Management TLS Session (vCenter Host Handshake)`
+      },
+      http: {
+        etherType: '0x0800 (IPv4 Datagram)',
+        l2: `Src MAC: ${srcNode?.mac} ➔ Dst MAC: ${dstNode?.mac}`,
+        l3: `Src IP: ${srcNode?.ip} ➔ Dst IP: ${dstNode?.ip}`,
+        l4: `TCP Port 443 (TLS v1.3 HTTPS Web)`,
+        payload: `GET /index.html HTTP/1.1 (TLS Handshake Encrypted)`
+      },
+      smb: {
+        etherType: '0x0800 (IPv4 Datagram)',
+        l2: `Src MAC: ${srcNode?.mac} ➔ Dst MAC: ${dstNode?.mac}`,
+        l3: `Src IP: ${srcNode?.ip} ➔ Dst IP: ${dstNode?.ip}`,
+        l4: `TCP Port 445 (Microsoft SMB File Share)`,
+        payload: `SMB2 COM_TREE_CONNECT (Share: \\FILESERVER01\docs)`
       }
     };
 
@@ -370,10 +397,15 @@ export default function NetworkSandbox() {
     if (roles.includes('esxi')) return <Cpu className="w-10 h-10 text-emerald-400" />;
     switch(type) {
       case 'laptop': return <Laptop className="w-10 h-10 text-cyan-400" />;
+      case 'desktop': return <Laptop className="w-10 h-10 text-blue-400" />;
       case 'server': return <Server className="w-10 h-10 text-amber-400" />;
       case 'switch': return <Layers className="w-10 h-10 text-blue-400" />;
       case 'router': return <Router className="w-10 h-10 text-purple-400" />;
-      case 'cloud': return <Globe className="w-10 h-10 text-amber-400" />;
+      case 'firewall': return <ShieldCheck className="w-10 h-10 text-rose-400" />;
+      case 'printer': return <Printer className="w-10 h-10 text-slate-300" />;
+      case 'wifi': return <Wifi className="w-10 h-10 text-teal-400" />;
+      case 'storage': return <Database className="w-10 h-10 text-amber-300" />;
+      case 'cloud': return <Globe className="w-10 h-10 text-cyan-300" />;
       default: return <Server className="w-10 h-10 text-slate-400" />;
     }
   };
@@ -401,7 +433,7 @@ export default function NetworkSandbox() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto relative">
+    <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
 
       {/* DISCONNECT CABLE SELECTION MODAL POPUP (IF MORE THAN 1 CONNECTION) */}
       {disconnectNode && (
@@ -567,82 +599,70 @@ export default function NetworkSandbox() {
         </div>
       )}
 
-      {/* TOP BANNER */}
-      <div className="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl">
-        <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-inner">
-            <Network className="w-7 h-7" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-black tracking-tight text-slate-100">Interactive Network Sandbox</h2>
-            <p className="text-xs text-slate-400">Build custom topologies, configure Generic Servers via Gear ⚙️ icon, and run traffic</p>
-          </div>
+      {/* REMADE UNIFIED WORKSPACE CONTROLS & CABLE/PROTOCOL TOOLBAR */}
+      <div className="glass-panel p-4 rounded-3xl border border-slate-800 flex flex-wrap items-center justify-between gap-4 shadow-2xl bg-slate-900/90 font-mono text-xs">
+        
+        {/* Left Group: Cable Wiring Controls */}
+        <div className="flex items-center gap-2 bg-slate-950/90 px-3.5 py-2 rounded-2xl border border-slate-800">
+          <span className="text-slate-400 font-bold">Cable Wire:</span>
+          <select
+            value={selectedCableType}
+            onChange={(e) => setSelectedCableType(e.target.value)}
+            className="bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1 text-cyan-300 font-bold focus:outline-none cursor-pointer"
+          >
+            <option value="straight">Cat6 Ethernet (Straight-Through)</option>
+            <option value="crossover">Cat6 Crossover Cable</option>
+            <option value="fiber">Single-Mode Fiber Optic Cable</option>
+            <option value="serial">Serial WAN Cable</option>
+            <option value="coax">Coaxial Cable</option>
+          </select>
+
+          <button
+            onClick={() => { setIsCableMode(!isCableMode); setConnectingFromId(null); }}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+              isCableMode ? 'bg-cyan-500 text-slate-950 shadow-md animate-pulse' : 'bg-slate-800 text-slate-200 hover:bg-slate-700 border border-slate-700'
+            }`}
+          >
+            <span>{isCableMode ? (connectingFromId ? '⚡ Click 2nd Device...' : '⚡ Click 1st Device...') : '🔌 Add Cable Wire'}</span>
+          </button>
         </div>
-      </div>
 
-      {/* WORKSPACE CONTROLS & CABLE SELECTION TOOLBAR */}
-      <div className="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-3 font-mono text-xs">
-          
-          {/* Cable Wire Creation Button */}
-          <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
-            <span className="text-slate-400 font-bold">Cable Type:</span>
-            <select
-              value={selectedCableType}
-              onChange={(e) => setSelectedCableType(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-cyan-300 font-bold focus:outline-none"
-            >
-              <option value="straight">Cat6 Ethernet (Straight-Through)</option>
-              <option value="crossover">Cat6 Crossover Cable</option>
-              <option value="fiber">Single-Mode Fiber Optic Cable</option>
-              <option value="serial">Serial WAN Cable</option>
-            </select>
-
-            <button
-              onClick={() => { setIsCableMode(!isCableMode); setConnectingFromId(null); }}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                isCableMode ? 'bg-cyan-500 text-slate-950 shadow-md animate-pulse' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              {isCableMode ? (connectingFromId ? '⚡ Click 2nd Device...' : '⚡ Click 1st Device...') : '🔌 Add Cable Wire'}
-            </button>
-          </div>
-
-          {/* Traffic Operation Selector */}
+        {/* Center Group: Protocol & Source/Target Selectors */}
+        <div className="flex flex-wrap items-center gap-3">
           <div>
-            <label className="text-[10px] text-slate-400 block mb-0.5">Traffic Protocol</label>
+            <label className="text-[10px] text-slate-400 block mb-0.5 font-bold">Protocol:</label>
             <select
               value={simType}
               onChange={(e) => setSimType(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-cyan-300 font-bold focus:outline-none"
+              className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-cyan-300 font-bold focus:outline-none cursor-pointer"
             >
               <option value="dhcp">DHCP DORA Request</option>
               <option value="dns">DNS Hostname Query</option>
               <option value="kerberos">Kerberos Authentication (AS/TGS)</option>
               <option value="ping">ICMP Echo Request (Ping)</option>
               <option value="esxi">VMware ESXi vSphere Management</option>
+              <option value="http">HTTPS Web App Traffic</option>
+              <option value="smb">SMB Network File Transfer</option>
             </select>
           </div>
 
-          {/* Source Device */}
           <div>
-            <label className="text-[10px] text-slate-400 block mb-0.5">Source</label>
+            <label className="text-[10px] text-slate-400 block mb-0.5 font-bold">From:</label>
             <select
               value={simSource}
               onChange={(e) => setSimSource(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-200 focus:outline-none"
+              className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-200 font-bold focus:outline-none cursor-pointer"
             >
               {nodes.map(n => <option key={n.id} value={n.id}>{n.name}</option>)}
             </select>
           </div>
 
-          {/* Target Device */}
           <div>
-            <label className="text-[10px] text-slate-400 block mb-0.5">Target</label>
+            <label className="text-[10px] text-slate-400 block mb-0.5 font-bold">To:</label>
             <select
               value={simTarget}
               onChange={(e) => setSimTarget(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-200 focus:outline-none"
+              className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-200 font-bold focus:outline-none cursor-pointer"
             >
               {nodes.map(n => <option key={n.id} value={n.id}>{n.name}</option>)}
             </select>
@@ -651,7 +671,7 @@ export default function NetworkSandbox() {
           {/* Speed Selector */}
           <div className="flex items-center gap-1 bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-800">
             <Gauge className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Speed:</span>
+            <span className="font-bold">Speed:</span>
             {[0.5, 1, 2].map((s) => (
               <button
                 key={s}
@@ -666,12 +686,14 @@ export default function NetworkSandbox() {
           </div>
         </div>
 
+        {/* Right Group: Play Action Button */}
         <button
           onClick={handleRunSimulation}
           disabled={isSimulating}
-          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:scale-105 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-cyan-500/30 cursor-pointer transition-all"
+          className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-indigo-500 to-blue-600 hover:scale-105 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-cyan-500/30 cursor-pointer transition-all border border-cyan-300"
         >
-          <Play className="w-4 h-4 fill-current" /> Run Traffic Simulation
+          <Play className="w-4 h-4 fill-current" />
+          <span>Run Traffic Simulation</span>
         </button>
       </div>
 
@@ -698,18 +720,27 @@ export default function NetworkSandbox() {
               <span>Add Device</span>
             </button>
 
-            {/* DROPDOWN POPOVER MENU */}
+            {/* EXPANDED DROPDOWN POPOVER MENU WITH MORE DEVICES */}
             {isAddDeviceMenuOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-700 shadow-2xl p-2 font-mono text-xs space-y-1 z-40 animate-fadeIn">
+              <div className="absolute right-0 mt-2 w-56 bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-700 shadow-2xl p-2 font-mono text-xs space-y-1 z-40 animate-fadeIn max-h-[380px] overflow-y-auto">
                 <div className="px-2 py-1 border-b border-slate-800 text-[10px] text-slate-400 font-bold uppercase">
                   Select Device to Add:
                 </div>
+                
                 <button
                   onClick={() => { handleAddNode('laptop'); setIsAddDeviceMenuOpen(false); }}
                   className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-cyan-950 text-cyan-300 hover:text-cyan-200 border border-slate-800 hover:border-cyan-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
                 >
                   <Laptop className="w-4 h-4 text-cyan-400" />
                   <span>+ Laptop</span>
+                </button>
+
+                <button
+                  onClick={() => { handleAddNode('desktop'); setIsAddDeviceMenuOpen(false); }}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-blue-950 text-blue-300 hover:text-blue-200 border border-slate-800 hover:border-blue-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <Laptop className="w-4 h-4 text-blue-400" />
+                  <span>+ Desktop Workstation</span>
                 </button>
 
                 <button
@@ -733,14 +764,46 @@ export default function NetworkSandbox() {
                   className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-purple-950 text-purple-300 hover:text-purple-200 border border-slate-800 hover:border-purple-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
                 >
                   <Router className="w-4 h-4 text-purple-400" />
-                  <span>+ Router</span>
+                  <span>+ Gateway Router</span>
+                </button>
+
+                <button
+                  onClick={() => { handleAddNode('firewall'); setIsAddDeviceMenuOpen(false); }}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-rose-950 text-rose-300 hover:text-rose-200 border border-slate-800 hover:border-rose-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <ShieldCheck className="w-4 h-4 text-rose-400" />
+                  <span>+ Hardware Firewall</span>
+                </button>
+
+                <button
+                  onClick={() => { handleAddNode('printer'); setIsAddDeviceMenuOpen(false); }}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-slate-800 text-slate-300 border border-slate-800 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <Printer className="w-4 h-4 text-slate-300" />
+                  <span>+ Network Printer</span>
+                </button>
+
+                <button
+                  onClick={() => { handleAddNode('wifi'); setIsAddDeviceMenuOpen(false); }}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-teal-950 text-teal-300 border border-slate-800 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <Wifi className="w-4 h-4 text-teal-400" />
+                  <span>+ Wireless AP (Wi-Fi)</span>
+                </button>
+
+                <button
+                  onClick={() => { handleAddNode('storage'); setIsAddDeviceMenuOpen(false); }}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-amber-950 text-amber-300 border border-slate-800 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <Database className="w-4 h-4 text-amber-300" />
+                  <span>+ SAN / NAS Storage</span>
                 </button>
 
                 <button
                   onClick={() => { handleAddNode('cloud'); setIsAddDeviceMenuOpen(false); }}
                   className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-slate-800 text-slate-300 border border-slate-800 font-bold flex items-center gap-2 transition-all cursor-pointer"
                 >
-                  <Globe className="w-4 h-4 text-slate-400" />
+                  <Globe className="w-4 h-4 text-cyan-300" />
                   <span>+ Internet Cloud</span>
                 </button>
               </div>
