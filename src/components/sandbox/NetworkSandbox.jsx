@@ -631,22 +631,7 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
 
-      {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
-      {appMode !== 'detailed' && appMode !== 'expert' && (
-        <CleanWidget
-          title="Interactive Network Topology Sandbox"
-          subtitle="Drag devices onto the canvas, wire cables together, and send test traffic between computers"
-          icon={Network}
-          ip={selectedNode ? selectedNode.ip : 'Select a Device'}
-          protocol={simType.toUpperCase()}
-          port="Simulated Traffic"
-          status={simPacketPos ? "Packet Transmission Active ⚡" : "Topology Ready"}
-          actionTitle={statusBanner.title}
-          actionDesc={statusBanner.subtitle}
-          showAnimation={showAnimation}
-          setShowAnimation={setShowAnimation}
-        />
-      )}
+
 
       {/* DISCONNECT CABLE SELECTION MODAL POPUP (IF MORE THAN 1 CONNECTION) */}
       {disconnectNode && (
@@ -1019,38 +1004,29 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
       </div>
 
       {/* TOPOLOGY CANVAS STAGE */}
-      <div className="glass-panel rounded-3xl border border-slate-800 p-6 space-y-4 shadow-2xl relative">
+      <div className="glass-panel rounded-3xl border border-slate-800 p-4 space-y-4 shadow-2xl relative">
         
-        {/* Status Banner with Dynamic Cable Color Legend */}
-        <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-3 font-mono">
-          <div>
-            <h3 className="font-extrabold text-cyan-300 text-base">{statusBanner.title}</h3>
-            <p className="text-xs text-slate-300">{statusBanner.subtitle}</p>
-          </div>
-
-          {/* DYNAMIC CABLE COLOR LEGEND */}
-          <div className="flex items-center gap-3 text-[11px] font-bold bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800 text-slate-300">
-            <span className="flex items-center gap-1">
-              <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500"></span>
-              <span>🟢 WAN (Internet ISP)</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-500"></span>
-              <span>🔵 LAN Network</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-3 h-3 rounded-full bg-rose-500 shadow-sm shadow-rose-500"></span>
-              <span>🔴 Disconnected / No LAN</span>
-            </span>
-          </div>
-        </div>
-
         <div
           ref={canvasRef}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          className="rounded-2xl border border-slate-800 h-[480px] relative overflow-hidden bg-[radial-gradient(#1e293b_1.5px,transparent_1.5px)] [background-size:20px_20px] bg-slate-950/90 select-none"
+          className="rounded-2xl border border-slate-800 h-[520px] relative overflow-hidden bg-[radial-gradient(#1e293b_1.5px,transparent_1.5px)] [background-size:20px_20px] bg-slate-950/90 select-none"
         >
+          {/* FLOATING CABLE COLOR LEGEND AT TOP-LEFT OF WORKPLACE CANVAS */}
+          <div className="absolute top-4 left-4 z-30 font-mono hidden sm:flex items-center gap-3 text-[11px] font-bold bg-slate-900/90 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-slate-800 text-slate-300 shadow-xl">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500 animate-pulse"></span>
+              <span>🟢 WAN (Internet ISP)</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm shadow-blue-500"></span>
+              <span>🔵 LAN Network</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500"></span>
+              <span>🔴 Disconnected</span>
+            </span>
+          </div>
           {/* FLOATING CONTROL PANEL AT TOP-RIGHT OF WORKPLACE CANVAS: 1. ADD DEVICE, 2. DISCONNECT, 3. ADD CABLE */}
           <div className="absolute top-4 right-4 z-30 font-mono flex flex-col items-end gap-2">
             
