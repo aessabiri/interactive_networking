@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, RotateCcw, Server, Laptop, Router, CheckCircle2, Zap, Gauge, Mail, HelpCircle, Radio, Database, Terminal, SkipForward, Globe, XCircle, Info, FileCode, X, Layers, Cpu, Hash, Activity } from 'lucide-react';
+import { Play, Pause, RotateCcw, Server, Laptop, Router, CheckCircle2, Zap, Gauge, Mail, HelpCircle, Radio, Database, Terminal, SkipForward, Globe, XCircle, Info, FileCode, X, Layers, Cpu, Hash, Activity, Sparkles } from 'lucide-react';
+import TerminalLog from '../common/TerminalLog';
+import { CleanHeader, CleanInfoBanner, SlideOutInspector } from '../common/EasyCard';
 
-export default function DHCPModule() {
+export default function DHCPModule({ appMode = 'clean' }) {
   const [activeStep, setActiveStep] = useState(0); // 0: Idle, 1: Discover, 2: Offer, 3: Request, 4: Ack
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSingleStep, setIsSingleStep] = useState(false);
@@ -303,10 +305,32 @@ export default function DHCPModule() {
   const currentPayload = currentMeta.payload;
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto relative">
+    <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
 
-      {/* FLOATING MODAL POPUP FOR PACKET PAYLOAD INSPECTOR (BIG FONTS) */}
-      {modalPayloadStep && activeModalData && (
+      {/* CLEAN MODE HEADER & COLORFUL BASIC INFO WIDGET */}
+      {appMode !== 'expert' && (
+        <>
+          <CleanHeader
+            title="DHCP Automatic IP Assignment Made Simple"
+            subtitle="Watch how your computer gets an IP address automatically from the Network Router/DHCP Server"
+            icon={Zap}
+          />
+
+          <CleanInfoBanner
+            ip="192.168.1.105 (Leased)"
+            protocol="DHCP (UDP)"
+            port="UDP 67 / 68"
+            status={isRelayMode ? "DHCP Relay Active" : "Local LAN Broadcast"}
+            actionTitle={currentMeta.title}
+            actionDesc={currentMeta.subtitle}
+            stepNumber={activeStep}
+            totalSteps={4}
+          />
+        </>
+      )}
+
+      {/* FLOATING MODAL POPUP FOR PACKET PAYLOAD INSPECTOR (EXPERT MODE ONLY) */}
+      {appMode === 'expert' && modalPayloadStep && activeModalData && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
           <div className="glass-panel max-w-2xl w-full p-7 rounded-3xl border border-slate-700 shadow-2xl space-y-6 bg-slate-900/95 relative text-slate-100 max-h-[90vh] overflow-y-auto">
             
@@ -750,102 +774,111 @@ export default function DHCPModule() {
         </div>
       </div>
 
-      {/* WINDOWS VS LINUX DHCP COMMANDS CHEATSHEET WITH EXPLICIT DORA STEP MAPPING & FLOATING MODAL BUTTON */}
-      <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex items-center gap-2">
-            <Terminal className="w-5 h-5 text-amber-400" />
-            <h3 className="font-extrabold text-slate-100 text-sm">CLI Commands & Request Info Inspector</h3>
-          </div>
+      {/* TECHNICAL INSPECTOR & EVENT LOGS (COLLAPSED SLIDE-OUT IN CLEAN MODE) */}
+      <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
+        <div className="space-y-4">
+          
+          {/* OS CLI COMMANDS & PACKET PAYLOAD INSPECTOR */}
+          <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4 shadow-2xl font-mono text-xs">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-slate-800 pb-3 font-mono">
+              <div className="flex items-center gap-2">
+                <Terminal className="w-5 h-5 text-cyan-400" />
+                <h3 className="font-extrabold text-slate-100 text-sm">CLI Commands & Request Info Inspector</h3>
+              </div>
 
-          <div className="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800">
-            <button
-              onClick={() => setActiveOsTab('windows')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeOsTab === 'windows' ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              🪟 Windows OS
-            </button>
-            <button
-              onClick={() => setActiveOsTab('linux')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeOsTab === 'linux' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              🐧 Linux OS
-            </button>
-          </div>
-        </div>
-
-        {/* 4 COMMAND CARDS GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs">
-          {[
-            {
-              step: 1,
-              title: '1. DISCOVER',
-              color: 'text-amber-400 border-amber-500/40',
-              btnBg: 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-lg shadow-amber-500/20',
-              winCmd: 'ipconfig /renew',
-              winDesc: 'Triggers Windows DHCP client to send DISCOVER broadcast on UDP 68.',
-              linCmd: 'sudo dhclient -v eth0',
-              linDesc: 'Sends DHCPDISCOVER broadcast message on interface eth0.'
-            },
-            {
-              step: 2,
-              title: '2. OFFER',
-              color: 'text-cyan-400 border-cyan-500/40',
-              btnBg: 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black shadow-lg shadow-cyan-500/20',
-              winCmd: 'Get-DhcpServerv4Scope',
-              winDesc: 'Inspects configured scope range (192.168.1.100-200) and available IPs.',
-              linCmd: 'cat /etc/dhcp/dhcpd.conf',
-              linDesc: 'Server matches client subnet and prepares DHCPOFFER packet.'
-            },
-            {
-              step: 3,
-              title: '3. REQUEST',
-              color: 'text-blue-400 border-blue-500/40',
-              btnBg: 'bg-blue-500 hover:bg-blue-400 text-slate-950 font-black shadow-lg shadow-blue-500/20',
-              winCmd: 'ipconfig /renew',
-              winDesc: 'Client broadcasts acceptance of offered IP to all servers on LAN.',
-              linCmd: 'sudo dhclient eth0',
-              linDesc: 'Sends DHCPREQUEST broadcast confirming server choice.'
-            },
-            {
-              step: 4,
-              title: '4. ACK',
-              color: 'text-emerald-400 border-emerald-500/40',
-              btnBg: 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black shadow-lg shadow-emerald-500/20',
-              winCmd: 'Get-DhcpServerv4Lease & ipconfig /all',
-              winDesc: 'Server commits lease in dhcp.mdb; Client displays assigned IP & Gateway.',
-              linCmd: 'cat /var/lib/dhcp/dhcpd.leases & ip addr',
-              linDesc: 'Server logs active lease in dhcpd.leases; Client binds IP address.'
-            }
-          ].map((item) => (
-            <div key={item.step} className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-3 flex flex-col justify-between">
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className={`font-bold text-xs ${item.color.split(' ')[0]}`}>{item.title} Command</span>
-                  <button
-                    onClick={() => setModalPayloadStep(item.step)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center gap-1.5 ${item.btnBg}`}
-                  >
-                    <FileCode className="w-4 h-4" />
-                    <span>Show Info Sent 🔍</span>
-                  </button>
-                </div>
-
-                <p className="text-slate-200 font-extrabold font-mono text-sm bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                  {activeOsTab === 'windows' ? item.winCmd : item.linCmd}
-                </p>
-                <p className="text-slate-400 text-[11px] leading-relaxed">
-                  {activeOsTab === 'windows' ? item.winDesc : item.linDesc}
-                </p>
+              <div className="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800">
+                <button
+                  onClick={() => setActiveOsTab('windows')}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    activeOsTab === 'windows' ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  🪟 Windows OS
+                </button>
+                <button
+                  onClick={() => setActiveOsTab('linux')}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    activeOsTab === 'linux' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  🐧 Linux OS
+                </button>
               </div>
             </div>
-          ))}
+
+            {/* 4 COMMAND CARDS GRID */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs">
+              {[
+                {
+                  step: 1,
+                  title: '1. DISCOVER',
+                  color: 'text-amber-400 border-amber-500/40',
+                  btnBg: 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-lg shadow-amber-500/20',
+                  winCmd: 'ipconfig /renew',
+                  winDesc: 'Triggers Windows DHCP client to send DISCOVER broadcast on UDP 68.',
+                  linCmd: 'sudo dhclient -v eth0',
+                  linDesc: 'Sends DHCPDISCOVER broadcast message on interface eth0.'
+                },
+                {
+                  step: 2,
+                  title: '2. OFFER',
+                  color: 'text-cyan-400 border-cyan-500/40',
+                  btnBg: 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black shadow-lg shadow-cyan-500/20',
+                  winCmd: 'Get-DhcpServerv4Scope',
+                  winDesc: 'Inspects configured scope range (192.168.1.100-200) and available IPs.',
+                  linCmd: 'cat /etc/dhcp/dhcpd.conf',
+                  linDesc: 'Server matches client subnet and prepares DHCPOFFER packet.'
+                },
+                {
+                  step: 3,
+                  title: '3. REQUEST',
+                  color: 'text-blue-400 border-blue-500/40',
+                  btnBg: 'bg-blue-500 hover:bg-blue-400 text-slate-950 font-black shadow-lg shadow-blue-500/20',
+                  winCmd: 'ipconfig /renew',
+                  winDesc: 'Client broadcasts acceptance of offered IP to all servers on LAN.',
+                  linCmd: 'sudo dhclient eth0',
+                  linDesc: 'Sends DHCPREQUEST broadcast confirming server choice.'
+                },
+                {
+                  step: 4,
+                  title: '4. ACK',
+                  color: 'text-emerald-400 border-emerald-500/40',
+                  btnBg: 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black shadow-lg shadow-emerald-500/20',
+                  winCmd: 'Get-DhcpServerv4Lease & ipconfig /all',
+                  winDesc: 'Server commits lease in dhcp.mdb; Client displays assigned IP & Gateway.',
+                  linCmd: 'cat /var/lib/dhcp/dhcpd.leases & ip addr',
+                  linDesc: 'Server logs active lease in dhcpd.leases; Client binds IP address.'
+                }
+              ].map((item) => (
+                <div key={item.step} className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-3 flex flex-col justify-between">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className={`font-bold text-xs ${item.color.split(' ')[0]}`}>{item.title} Command</span>
+                      <button
+                        onClick={() => setModalPayloadStep(item.step)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center gap-1.5 ${item.btnBg}`}
+                      >
+                        <FileCode className="w-4 h-4" />
+                        <span>Show Info Sent 🔍</span>
+                      </button>
+                    </div>
+
+                    <p className="text-slate-200 font-extrabold font-mono text-sm bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                      {activeOsTab === 'windows' ? item.winCmd : item.linCmd}
+                    </p>
+
+                    <p className="text-slate-400 text-[11px] font-sans">
+                      {activeOsTab === 'windows' ? item.winDesc : item.linDesc}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <TerminalLog logs={logs} onClear={() => setLogs([])} />
         </div>
-      </div>
+      </SlideOutInspector>
     </div>
   );
 }

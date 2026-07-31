@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Building2, Router, Server, Laptop, Search, Play, Pause, RotateCcw, CheckCircle2, Gauge, Mail, ChevronDown, ChevronUp, HelpCircle, FileCode, Terminal, SkipForward, Radio, Layers, Cpu, ArrowRight, ShieldCheck, X, Activity, Zap } from 'lucide-react';
+import { Globe, Building2, Router, Server, Laptop, Search, Play, Pause, RotateCcw, CheckCircle2, Gauge, Mail, ChevronDown, ChevronUp, HelpCircle, FileCode, Terminal, SkipForward, Radio, Layers, Cpu, ArrowRight, ShieldCheck, X, Activity, Zap, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
+import { CleanHeader, CleanInfoBanner, SlideOutInspector } from '../common/EasyCard';
 
-export default function DNSModule() {
+export default function DNSModule({ appMode = 'clean' }) {
   const [activeStep, setActiveStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSingleStep, setIsSingleStep] = useState(false);
@@ -394,8 +395,30 @@ export default function DNSModule() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
-      {/* FLOATING MODAL POPUP FOR PACKET & NAT PAYLOAD INSPECTOR (BIG FONTS) */}
-      {modalPayloadStep && activeModalData && (
+      {/* CLEAN MODE HEADER & COLORFUL BASIC INFO WIDGET */}
+      {appMode !== 'expert' && (
+        <>
+          <CleanHeader
+            title="DNS Hostname Lookup Made Simple"
+            subtitle={`Translating hostname "${targetDomain}" into numerical IP address (${currDomain.resolvedIp})`}
+            icon={Globe}
+          />
+
+          <CleanInfoBanner
+            ip={currDomain.resolvedIp}
+            protocol="DNS (UDP)"
+            port={53}
+            status={isExternalDomain ? "Public Internet Query" : "Local AD Subnet"}
+            actionTitle={currentMeta.title}
+            actionDesc={currentMeta.subtitle}
+            stepNumber={activeStep}
+            totalSteps={totalSteps}
+          />
+        </>
+      )}
+
+      {/* FLOATING MODAL POPUP FOR PACKET & NAT PAYLOAD INSPECTOR (EXPERT MODE ONLY) */}
+      {appMode === 'expert' && modalPayloadStep && activeModalData && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
           <div className="glass-panel max-w-2xl w-full p-7 rounded-3xl border border-slate-700 shadow-2xl space-y-6 bg-slate-900/95 relative text-slate-100 max-h-[90vh] overflow-y-auto">
             
@@ -457,51 +480,49 @@ export default function DNSModule() {
       {/* MAIN MASTER WORKSPACE STAGE FOR DNS & ISP */}
       <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-5 shadow-2xl relative overflow-hidden">
         
-        {/* DOMAIN TARGET SELECTOR & MODE BADGE */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <Search className="w-5 h-5 text-cyan-400" />
-            <div>
-              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-bold">Select Hostname to Resolve</span>
+        {/* UNIFIED INTEGRATED WORKSPACE CONTROL TOOLBAR */}
+        <div className="glass-panel p-3 rounded-2xl border border-slate-800/90 bg-slate-900/95 flex flex-wrap items-center justify-between gap-3 shadow-xl font-mono text-xs">
+          
+          {/* Left Group: Target Domain Selector & Query Mode Badge */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+              <Search className="w-4 h-4 text-cyan-400" />
+              <span className="text-slate-400 font-bold hidden sm:inline">Resolve Domain:</span>
               <select
                 value={targetDomain}
                 onChange={(e) => { setTargetDomain(e.target.value); handleReset(); }}
-                className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-cyan-300 focus:outline-none focus:border-cyan-500 cursor-pointer"
+                className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-mono font-bold text-cyan-300 focus:outline-none focus:border-cyan-500 cursor-pointer"
               >
-                <optgroup label="🌐 Public Internet Domains (Triggers Router NAT & ISP Wire Traversal)">
+                <optgroup label="🌐 Public Internet Domains (NAT & ISP Traversal)">
                   <option value="google.com">google.com (Public Web - 8.8.8.8)</option>
                   <option value="microsoft.com">microsoft.com (Public Cloud - 4.222.0.1)</option>
-                  <option value="github.com">github.com (Public Code - 1.1.1.1 Cloudflare)</option>
+                  <option value="github.com">github.com (Cloudflare - 1.1.1.1)</option>
                 </optgroup>
-                <optgroup label="🏢 Internal Active Directory Domains (LAN Resolution)">
-                  <option value="dc01.corp.local">dc01.corp.local (Local AD Domain Controller)</option>
+                <optgroup label="🏢 Internal Active Directory Domains (LAN)">
+                  <option value="dc01.corp.local">dc01.corp.local (Local AD DC)</option>
                   <option value="_ldap._tcp.dc._msdcs.corp.local">_ldap._tcp.dc._msdcs.corp.local (AD SRV Record)</option>
                 </optgroup>
               </select>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2 font-mono">
-            <span className={`px-3 py-1.5 rounded-xl text-xs font-bold border shadow ${
+            <span className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border shadow ${
               isExternalDomain ? 'bg-amber-950 text-amber-300 border-amber-700' : 'bg-purple-950 text-purple-300 border-purple-700'
             }`}>
-              {isExternalDomain ? `🌐 PUBLIC QUERY ➔ ${currDomain.dnsName} (${currDomain.dnsIp})` : '🏢 LOCAL AD LAN QUERY (NO NAT)'}
+              {isExternalDomain ? `🌐 PUBLIC ➔ ${currDomain.dnsName} (${currDomain.dnsIp})` : '🏢 LOCAL LAN QUERY'}
             </span>
           </div>
-        </div>
 
-        {/* WORKSPACE CONTROL TOOLBAR */}
-        <div className="glass-panel p-2.5 rounded-2xl border border-slate-800/90 bg-slate-900/95 flex flex-wrap items-center justify-between gap-3 shadow-xl font-mono text-xs">
-          <div className="flex items-center gap-3">
-            {/* Speed Selector */}
+          {/* Right Group: Animation Speed & Action Controls */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Animation Speed Selector */}
             <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-slate-300">
               <Gauge className="w-4 h-4 text-cyan-400" />
-              <span className="font-bold">Animation Speed:</span>
+              <span className="font-bold hidden sm:inline">Speed:</span>
               {[0.25, 0.5, 1].map((s) => (
                 <button
                   key={s}
                   onClick={() => setSpeed(s)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer transition-all ${
+                  className={`px-2 py-0.5 rounded-lg text-xs font-bold cursor-pointer transition-all ${
                     speed === s ? 'bg-cyan-500 text-slate-950 shadow-md' : 'hover:bg-slate-800 text-slate-400'
                   }`}
                 >
@@ -509,44 +530,44 @@ export default function DNSModule() {
                 </button>
               ))}
             </div>
-          </div>
 
-          {/* Action Control Buttons */}
-          <div className="flex items-center gap-2">
-            {isFinalStepComplete ? (
-              <button
-                onClick={handleReset}
-                className="px-6 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:scale-105 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/30 cursor-pointer transition-all animate-bounce"
-              >
-                <RotateCcw className="w-4 h-4" /> Reset & Restart DNS Query
-              </button>
-            ) : (
-              <>
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              {isFinalStepComplete ? (
                 <button
-                  onClick={handleStepForward}
-                  disabled={isPlaying}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs font-extrabold flex items-center gap-1.5 border border-slate-700 cursor-pointer transition-colors"
+                  onClick={handleReset}
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:scale-105 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/30 cursor-pointer transition-all animate-bounce"
                 >
-                  <SkipForward className="w-4 h-4 fill-current" /> Next Step ({activeStep + 1}/{totalSteps})
+                  <RotateCcw className="w-4 h-4" /> Reset & Restart Query
                 </button>
+              ) : (
+                <>
+                  <button
+                    onClick={handleStepForward}
+                    disabled={isPlaying}
+                    className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs font-extrabold flex items-center gap-1.5 border border-slate-700 cursor-pointer transition-colors"
+                  >
+                    <SkipForward className="w-4 h-4 fill-current" /> Next Step ({activeStep + 1}/{totalSteps})
+                  </button>
 
-                <button
-                  onClick={handleStartPlay}
-                  className={`px-5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shadow-lg ${
-                    isPlaying
-                      ? 'bg-cyan-500 text-slate-950 shadow-cyan-500/20'
-                      : 'bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-600 hover:scale-105 text-slate-950 shadow-cyan-500/30'
-                  }`}
-                >
-                  {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-                  {isPlaying ? 'Pause' : 'Start DNS Lookup'}
-                </button>
+                  <button
+                    onClick={handleStartPlay}
+                    className={`px-5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shadow-lg ${
+                      isPlaying
+                        ? 'bg-cyan-500 text-slate-950 shadow-cyan-500/20'
+                        : 'bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-600 hover:scale-105 text-slate-950 shadow-cyan-500/30'
+                    }`}
+                  >
+                    {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
+                    {isPlaying ? 'Pause' : 'Start DNS Lookup'}
+                  </button>
 
-                <button onClick={handleReset} className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer" title="Reset">
-                  <RotateCcw className="w-4 h-4" />
-                </button>
-              </>
-            )}
+                  <button onClick={handleReset} className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer" title="Reset">
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -735,92 +756,94 @@ export default function DNSModule() {
           )}
         </div>
 
-        {/* STEP INSPECTION BUTTONS & DETAILS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2">
-          {(isExternalDomain ? [1, 2, 3, 4] : [1, 2, 3]).map((stepNum) => {
-            const meta = stepMeta[stepNum];
-            return (
-              <div key={stepNum} className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 flex flex-col justify-between">
-                <div className="space-y-1 font-mono text-xs">
-                  <span className="text-cyan-400 font-bold text-xs">{meta.title.split(':')[0]}</span>
-                  <p className="text-slate-300 text-[11px] leading-tight">{meta.subtitle}</p>
-                </div>
+        {/* STEP INSPECTION BUTTONS & DETAILS (EXPERT MODE ONLY) */}
+        {appMode === 'expert' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+            {(isExternalDomain ? [1, 2, 3, 4] : [1, 2, 3]).map((stepNum) => {
+              const meta = stepMeta[stepNum];
+              return (
+                <div key={stepNum} className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 flex flex-col justify-between">
+                  <div className="space-y-1 font-mono text-xs">
+                    <span className="text-cyan-400 font-bold text-xs">{meta.title.split(':')[0]}</span>
+                    <p className="text-slate-300 text-[11px] leading-tight">{meta.subtitle}</p>
+                  </div>
 
-                <button
-                  onClick={() => setModalPayloadStep(stepNum)}
-                  className="w-full py-1.5 px-2 rounded-xl text-xs font-extrabold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <FileCode className="w-3.5 h-3.5" />
-                  <span>Inspect Packet & NAT 🔍</span>
-                </button>
-              </div>
-            );
-          })}
-        </div>
+                  <button
+                    onClick={() => setModalPayloadStep(stepNum)}
+                    className="w-full py-1.5 px-2 rounded-xl text-xs font-extrabold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <FileCode className="w-3.5 h-3.5" />
+                    <span>Inspect Packet & NAT 🔍</span>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* SIDE-BY-SIDE REAL-TIME PACKET INSPECTOR (LEFT) & NETWORK EVENT LOGS (RIGHT) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
-        
-        {/* LEFT COLUMN: LIVE REAL-TIME PACKET CONTENT INSPECTOR */}
-        <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-            <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-sm">
-              <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
-              <span>Live Packet Content Inspector</span>
-            </div>
-            <span className="px-2 py-0.5 rounded text-[10px] bg-slate-900 text-slate-400 border border-slate-800 font-bold">
-              Step {activeStep}/{totalSteps} Active
-            </span>
-          </div>
-
-          {currentPayload ? (
-            <div className="space-y-2.5">
-              <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800/80 space-y-1.5">
-                <div className="flex items-center justify-between text-slate-400 text-[11px] font-bold">
-                  <span>Packet Type / Operation:</span>
-                  <span className="text-amber-400">{currentPayload.stepName}</span>
-                </div>
-
-                <p className="text-slate-200 text-[11px]">
-                  <span className="text-slate-500 font-bold">Ethernet (L2):</span> {currentPayload.l2Header}
-                </p>
-                <p className="text-slate-200 text-[11px]">
-                  <span className="text-slate-500 font-bold">IPv4 (L3):</span> <span className="text-cyan-300 font-bold">{currentPayload.l3Header}</span>
-                </p>
-                <p className="text-slate-200 text-[11px]">
-                  <span className="text-slate-500 font-bold">UDP (L4):</span> <span className="text-emerald-300 font-bold">{currentPayload.l4Header}</span>
-                </p>
+      {/* TECHNICAL PACKET INSPECTOR & EVENT LOGS (COLLAPSED SLIDE-OUT IN CLEAN MODE, OPEN IN EXPERT MODE) */}
+      <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
+          
+          {/* LEFT COLUMN: LIVE REAL-TIME PACKET CONTENT INSPECTOR */}
+          <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-sm">
+                <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
+                <span>Live Packet Content Inspector</span>
               </div>
+              <span className="px-2 py-0.5 rounded text-[10px] bg-slate-900 text-slate-400 border border-slate-800 font-bold">
+                Step {activeStep}/{totalSteps} Active
+              </span>
+            </div>
 
-              {/* HIGHLIGHTED NAT MODIFICATION / ADDRESS REWRITING LINE (DIFFERENT COLOR) */}
-              {isExternalDomain && (activeStep === 2 || activeStep === 4) && (
-                <div className="p-3 rounded-2xl border bg-amber-950/90 border-amber-500 text-amber-200 space-y-1 shadow-lg animate-pulse">
-                  <div className="flex items-center gap-1.5 text-xs font-black text-amber-300 uppercase tracking-wider">
-                    <Zap className="w-4 h-4 fill-current text-amber-400" />
-                    <span>ROUTER NAT ADDRESS REWRITING DETECTED!</span>
+            {currentPayload ? (
+              <div className="space-y-2.5">
+                <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800/80 space-y-1.5">
+                  <div className="flex items-center justify-between text-slate-400 text-[11px] font-bold">
+                    <span>Packet Type / Operation:</span>
+                    <span className="text-amber-400">{currentPayload.stepName}</span>
                   </div>
-                  <p className="text-[11px] font-extrabold text-amber-100 leading-relaxed">
-                    {activeStep === 2
-                      ? `⚡ INBOUND SNAT: Router modified Source Private IP 192.168.1.105:54321 ➔ Public WAN IP 203.0.113.45:41001 (Targeting ${currDomain.dnsIp})`
-                      : `⚡ REVERSE NAT: Router restored Destination Public WAN IP 203.0.113.45:41001 ➔ Private IP 192.168.1.105:54321 (Resolved ${currDomain.resolvedIp})`}
+
+                  <p className="text-slate-200 text-[11px]">
+                    <span className="text-slate-500 font-bold">Ethernet (L2):</span> {currentPayload.l2Header}
+                  </p>
+                  <p className="text-slate-200 text-[11px]">
+                    <span className="text-slate-500 font-bold">IPv4 (L3):</span> <span className="text-cyan-300 font-bold">{currentPayload.l3Header}</span>
+                  </p>
+                  <p className="text-slate-200 text-[11px]">
+                    <span className="text-slate-500 font-bold">UDP (L4):</span> <span className="text-emerald-300 font-bold">{currentPayload.l4Header}</span>
                   </p>
                 </div>
-              )}
-            </div>
-          ) : (
-            <div className="p-6 bg-slate-950/60 rounded-2xl border border-slate-800 text-center text-slate-500">
-              <p className="text-xs font-bold">No active packet in flight.</p>
-              <p className="text-[10px]">Click "Start DNS Lookup" or "Next Step" to begin.</p>
-            </div>
-          )}
-        </div>
 
-        {/* RIGHT COLUMN: NETWORK EVENT LOGS */}
-        <div>
+                {/* HIGHLIGHTED NAT MODIFICATION / ADDRESS REWRITING LINE (DIFFERENT COLOR) */}
+                {isExternalDomain && (activeStep === 2 || activeStep === 4) && (
+                  <div className="p-3 rounded-2xl border bg-amber-950/90 border-amber-500 text-amber-200 space-y-1 shadow-lg animate-pulse">
+                    <div className="flex items-center gap-1.5 text-xs font-black text-amber-300 uppercase tracking-wider">
+                      <Zap className="w-4 h-4 fill-current text-amber-400" />
+                      <span>ROUTER NAT ADDRESS REWRITING DETECTED!</span>
+                    </div>
+                    <p className="text-[11px] font-extrabold text-amber-100 leading-relaxed">
+                      {activeStep === 2
+                        ? `⚡ INBOUND SNAT: Router modified Source Private IP 192.168.1.105:54321 ➔ Public WAN IP 203.0.113.45:41001 (Targeting ${currDomain.dnsIp})`
+                        : `⚡ OUTBOUND REVERSE NAT: Router restored Destination Public WAN IP 203.0.113.45:41001 ➔ Private IP 192.168.1.105:54321`}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
+                <p className="font-bold">No active packet frame in flight.</p>
+                <p className="text-[10px]">Select hostname above and click "Start DNS Lookup" to inspect packet headers in real time.</p>
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT COLUMN: REAL-TIME NETWORK EVENT LOGS */}
           <TerminalLog logs={logs} onClear={() => setLogs([])} />
         </div>
-      </div>
+      </SlideOutInspector>
     </div>
   );
 }

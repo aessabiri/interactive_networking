@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Server, Laptop, ShieldCheck, Play, Pause, RotateCcw, CheckCircle2, Gauge, HelpCircle, FileCode, Terminal, SkipForward, Radio, Layers, Cpu, ArrowRight, X, Activity, Zap, HardDrive, Lock, RefreshCw, Send, Check, Inbox, Globe, Building2, Router, Search } from 'lucide-react';
+import { Mail, Server, Laptop, ShieldCheck, Play, Pause, RotateCcw, CheckCircle2, Gauge, HelpCircle, FileCode, Terminal, SkipForward, Radio, Layers, Cpu, ArrowRight, X, Activity, Zap, HardDrive, Lock, RefreshCw, Send, Check, Inbox, Globe, Building2, Router, Search, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
+import { CleanHeader, CleanInfoBanner, SlideOutInspector } from '../common/EasyCard';
 
-export default function MailModule() {
+export default function MailModule({ appMode = 'clean' }) {
   const [activeStep, setActiveStep] = useState(0); // 0: Idle, 1: Submission (587), 2: DNS MX Query (Cross-domain only), 3: MTA Relay (25), 4: MRA Retrieval (993/995)
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSingleStep, setIsSingleStep] = useState(false);
@@ -501,8 +502,30 @@ export default function MailModule() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
-      {/* FLOATING MODAL POPUP FOR MAIL PAYLOAD INSPECTOR */}
-      {modalPayloadStep && activeModalData && (
+      {/* CLEAN MODE HEADER & COLORFUL BASIC INFO WIDGET */}
+      {appMode !== 'expert' && (
+        <>
+          <CleanHeader
+            title="Mail Server Routing Made Simple"
+            subtitle={`Sending email from ${senderEmail} to ${recipientEmail}`}
+            icon={Mail}
+          />
+
+          <CleanInfoBanner
+            ip={recipientDomain}
+            protocol="SMTP / IMAP / POP3"
+            port="Port 587 / 25 / 993"
+            status={domainMode === 'cross' ? 'Cross-Domain MX Routing' : 'Intra-Domain Direct Delivery'}
+            actionTitle={currentMeta.title}
+            actionDesc={currentMeta.subtitle}
+            stepNumber={activeStep}
+            totalSteps={totalSteps}
+          />
+        </>
+      )}
+
+      {/* FLOATING MODAL POPUP FOR MAIL PAYLOAD INSPECTOR (EXPERT MODE ONLY) */}
+      {appMode === 'expert' && modalPayloadStep && activeModalData && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
           <div className="glass-panel max-w-2xl w-full p-7 rounded-3xl border border-slate-700 shadow-2xl space-y-6 bg-slate-900/95 relative text-slate-100 max-h-[90vh] overflow-y-auto font-mono">
             
@@ -977,119 +1000,34 @@ export default function MailModule() {
         )}
       </div>
 
-      {/* STEP INSPECTION CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-2 font-mono">
-        {(domainMode === 'cross' ? [1, 2, 3, 4] : [1, 2, 3]).map((stepNum) => {
-          const meta = stepMeta[stepNum];
-          return (
-            <div key={stepNum} className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 flex flex-col justify-between">
-              <div className="space-y-1 text-xs">
-                <span className="text-amber-400 font-bold">{meta.title.split(':')[0]}</span>
-                <p className="text-slate-300 text-[11px] leading-relaxed">{meta.subtitle}</p>
-              </div>
+      {/* STEP INSPECTION CARDS & LOGS (COLLAPSED SLIDE-OUT IN CLEAN MODE) */}
+      <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 font-mono">
+            {(domainMode === 'cross' ? [1, 2, 3, 4] : [1, 2, 3]).map((stepNum) => {
+              const meta = stepMeta[stepNum];
+              return (
+                <div key={stepNum} className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 flex flex-col justify-between">
+                  <div className="space-y-1 text-xs">
+                    <span className="text-amber-400 font-bold">{meta.title.split(':')[0]}</span>
+                    <p className="text-slate-300 text-[11px] leading-relaxed">{meta.subtitle}</p>
+                  </div>
 
-              <button
-                onClick={() => setModalPayloadStep(stepNum)}
-                className="w-full py-2 px-3 rounded-xl text-xs font-extrabold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <FileCode className="w-4 h-4" />
-                <span>Inspect Mail Payload & Headers 🔍</span>
-              </button>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* COMPARISON CHEATSHEET: MICROSOFT EXCHANGE VS LINUX POSTFIX/DOVECOT */}
-      <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4 font-mono">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex items-center gap-2">
-            <Terminal className="w-5 h-5 text-amber-400" />
-            <h3 className="font-extrabold text-slate-100 text-sm">Enterprise Mail Architecture Comparison & CLI Commands</h3>
+                  <button
+                    onClick={() => setModalPayloadStep(stepNum)}
+                    className="w-full py-2 px-3 rounded-xl text-xs font-extrabold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <FileCode className="w-4 h-4" />
+                    <span>Inspect Mail Payload & Headers 🔍</span>
+                  </button>
+                </div>
+              );
+            })}
           </div>
 
-          <div className="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
-            <button
-              onClick={() => setActiveOsTab('exchange')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
-                activeOsTab === 'exchange' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              🪟 Exchange Server 2019
-            </button>
-            <button
-              onClick={() => setActiveOsTab('linux')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
-                activeOsTab === 'linux' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              🐧 Linux (Postfix + Dovecot)
-            </button>
-          </div>
+          <TerminalLog logs={logs} onClear={() => setLogs([])} />
         </div>
-
-        {/* DETAILED ARCHITECTURE & COMMAND GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-          {activeOsTab === 'exchange' ? (
-            <>
-              <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-                <span className="text-blue-400 font-extrabold text-sm block">1. Exchange Server Roles (MUA / MSA / MTA / MDA / MRA)</span>
-                <p className="text-slate-300 text-[11px] leading-relaxed">
-                  Microsoft Exchange 2019 consolidates Mailbox Role (Transport MTA, Delivery MDA, ESE Store) and Front-End CAS Services (MRA via Outlook MAPI/EWS & ActiveSync).
-                </p>
-                <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-1 text-slate-300 font-mono text-[11px]">
-                  <p><span className="text-slate-500">MTA Service:</span> Microsoft Exchange Transport Service</p>
-                  <p><span className="text-slate-500">MDA / Store:</span> Extensible Storage Engine (ESE / .edb database)</p>
-                  <p><span className="text-slate-500">Database High Availability:</span> DAG (Database Availability Group)</p>
-                </div>
-              </div>
-
-              <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-                <span className="text-cyan-400 font-extrabold text-sm block">2. Exchange Management Shell (PowerShell)</span>
-                <p className="text-slate-300 text-[11px] leading-relaxed">
-                  Key Exchange PowerShell cmdlets for mailbox provisioning and transport queue management:
-                </p>
-                <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-1.5 font-mono text-[11px] text-cyan-200">
-                  <p><span className="text-slate-500">View Databases:</span> Get-MailboxDatabase -Status</p>
-                  <p><span className="text-slate-500">Check Mail Queues:</span> Get-Queue | ft Identity,MessageCount</p>
-                  <p><span className="text-slate-500">New User Mailbox:</span> Enable-Mailbox -Identity student@dts.local</p>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-                <span className="text-amber-400 font-extrabold text-sm block">1. Linux Modular Mail Stack (Postfix + Dovecot)</span>
-                <p className="text-slate-300 text-[11px] leading-relaxed">
-                  Linux open-source mail servers decouple MSA/MTA (Postfix on Port 587/25) from MDA/MRA (Dovecot IMAP 993 / POP3 995) for security and scalability.
-                </p>
-                <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-1 text-slate-300 font-mono text-[11px]">
-                  <p><span className="text-slate-500">MSA / MTA (Port 587/25):</span> Postfix / Exim / Sendmail</p>
-                  <p><span className="text-slate-500">MDA / MRA (Port 993/995):</span> Dovecot LDA / Dovecot IMAP/POP3 Daemon</p>
-                  <p><span className="text-slate-500">Mailbox Storage:</span> Maildir (/home/user/Maildir/ - 1 File/Email)</p>
-                </div>
-              </div>
-
-              <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-                <span className="text-emerald-400 font-extrabold text-sm block">2. Linux Mail CLI & Queue Management</span>
-                <p className="text-slate-300 text-[11px] leading-relaxed">
-                  Essential Linux terminal commands for managing mail daemons and inspecting mail logs:
-                </p>
-                <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-1.5 font-mono text-[11px] text-amber-200">
-                  <p><span className="text-slate-500">Service Status:</span> systemctl status postfix dovecot</p>
-                  <p><span className="text-slate-500">View Postfix Queue:</span> mailq  or  postqueue -p</p>
-                  <p><span className="text-slate-500">Tail Live Mail Logs:</span> tail -f /var/log/mail.log</p>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* REAL-TIME LOGS */}
-      <div>
-        <TerminalLog logs={logs} onClear={() => setLogs([])} />
-      </div>
+      </SlideOutInspector>
     </div>
   );
 }

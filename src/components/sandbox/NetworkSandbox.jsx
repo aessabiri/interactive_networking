@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
-import { Network, Laptop, Server, Router, ShieldCheck, Globe, Play, Trash2, Plus, Zap, Gauge, CheckCircle2, Settings, Cpu, FileCode, Terminal, X, Radio, HardDrive, Mail, Layers, Activity, Printer, Wifi, Database } from 'lucide-react';
+import { Network, Laptop, Server, Router, ShieldCheck, Globe, Play, Trash2, Plus, Zap, Gauge, CheckCircle2, Settings, Cpu, FileCode, Terminal, X, Radio, HardDrive, Mail, Layers, Activity, Printer, Wifi, Database, Download, Upload, FileJson, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
+import { CleanHeader, CleanInfoBanner, SlideOutInspector } from '../common/EasyCard';
 
-export default function NetworkSandbox() {
+export default function NetworkSandbox({ appMode = 'clean' }) {
   // Initial Nodes on Canvas (Includes connected INTERNET-ISP node)
   const [nodes, setNodes] = useState([
     {
@@ -243,6 +244,98 @@ export default function NetworkSandbox() {
       ...prev,
       { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: `Added ${newNode.name} (${type.toUpperCase()}) to canvas.` }
     ]);
+  };
+
+  // Export Topology to JSON file
+  const handleExportTopology = () => {
+    const data = JSON.stringify({ nodes, links }, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'netpulse_topology.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'EXPORT', message: 'Topology exported to netpulse_topology.json.' }]);
+  };
+
+  // Import Topology from JSON file
+  const handleImportTopology = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target.result);
+        if (parsed.nodes && parsed.links) {
+          setNodes(parsed.nodes);
+          setLinks(parsed.links);
+          setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'IMPORT', message: `Topology loaded (${parsed.nodes.length} devices, ${parsed.links.length} cables).` }]);
+        }
+      } catch (err) {
+        alert('Invalid topology JSON file format!');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Preset Template Loader
+  const handleLoadTemplate = (templateKey) => {
+    const templates = {
+      corporate: {
+        nodes: [
+          { id: 'lap1', name: 'WORKSTATION-01', type: 'laptop', x: 80, y: 160, ip: '192.168.1.105', mac: '00:50:56:A1:B2:C1', os: 'Windows 11 Pro', roles: [], subnetMask: '255.255.255.0', vlan: '10 (DATA)', gateway: '192.168.1.1' },
+          { id: 'sw1', name: 'CORE-SWITCH-01', type: 'switch', x: 320, y: 200, ip: 'N/A (L2 Switch)', mac: '00:11:22:33:44:00', os: 'Cisco IOS L2', roles: [], vlan: 'TRUNK' },
+          { id: 'srv1', name: 'DC01-AD-SERVER', type: 'server', x: 580, y: 100, ip: '192.168.1.10', mac: '00:0C:29:8E:7F:11', os: 'Windows Server 2022 Datacenter', roles: ['dhcp', 'ad', 'dns'], subnetMask: '255.255.255.0', gateway: '192.168.1.1' },
+          { id: 'r1', name: 'EDGE-ROUTER', type: 'router', x: 580, y: 320, ip: '192.168.1.1', mac: '00:00:0C:07:AC:01', os: 'Enterprise Gateway OS', roles: ['nat'], subnetMask: '255.255.255.0' },
+          { id: 'isp1', name: 'INTERNET-ISP 🌐', type: 'cloud', x: 820, y: 320, ip: '8.8.8.8 (WAN)', mac: '00:FE:88:99:AA:BB', os: 'Public WAN Gateway ISP', roles: [] }
+        ],
+        links: [
+          { id: 'link1', from: 'lap1', to: 'sw1', cableType: 'straight' },
+          { id: 'link2', from: 'sw1', to: 'srv1', cableType: 'straight' },
+          { id: 'link3', from: 'sw1', to: 'r1', cableType: 'straight' },
+          { id: 'link4', from: 'r1', to: 'isp1', cableType: 'straight' }
+        ]
+      },
+      dmz: {
+        nodes: [
+          { id: 'lap1', name: 'ADMIN-PC', type: 'laptop', x: 80, y: 160, ip: '192.168.1.100', mac: '00:50:56:11:22:33', os: 'Windows 11 Enterprise', roles: [], subnetMask: '255.255.255.0', vlan: '10 (MGMT)', gateway: '192.168.1.1' },
+          { id: 'sw1', name: 'INTERNAL-SWITCH', type: 'switch', x: 300, y: 160, ip: 'N/A (L2)', mac: '00:11:22:33:00:01', os: 'Cisco Catalyst L2', roles: [], vlan: 'TRUNK' },
+          { id: 'fw1', name: 'DMZ-FIREWALL', type: 'firewall', x: 520, y: 220, ip: '192.168.1.1', mac: '00:90:0B:22:33:44', os: 'FortiGate PAN-OS', roles: ['firewall'], subnetMask: '255.255.255.0' },
+          { id: 'web1', name: 'DMZ-WEB-SERVER', type: 'server', x: 520, y: 80, ip: '10.0.0.50', mac: '00:0C:29:AA:BB:CC', os: 'Linux Ubuntu Server', roles: ['http'], subnetMask: '255.255.255.0', vlan: '50 (DMZ)', gateway: '10.0.0.1' },
+          { id: 'isp1', name: 'INTERNET-ISP 🌐', type: 'cloud', x: 780, y: 220, ip: '8.8.8.8 (WAN)', mac: '00:FE:88:99:AA:BB', os: 'Public WAN ISP', roles: [] }
+        ],
+        links: [
+          { id: 'link1', from: 'lap1', to: 'sw1', cableType: 'straight' },
+          { id: 'link2', from: 'sw1', to: 'fw1', cableType: 'straight' },
+          { id: 'link3', from: 'fw1', to: 'web1', cableType: 'straight' },
+          { id: 'link4', from: 'fw1', to: 'isp1', cableType: 'straight' }
+        ]
+      },
+      vpn: {
+        nodes: [
+          { id: 'pc1', name: 'BRANCH-PC', type: 'laptop', x: 80, y: 200, ip: '192.168.10.50', mac: '00:50:56:77:88:99', os: 'Windows 11 Pro', roles: [], subnetMask: '255.255.255.0', vlan: '100', gateway: '192.168.10.1' },
+          { id: 'r_branch', name: 'BRANCH-VPN-GW', type: 'router', x: 320, y: 200, ip: '192.168.10.1', mac: '00:11:22:88:99:00', os: 'IPsec Gateway OS', roles: ['nat'], subnetMask: '255.255.255.0' },
+          { id: 'isp1', name: 'PUBLIC-WAN 🌐', type: 'cloud', x: 550, y: 200, ip: '203.0.113.1', mac: '00:FE:88:99:AA:BB', os: 'Public WAN Gateway', roles: [] },
+          { id: 'r_hq', name: 'HQ-VPN-GW', type: 'router', x: 750, y: 200, ip: '172.16.0.1', mac: '00:11:22:99:00:11', os: 'IPsec Gateway OS', roles: ['nat'], subnetMask: '255.255.0.0' },
+          { id: 'hq_srv', name: 'HQ-APP-SERVER', type: 'server', x: 920, y: 200, ip: '172.16.0.50', mac: '00:0C:29:11:22:33', os: 'Windows Server 2022', roles: ['smb', 'dns'], subnetMask: '255.255.0.0', gateway: '172.16.0.1' }
+        ],
+        links: [
+          { id: 'l1', from: 'pc1', to: 'r_branch', cableType: 'straight' },
+          { id: 'l2', from: 'r_branch', to: 'isp1', cableType: 'fiber' },
+          { id: 'l3', from: 'isp1', to: 'r_hq', cableType: 'fiber' },
+          { id: 'l4', from: 'r_hq', to: 'hq_srv', cableType: 'straight' }
+        ]
+      }
+    };
+
+    const sel = templates[templateKey];
+    if (sel) {
+      setNodes(sel.nodes);
+      setLinks(sel.links);
+      setSelectedNodeId(sel.nodes[0].id);
+      setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'TEMPLATE', message: `Loaded preset topology: ${templateKey.toUpperCase()}` }]);
+    }
   };
 
   // Node Click / Cable Wiring Logic
@@ -537,6 +630,26 @@ export default function NetworkSandbox() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
 
+      {/* CLEAN MODE HEADER & COLORFUL BASIC INFO WIDGET */}
+      {appMode !== 'expert' && (
+        <>
+          <CleanHeader
+            title="Interactive Network Topology Sandbox"
+            subtitle="Drag devices onto the canvas, wire cables together, and send test traffic between computers"
+            icon={Network}
+          />
+
+          <CleanInfoBanner
+            ip={selectedNode ? selectedNode.ip : 'Select a Device'}
+            protocol={simType.toUpperCase()}
+            port="Simulated Traffic"
+            status={simPacketPos ? "Packet Transmission Active ⚡" : "Topology Ready"}
+            actionTitle={statusBanner.title}
+            actionDesc={statusBanner.subtitle}
+          />
+        </>
+      )}
+
       {/* DISCONNECT CABLE SELECTION MODAL POPUP (IF MORE THAN 1 CONNECTION) */}
       {disconnectNode && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
@@ -704,20 +817,48 @@ export default function NetworkSandbox() {
       {/* REMADE UNIFIED WORKSPACE CONTROLS & CABLE/PROTOCOL TOOLBAR */}
       <div className="glass-panel p-4 rounded-3xl border border-slate-800 flex flex-wrap items-center justify-between gap-4 shadow-2xl bg-slate-900/90 font-mono text-xs">
         
-        {/* Left Group: Cable Type Selection */}
-        <div className="flex items-center gap-2 bg-slate-950/90 px-3.5 py-2 rounded-2xl border border-slate-800">
-          <span className="text-slate-400 font-bold">Cable Type:</span>
-          <select
-            value={selectedCableType}
-            onChange={(e) => setSelectedCableType(e.target.value)}
-            className="bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1 text-cyan-300 font-bold focus:outline-none cursor-pointer"
-          >
-            <option value="straight">Cat6 Ethernet (Straight-Through)</option>
-            <option value="crossover">Cat6 Crossover Cable</option>
-            <option value="fiber">Single-Mode Fiber Optic Cable</option>
-            <option value="serial">Serial WAN Cable</option>
-            <option value="coax">Coaxial Cable</option>
-          </select>
+        {/* Left Group: Cable Type Selection & Export/Import Topology */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 bg-slate-950/90 px-3.5 py-2 rounded-2xl border border-slate-800">
+            <span className="text-slate-400 font-bold">Cable Type:</span>
+            <select
+              value={selectedCableType}
+              onChange={(e) => setSelectedCableType(e.target.value)}
+              className="bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1 text-cyan-300 font-bold focus:outline-none cursor-pointer"
+            >
+              <option value="straight">Cat6 Ethernet (Straight-Through)</option>
+              <option value="crossover">Cat6 Crossover Cable</option>
+              <option value="fiber">Single-Mode Fiber Optic Cable</option>
+              <option value="serial">Serial WAN Cable</option>
+              <option value="coax">Coaxial Cable</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleExportTopology}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-cyan-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer"
+              title="Download current topology layout as JSON file"
+            >
+              <Download className="w-3.5 h-3.5" /> Export
+            </button>
+
+            <label className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-amber-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer">
+              <Upload className="w-3.5 h-3.5" /> Import
+              <input type="file" accept=".json" onChange={handleImportTopology} className="hidden" />
+            </label>
+
+            <select
+              onChange={(e) => handleLoadTemplate(e.target.value)}
+              defaultValue=""
+              className="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs font-bold text-emerald-300 focus:outline-none focus:border-emerald-500 cursor-pointer"
+            >
+              <option value="" disabled>Load Preset Template...</option>
+              <option value="corporate">🏢 Corporate HQ & ISP</option>
+              <option value="dmz">🛡️ DMZ Firewall Architecture</option>
+              <option value="vpn">🔒 Site-to-Site IPsec VPN</option>
+            </select>
+          </div>
         </div>
 
         {/* Center Group: Protocol & Source/Target Selectors */}
@@ -1054,111 +1195,174 @@ export default function NetworkSandbox() {
           })}
         </div>
 
-        {/* LIVE PACKET CONTENT INSPECTOR PANEL */}
-        <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-            <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-xs">
-              <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
-              <span>SANDBOX LIVE PACKET CONTENT INSPECTOR</span>
+        {/* LIVE PACKET CONTENT INSPECTOR PANEL (COLLAPSED SLIDE-OUT IN CLEAN MODE) */}
+        <SlideOutInspector title="Slide Out Sandbox Technical Deep Dive & Wire Logs">
+          <div className="space-y-4">
+            <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
+              <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-xs">
+                  <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
+                  <span>SANDBOX LIVE PACKET CONTENT INSPECTOR</span>
+                </div>
+                <span className="text-amber-400 text-[10px] font-bold">
+                  {livePacketData ? livePacketData.currentHop : 'Idle (Waiting for Simulation)'}
+                </span>
+              </div>
+
+              {livePacketData ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1.5">
+                    <div className="flex items-center justify-between text-blue-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                      <span>Layer 2 & Layer 3 Stack:</span>
+                      <span className="text-amber-400">{livePacketData.protocolName}</span>
+                    </div>
+                    <p className="text-slate-300 text-[11px]">
+                      <span className="text-slate-500 font-bold">EtherType:</span> <span className="text-amber-300 font-bold">{livePacketData.etherType}</span>
+                    </p>
+                    <p className="text-slate-300 text-[11px]">
+                      <span className="text-slate-500 font-bold">Layer 2 MACs:</span> <span className="text-cyan-300 font-bold">{livePacketData.l2}</span>
+                    </p>
+                    <p className="text-slate-300 text-[11px]">
+                      <span className="text-slate-500 font-bold">Layer 3 IPs:</span> <span className="text-emerald-300 font-bold">{livePacketData.l3}</span>
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1.5">
+                    <div className="flex items-center justify-between text-cyan-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                      <span>Layer 4 & Protocol Payload:</span>
+                      <span className="text-slate-400 text-[10px]">{livePacketData.currentHop}</span>
+                    </div>
+                    <p className="text-slate-300 text-[11px]">
+                      <span className="text-slate-500 font-bold">Transport Layer:</span> <span className="text-purple-300 font-bold">{livePacketData.l4}</span>
+                    </p>
+                    <p className="text-slate-300 text-[11px]">
+                      <span className="text-slate-500 font-bold">Payload Data:</span> <span className="text-amber-300 font-bold">{livePacketData.payload}</span>
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
+                  <p className="font-bold">No active packet frame in flight.</p>
+                  <p className="text-[10px]">Select source/target devices and click "Run Traffic Simulation" to inspect packet headers in real time.</p>
+                </div>
+              )}
             </div>
-            <span className="text-amber-400 text-[10px] font-bold">
-              {livePacketData ? livePacketData.currentHop : 'Idle (Waiting for Simulation)'}
-            </span>
+
+            <TerminalLog logs={logs} onClear={() => setLogs([])} />
           </div>
-
-          {livePacketData ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1.5">
-                <div className="flex items-center justify-between text-blue-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
-                  <span>Layer 2 & Layer 3 Stack:</span>
-                  <span className="text-amber-400">{livePacketData.protocolName}</span>
-                </div>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">EtherType:</span> <span className="text-amber-300 font-bold">{livePacketData.etherType}</span>
-                </p>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Layer 2 MACs:</span> <span className="text-cyan-300 font-bold">{livePacketData.l2}</span>
-                </p>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Layer 3 IPs:</span> <span className="text-emerald-300 font-bold">{livePacketData.l3}</span>
-                </p>
-              </div>
-
-              <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1.5">
-                <div className="flex items-center justify-between text-cyan-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
-                  <span>Layer 4 & Protocol Payload:</span>
-                  <span className="text-slate-400 text-[10px]">{livePacketData.currentHop}</span>
-                </div>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Transport Layer:</span> <span className="text-purple-300 font-bold">{livePacketData.l4}</span>
-                </p>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Payload Data:</span> <span className="text-amber-300 font-bold">{livePacketData.payload}</span>
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
-              <p className="font-bold">No active packet frame in flight.</p>
-              <p className="text-[10px]">Select source/target devices and click "Run Traffic Simulation" to inspect packet headers in real time.</p>
-            </div>
-          )}
-        </div>
+        </SlideOutInspector>
       </div>
 
-      {/* SELECTED DEVICE INSPECTOR & LOGS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-        
-        {/* LEFT COLUMN: SELECTED DEVICE DETAILS */}
-        <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 shadow-xl">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-            <span className="text-cyan-400 font-extrabold text-sm">Selected Device Inspector</span>
-            {selectedNode && (
-              <button
-                onClick={() => handleDeleteNode(selectedNode.id)}
-                className="text-rose-400 hover:text-rose-300 text-xs flex items-center gap-1 cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" /> Remove Device
-              </button>
-            )}
-          </div>
-
-          {selectedNode ? (
-            <div className="space-y-2 text-slate-200">
-              <p><span className="text-slate-500 font-bold">Device Name:</span> <span className="text-cyan-300 font-bold">{selectedNode.name}</span></p>
-              <p><span className="text-slate-500 font-bold">Device Type:</span> <span className="text-amber-300 font-bold">{selectedNode.type.toUpperCase()}</span></p>
-              <p><span className="text-slate-500 font-bold">IPv4 Address:</span> <span className="text-emerald-300 font-bold">{selectedNode.ip}</span></p>
-              <p><span className="text-slate-500 font-bold">MAC Address:</span> <span className="text-slate-400 font-bold">{selectedNode.mac}</span></p>
-              <p><span className="text-slate-500 font-bold">Operating System:</span> <span className="text-purple-300 font-bold">{selectedNode.os}</span></p>
-              
-              <div className="pt-3 border-t border-slate-800 space-y-2">
-                <button
-                  onClick={() => handleInitiateDisconnect(selectedNode.id)}
-                  className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-rose-950/80 text-rose-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700 font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <span>✂️ Disconnect Cable Wires</span>
-                </button>
-
-                {selectedNode.type === 'server' && (
-                  <button
-                    onClick={() => setEditingServerId(selectedNode.id)}
-                    className="w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-2 shadow"
-                  >
-                    <Settings className="w-4 h-4" />
-                    Configure OS & Roles ⚙️
-                  </button>
-                )}
-              </div>
-            </div>
-          ) : (
-            <p className="text-slate-500 text-center py-4">Click any device on the canvas to inspect settings.</p>
+      {/* SELECTED DEVICE INSPECTOR */}
+      <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <span className="text-cyan-400 font-extrabold text-sm">Selected Device Inspector</span>
+          {selectedNode && (
+            <button
+              onClick={() => handleDeleteNode(selectedNode.id)}
+              className="text-rose-400 hover:text-rose-300 text-xs flex items-center gap-1 cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Remove Device
+            </button>
           )}
         </div>
 
-        {/* RIGHT 2 COLUMNS: TERMINAL LOGS */}
-        <div className="md:col-span-2">
-          <TerminalLog logs={logs} onClear={() => setLogs([])} />
-        </div>
+        {selectedNode ? (
+          <div className="space-y-2.5 text-slate-200">
+            <div>
+              <label className="text-[10px] text-slate-500 font-bold block uppercase">Device Name:</label>
+              <input
+                type="text"
+                value={selectedNode.name}
+                onChange={(e) => {
+                  const newName = e.target.value;
+                  setNodes(nodes.map(n => n.id === selectedNode.id ? { ...n, name: newName } : n));
+                }}
+                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-cyan-300 focus:outline-none focus:border-cyan-500"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] text-slate-500 font-bold block uppercase">IPv4 Address:</label>
+                <input
+                  type="text"
+                  value={selectedNode.ip}
+                  onChange={(e) => {
+                    const newIp = e.target.value;
+                    setNodes(nodes.map(n => n.id === selectedNode.id ? { ...n, ip: newIp } : n));
+                  }}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-emerald-300 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] text-slate-500 font-bold block uppercase">Subnet Mask:</label>
+                <input
+                  type="text"
+                  value={selectedNode.subnetMask || '255.255.255.0'}
+                  onChange={(e) => {
+                    const mask = e.target.value;
+                    setNodes(nodes.map(n => n.id === selectedNode.id ? { ...n, subnetMask: mask } : n));
+                  }}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-amber-300 focus:outline-none focus:border-amber-500"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] text-slate-500 font-bold block uppercase">Default Gateway:</label>
+                <input
+                  type="text"
+                  value={selectedNode.gateway || '192.168.1.1'}
+                  onChange={(e) => {
+                    const gw = e.target.value;
+                    setNodes(nodes.map(n => n.id === selectedNode.id ? { ...n, gateway: gw } : n));
+                  }}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-purple-300 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] text-slate-500 font-bold block uppercase">VLAN Assignment:</label>
+                <input
+                  type="text"
+                  value={selectedNode.vlan || '1 (DEFAULT)'}
+                  onChange={(e) => {
+                    const vl = e.target.value;
+                    setNodes(nodes.map(n => n.id === selectedNode.id ? { ...n, vlan: vl } : n));
+                  }}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-cyan-400 focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+            </div>
+
+            <p><span className="text-slate-500 font-bold">MAC Address:</span> <span className="text-slate-400 font-bold">{selectedNode.mac}</span></p>
+            <p><span className="text-slate-500 font-bold">Operating System:</span> <span className="text-purple-300 font-bold">{selectedNode.os}</span></p>
+            
+            <div className="pt-2 border-t border-slate-800 space-y-2">
+              <button
+                onClick={() => handleInitiateDisconnect(selectedNode.id)}
+                className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-rose-950/80 text-rose-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700 font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>✂️ Disconnect Cable Wires</span>
+              </button>
+
+              {selectedNode.type === 'server' && (
+                <button
+                  onClick={() => setEditingServerId(selectedNode.id)}
+                  className="w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-2 shadow"
+                >
+                  <Settings className="w-4 h-4" />
+                  Configure OS & Roles ⚙️
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <p className="text-slate-500 text-center py-4">Click any device on the canvas to inspect settings.</p>
+        )}
       </div>
     </div>
   );

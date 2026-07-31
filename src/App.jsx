@@ -5,26 +5,29 @@ import DNSModule from './components/dns/DNSModule';
 import ADModule from './components/active-directory/ADModule';
 import LANModule from './components/lan/LANModule';
 import MailModule from './components/mail/MailModule';
+import FirewallVPNModule from './components/firewall/FirewallVPNModule';
 import NetworkSandbox from './components/sandbox/NetworkSandbox';
 import LabNotebook from './components/notebook/LabNotebook';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dhcp');
+  const [appMode, setAppMode] = useState('clean'); // 'clean' or 'expert'
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950">
       {/* Header Navbar */}
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} appMode={appMode} setAppMode={setAppMode} />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
-        {activeTab === 'dhcp' && <DHCPModule />}
-        {activeTab === 'dns' && <DNSModule />}
-        {activeTab === 'ad' && <ADModule />}
-        {activeTab === 'lan' && <LANModule />}
-        {activeTab === 'mail' && <MailModule />}
-        {activeTab === 'sandbox' && <NetworkSandbox />}
-        {activeTab === 'notebook' && <LabNotebook />}
+        {activeTab === 'dhcp' && <DHCPModule appMode={appMode} />}
+        {activeTab === 'dns' && <DNSModule appMode={appMode} />}
+        {activeTab === 'ad' && <ADModule appMode={appMode} />}
+        {activeTab === 'lan' && <LANModule appMode={appMode} />}
+        {activeTab === 'mail' && <MailModule appMode={appMode} />}
+        {activeTab === 'firewall' && <FirewallVPNModule appMode={appMode} />}
+        {activeTab === 'sandbox' && <NetworkSandbox appMode={appMode} />}
+        {activeTab === 'notebook' && <LabNotebook appMode={appMode} />}
       </main>
 
       {/* Footer */}

@@ -7,16 +7,20 @@ import {
   Layers, 
   BookOpen, 
   Zap,
-  Mail
+  Mail,
+  ShieldAlert,
+  Sparkles,
+  Sliders
 } from 'lucide-react';
 
-export default function Navbar({ activeTab, setActiveTab }) {
+export default function Navbar({ activeTab, setActiveTab, appMode = 'easy', setAppMode }) {
   const tabs = [
     { id: 'dhcp', label: 'DHCP Protocol', icon: Zap, badge: 'DORA' },
     { id: 'dns', label: 'DNS Resolver', icon: Globe, badge: 'Recursive/Iterative' },
     { id: 'ad', label: 'Active Directory & DC', icon: ShieldCheck, badge: 'Kerberos & LDAP' },
     { id: 'lan', label: 'LAN & Routing', icon: Layers, badge: 'ARP & OSI' },
     { id: 'mail', label: 'Mail Server', icon: Mail, badge: 'SMTP / IMAP / POP3' },
+    { id: 'firewall', label: 'Firewall & VPN', icon: ShieldAlert, badge: 'Stateful & Tunnel' },
     { id: 'sandbox', label: 'Topology Sandbox', icon: Network, badge: 'Drag & Drop Canvas' },
     { id: 'notebook', label: 'DTS CLI & Quiz', icon: BookOpen, badge: 'Trainer' },
   ];
@@ -24,22 +28,54 @@ export default function Navbar({ activeTab, setActiveTab }) {
   return (
     <header className="sticky top-0 z-50 glass-panel border-b border-slate-800 px-4 py-3 shadow-2xl">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-        {/* Brand Logo */}
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-purple-600 shadow-lg shadow-cyan-500/20 text-white animate-pulse">
-            <Cpu className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-                NetPulse
-              </span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">
-                DTS Herford Infra
-              </span>
+        
+        {/* Brand Logo & Mode Toggle Switch */}
+        <div className="flex items-center justify-between w-full md:w-auto gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-purple-600 shadow-lg shadow-cyan-500/20 text-white animate-pulse">
+              <Cpu className="w-6 h-6" />
             </div>
-            <p className="text-xs text-slate-400 font-mono">Windows & Linux Network Architecture Visualizer</p>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                  NetPulse
+                </span>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">
+                  DTS Herford
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 font-mono">Enterprise Network Visualizer</p>
+            </div>
           </div>
+
+          {/* CLEAN VS EXPERT MODE TOGGLE BUTTON */}
+          {setAppMode && (
+            <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 shadow-inner font-mono text-xs">
+              <button
+                onClick={() => setAppMode('clean')}
+                className={`px-3.5 py-1.5 rounded-xl font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                  appMode === 'clean' || appMode === 'easy'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/20 scale-105'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 fill-current text-slate-950" />
+                <span>🌱 Clean Mode</span>
+              </button>
+
+              <button
+                onClick={() => setAppMode('expert')}
+                className={`px-3 py-1.5 rounded-xl font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                  appMode === 'expert'
+                    ? 'bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 text-white shadow-md shadow-cyan-500/20 scale-105'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Sliders className="w-3.5 h-3.5" />
+                <span>⚡ Expert</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Navigation Tabs */}
