@@ -60,6 +60,8 @@ export default function NetworkSandbox() {
 
   const [selectedNodeId, setSelectedNodeId] = useState('lap1');
   const [editingServerId, setEditingServerId] = useState(null); // Server ID for Config Modal
+  const [disconnectModalNodeId, setDisconnectModalNodeId] = useState(null); // Node ID for Cable Disconnect Selection Modal
+  const [isAddDeviceMenuOpen, setIsAddDeviceMenuOpen] = useState(false); // Floating Add Device Popover Menu State
   const [draggingNodeId, setDraggingNodeId] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   
@@ -75,6 +77,7 @@ export default function NetworkSandbox() {
   const [speed, setSpeed] = useState(1);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simPacketPos, setSimPacketPos] = useState(null);
+  const [livePacketData, setLivePacketData] = useState(null); // Real-time packet inspector details
   const [statusBanner, setStatusBanner] = useState({
     title: 'Sandbox Ready',
     subtitle: 'Drag devices, configure Generic Servers via ⚙️ Gear icon, and run traffic simulations!'
@@ -216,7 +219,28 @@ export default function NetworkSandbox() {
     setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: `Removed device ${nodeId} and associated cable links.` }]);
   };
 
-  // Run Traffic Simulation with Graph Pathfinding Traversal
+  // Disconnect Cable Logic (Prompt modal if multiple connections)
+  const handleInitiateDisconnect = (nodeId) => {
+    const connectedLinks = links.filter(l => l.from === nodeId || l.to === nodeId);
+    if (connectedLinks.length === 0) {
+      setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: `Device has no connected cable wires.` }]);
+      return;
+    }
+
+    if (connectedLinks.length === 1) {
+      // Single cable connection: disconnect directly
+      const linkToRemove = connectedLinks[0];
+      const fromNode = nodes.find(n => n.id === linkToRemove.from);
+      const toNode = nodes.find(n => n.id === linkToRemove.to);
+      setLinks(links.filter(l => l.id !== linkToRemove.id));
+      setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: `Disconnected cable between ${fromNode?.name} and ${toNode?.name}.` }]);
+    } else {
+      // Multiple cable connections: prompt modal selection!
+      setDisconnectModalNodeId(nodeId);
+    }
+  };
+
+  // Run Traffic Simulation with Graph Pathfinding & Real-Time Live Packet Inspector
   const handleRunSimulation = () => {
     if (simSource === simTarget) return;
 
@@ -235,6 +259,7 @@ export default function NetworkSandbox() {
         ...prev,
         { time: new Date().toLocaleTimeString(), tag: 'ROUTING_ERROR', message: `FAIL: No cable connection path between ${srcNode?.name} and ${dstNode?.name}. Packet dropped.` }
       ]);
+      setLivePacketData(null);
       return;
     }
 
@@ -246,6 +271,44 @@ export default function NetworkSandbox() {
       kerberos: 'Kerberos Ticket Exchange (AS/TGS)',
       ping: 'ICMP Echo Ping Request',
       esxi: 'VMware ESXi Host vSphere Management'
+    };
+
+    const packetPayloadTemplates = {
+      dhcp: {
+        etherType: '0x0806 (ARP / BOOTP DHCP)',
+        l2: `Src MAC: ${srcNode?.mac} ➔ Dst MAC: FF:FF:FF:FF:FF:FF (Broadcast)`,
+        l3: `Src IP: 0.0.0.0 ➔ Dst IP: 255.255.255.255`,
+        l4: `UDP Port 68 ➔ UDP Port 67 (BOOTP Client/Server)`,
+        payload: `DHCP DISCOVER (xid: 0x39a1f2, chaddr: ${srcNode?.mac})`
+      },
+      dns: {
+        etherType: '0x0800 (IPv4 Datagram)',
+        l2: `Src MAC: ${srcNode?.mac} ➔ Dst MAC: ${dstNode?.mac}`,
+        l3: `Src IP: ${srcNode?.ip} ➔ Dst IP: ${dstNode?.ip}`,
+        l4: `UDP Port 53 (Domain Name System)`,
+        payload: `DNS Query: A corp.local IN (Transaction ID: 0x1a8f)`
+      },
+      kerberos: {
+        etherType: '0x0800 (IPv4 Datagram)',
+        l2: `Src MAC: ${srcNode?.mac} ➔ Dst MAC: ${dstNode?.mac}`,
+        l3: `Src IP: ${srcNode?.ip} ➔ Dst IP: ${dstNode?.ip}`,
+        l4: `TCP Port 88 (Kerberos KDC)`,
+        payload: `KRB_AS_REQ (Principal: student@dts.local, Encrypted Timestamp)`
+      },
+      ping: {
+        etherType: '0x0800 (IPv4 Datagram)',
+        l2: `Src MAC: ${srcNode?.mac} ➔ Dst MAC: ${dstNode?.mac}`,
+        l3: `Src IP: ${srcNode?.ip} ➔ Dst IP: ${dstNode?.ip}`,
+        l4: `ICMP Type 8 (Echo Request)`,
+        payload: `Ping Payload (32 bytes data, TTL=64, Seq=1)`
+      },
+      esxi: {
+        etherType: '0x0800 (IPv4 Datagram)',
+        l2: `Src MAC: ${srcNode?.mac} ➔ Dst MAC: ${dstNode?.mac}`,
+        l3: `Src IP: ${srcNode?.ip} ➔ Dst IP: ${dstNode?.ip}`,
+        l4: `TCP Port 443 (vSphere HTTPS Client)`,
+        payload: `ESXi Management TLS Session (vCenter Host Handshake)`
+      }
     };
 
     const pathNames = cablePath.map(id => nodes.find(n => n.id === id)?.name).join(' ➔ ');
@@ -277,6 +340,14 @@ export default function NetworkSandbox() {
           const curX = nodeA.x + (nodeB.x - nodeA.x) * segProgress;
           const curY = nodeA.y + (nodeB.y - nodeA.y) * segProgress;
           setSimPacketPos({ x: curX, y: curY });
+
+          // Update Live Packet Inspector
+          const baseTemplate = packetPayloadTemplates[simType] || packetPayloadTemplates.ping;
+          setLivePacketData({
+            ...baseTemplate,
+            protocolName: typeNames[simType],
+            currentHop: `Hop ${segIndex + 1} of ${numSegments}: ${nodeA.name} ➔ ${nodeB.name}`
+          });
         }
       } else {
         clearInterval(interval);
@@ -309,6 +380,8 @@ export default function NetworkSandbox() {
 
   const selectedNode = nodes.find(n => n.id === selectedNodeId);
   const editingServer = nodes.find(n => n.id === editingServerId);
+  const disconnectNode = nodes.find(n => n.id === disconnectModalNodeId);
+  const nodeConnectedLinks = disconnectModalNodeId ? links.filter(l => l.from === disconnectModalNodeId || l.to === disconnectModalNodeId) : [];
 
   // Toggle Server Role
   const handleToggleRole = (role) => {
@@ -329,6 +402,71 @@ export default function NetworkSandbox() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative">
+
+      {/* DISCONNECT CABLE SELECTION MODAL POPUP (IF MORE THAN 1 CONNECTION) */}
+      {disconnectNode && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="glass-panel max-w-lg w-full p-6 rounded-3xl border border-slate-700 space-y-4 bg-slate-900/95 relative text-slate-100 font-mono">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                  <Trash2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-100">Disconnect Cable for {disconnectNode.name}</h3>
+                  <p className="text-xs text-rose-400 font-bold">Select Cable Connection to Remove</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setDisconnectModalNodeId(null)}
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              <span className="text-cyan-300 font-bold">{disconnectNode.name}</span> has <span className="text-amber-400 font-bold">{nodeConnectedLinks.length} active cable connections</span>. Select which cable to disconnect:
+            </p>
+
+            <div className="space-y-2.5 max-h-60 overflow-y-auto">
+              {nodeConnectedLinks.map(link => {
+                const otherId = link.from === disconnectModalNodeId ? link.to : link.from;
+                const otherNode = nodes.find(n => n.id === otherId);
+                return (
+                  <div key={link.id} className="p-3 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-between hover:border-slate-700 transition-colors">
+                    <div>
+                      <p className="text-xs font-bold text-slate-100">
+                        <span className="text-cyan-300">{disconnectNode.name}</span> 🔌 <span className="text-amber-300">{otherNode?.name}</span>
+                      </p>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{link.cableType} Cable</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setLinks(links.filter(l => l.id !== link.id));
+                        setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: `Disconnected ${link.cableType.toUpperCase()} cable between ${disconnectNode.name} and ${otherNode?.name}.` }]);
+                        setDisconnectModalNodeId(null);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-slate-950 font-black text-xs cursor-pointer shadow transition-all flex items-center gap-1"
+                    >
+                      <span>✂️ Disconnect</span>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-slate-800">
+              <button
+                onClick={() => setDisconnectModalNodeId(null)}
+                className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* GENERIC SERVER CONFIGURATION GEAR MODAL POPUP */}
       {editingServer && (
@@ -429,8 +567,8 @@ export default function NetworkSandbox() {
         </div>
       )}
 
-      {/* TOP BANNER & DEVICE PALETTE TOOLBAR */}
-      <div className="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col lg:flex-row items-center justify-between gap-4 shadow-2xl">
+      {/* TOP BANNER */}
+      <div className="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl">
         <div className="flex items-center gap-3">
           <div className="p-3 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-inner">
             <Network className="w-7 h-7" />
@@ -439,25 +577,6 @@ export default function NetworkSandbox() {
             <h2 className="text-2xl font-black tracking-tight text-slate-100">Interactive Network Sandbox</h2>
             <p className="text-xs text-slate-400">Build custom topologies, configure Generic Servers via Gear ⚙️ icon, and run traffic</p>
           </div>
-        </div>
-
-        {/* DEVICE PALETTE BUTTONS */}
-        <div className="flex flex-wrap items-center gap-2 bg-slate-900/90 p-2 rounded-2xl border border-slate-800 font-mono">
-          <button onClick={() => handleAddNode('laptop')} className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-bold flex items-center gap-1 cursor-pointer">
-            <Plus className="w-4 h-4" /> + Laptop
-          </button>
-          <button onClick={() => handleAddNode('server')} className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-1 border border-amber-500/30 cursor-pointer">
-            <Plus className="w-4 h-4" /> + Generic Server ⚙️
-          </button>
-          <button onClick={() => handleAddNode('switch')} className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-blue-300 text-xs font-bold flex items-center gap-1 cursor-pointer">
-            <Plus className="w-4 h-4" /> + L2 Switch
-          </button>
-          <button onClick={() => handleAddNode('router')} className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs font-bold flex items-center gap-1 cursor-pointer">
-            <Plus className="w-4 h-4" /> + Router
-          </button>
-          <button onClick={() => handleAddNode('cloud')} className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold flex items-center gap-1 cursor-pointer">
-            <Plus className="w-4 h-4" /> + Internet Cloud
-          </button>
         </div>
       </div>
 
@@ -557,8 +676,8 @@ export default function NetworkSandbox() {
       </div>
 
       {/* TOPOLOGY CANVAS STAGE */}
-      <div className="glass-panel rounded-3xl border border-slate-800 p-6 space-y-4 shadow-2xl">
-        <div className="p-4 rounded-2xl bg-cyan-950/60 border border-cyan-500/40 flex items-center justify-between">
+      <div className="glass-panel rounded-3xl border border-slate-800 p-6 space-y-4 shadow-2xl relative">
+        <div className="p-4 rounded-2xl bg-cyan-950/60 border border-cyan-500/40 flex items-center justify-between pr-36">
           <h3 className="font-extrabold text-cyan-300 text-base">{statusBanner.title}</h3>
           <p className="text-xs text-slate-300">{statusBanner.subtitle}</p>
         </div>
@@ -569,6 +688,65 @@ export default function NetworkSandbox() {
           onMouseUp={handleMouseUp}
           className="rounded-2xl border border-slate-800 h-[480px] relative overflow-hidden bg-[radial-gradient(#1e293b_1.5px,transparent_1.5px)] [background-size:20px_20px] bg-slate-950/90 select-none"
         >
+          {/* FLOATING '+ ADD DEVICE' POPOVER BUTTON AT TOP-RIGHT OF WORKPLACE CANVAS */}
+          <div className="absolute top-4 right-4 z-30 font-mono">
+            <button
+              onClick={() => setIsAddDeviceMenuOpen(!isAddDeviceMenuOpen)}
+              className="px-3.5 py-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:scale-105 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-xl border border-cyan-300 cursor-pointer transition-all"
+            >
+              <Plus className={`w-4 h-4 transition-transform duration-200 ${isAddDeviceMenuOpen ? 'rotate-45' : ''}`} />
+              <span>Add Device</span>
+            </button>
+
+            {/* DROPDOWN POPOVER MENU */}
+            {isAddDeviceMenuOpen && (
+              <div className="absolute right-0 mt-2 w-52 bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-700 shadow-2xl p-2 font-mono text-xs space-y-1 z-40 animate-fadeIn">
+                <div className="px-2 py-1 border-b border-slate-800 text-[10px] text-slate-400 font-bold uppercase">
+                  Select Device to Add:
+                </div>
+                <button
+                  onClick={() => { handleAddNode('laptop'); setIsAddDeviceMenuOpen(false); }}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-cyan-950 text-cyan-300 hover:text-cyan-200 border border-slate-800 hover:border-cyan-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <Laptop className="w-4 h-4 text-cyan-400" />
+                  <span>+ Laptop</span>
+                </button>
+
+                <button
+                  onClick={() => { handleAddNode('server'); setIsAddDeviceMenuOpen(false); }}
+                  className="w-full px-3 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <Settings className="w-4 h-4 text-amber-400" />
+                  <span>+ Generic Server ⚙️</span>
+                </button>
+
+                <button
+                  onClick={() => { handleAddNode('switch'); setIsAddDeviceMenuOpen(false); }}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-blue-950 text-blue-300 hover:text-blue-200 border border-slate-800 hover:border-blue-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <Layers className="w-4 h-4 text-blue-400" />
+                  <span>+ L2 Switch</span>
+                </button>
+
+                <button
+                  onClick={() => { handleAddNode('router'); setIsAddDeviceMenuOpen(false); }}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-purple-950 text-purple-300 hover:text-purple-200 border border-slate-800 hover:border-purple-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <Router className="w-4 h-4 text-purple-400" />
+                  <span>+ Router</span>
+                </button>
+
+                <button
+                  onClick={() => { handleAddNode('cloud'); setIsAddDeviceMenuOpen(false); }}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-slate-800 text-slate-300 border border-slate-800 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <Globe className="w-4 h-4 text-slate-400" />
+                  <span>+ Internet Cloud</span>
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* CABLES SVG */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none">
             {links.map(link => {
@@ -646,12 +824,63 @@ export default function NetworkSandbox() {
             );
           })}
         </div>
+
+        {/* LIVE PACKET CONTENT INSPECTOR PANEL */}
+        <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+            <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-xs">
+              <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
+              <span>SANDBOX LIVE PACKET CONTENT INSPECTOR</span>
+            </div>
+            <span className="text-amber-400 text-[10px] font-bold">
+              {livePacketData ? livePacketData.currentHop : 'Idle (Waiting for Simulation)'}
+            </span>
+          </div>
+
+          {livePacketData ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1.5">
+                <div className="flex items-center justify-between text-blue-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                  <span>Layer 2 & Layer 3 Stack:</span>
+                  <span className="text-amber-400">{livePacketData.protocolName}</span>
+                </div>
+                <p className="text-slate-300 text-[11px]">
+                  <span className="text-slate-500 font-bold">EtherType:</span> <span className="text-amber-300 font-bold">{livePacketData.etherType}</span>
+                </p>
+                <p className="text-slate-300 text-[11px]">
+                  <span className="text-slate-500 font-bold">Layer 2 MACs:</span> <span className="text-cyan-300 font-bold">{livePacketData.l2}</span>
+                </p>
+                <p className="text-slate-300 text-[11px]">
+                  <span className="text-slate-500 font-bold">Layer 3 IPs:</span> <span className="text-emerald-300 font-bold">{livePacketData.l3}</span>
+                </p>
+              </div>
+
+              <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1.5">
+                <div className="flex items-center justify-between text-cyan-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                  <span>Layer 4 & Protocol Payload:</span>
+                  <span className="text-slate-400 text-[10px]">{livePacketData.currentHop}</span>
+                </div>
+                <p className="text-slate-300 text-[11px]">
+                  <span className="text-slate-500 font-bold">Transport Layer:</span> <span className="text-purple-300 font-bold">{livePacketData.l4}</span>
+                </p>
+                <p className="text-slate-300 text-[11px]">
+                  <span className="text-slate-500 font-bold">Payload Data:</span> <span className="text-amber-300 font-bold">{livePacketData.payload}</span>
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
+              <p className="font-bold">No active packet frame in flight.</p>
+              <p className="text-[10px]">Select source/target devices and click "Run Traffic Simulation" to inspect packet headers in real time.</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* SELECTED DEVICE INSPECTOR & LOGS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
         
-        {/* LEFT COLUMN: SELECTED DEVICE DETAILS */}
+        {/* LEFT COLUMN: SELECTED DEVICE DETAILS & DISCONNECT CABLE BUTTON */}
         <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 shadow-xl">
           <div className="flex items-center justify-between border-b border-slate-800 pb-2">
             <span className="text-cyan-400 font-extrabold text-sm">Selected Device Inspector</span>
@@ -660,7 +889,7 @@ export default function NetworkSandbox() {
                 onClick={() => handleDeleteNode(selectedNode.id)}
                 className="text-rose-400 hover:text-rose-300 text-xs flex items-center gap-1 cursor-pointer"
               >
-                <Trash2 className="w-3.5 h-3.5" /> Remove
+                <Trash2 className="w-3.5 h-3.5" /> Remove Device
               </button>
             )}
           </div>
@@ -673,8 +902,15 @@ export default function NetworkSandbox() {
               <p><span className="text-slate-500 font-bold">MAC Address:</span> <span className="text-slate-400 font-bold">{selectedNode.mac}</span></p>
               <p><span className="text-slate-500 font-bold">Operating System:</span> <span className="text-purple-300 font-bold">{selectedNode.os}</span></p>
               
-              {selectedNode.type === 'server' && (
-                <div className="pt-2 border-t border-slate-800">
+              <div className="pt-3 border-t border-slate-800 space-y-2">
+                <button
+                  onClick={() => handleInitiateDisconnect(selectedNode.id)}
+                  className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-rose-950/80 text-rose-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700 font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <span>✂️ Disconnect Cable Wires</span>
+                </button>
+
+                {selectedNode.type === 'server' && (
                   <button
                     onClick={() => setEditingServerId(selectedNode.id)}
                     className="w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-2 shadow"
@@ -682,8 +918,8 @@ export default function NetworkSandbox() {
                     <Settings className="w-4 h-4" />
                     Configure OS & Roles ⚙️
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           ) : (
             <p className="text-slate-500 text-center py-4">Click any device on the canvas to inspect settings.</p>
