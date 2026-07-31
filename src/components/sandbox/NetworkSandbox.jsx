@@ -109,11 +109,20 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
     return node.type === 'cloud' || node.type === 'isp' || node.name.toUpperCase().includes('ISP') || node.name.toUpperCase().includes('INTERNET');
   };
 
-  // BFS CABLE NETWORK RECOVERY & DYNAMIC COLORING (Green = WAN/ISP Internet, Blue = LAN Network, Red = Disconnected/No LAN)
+  // BFS CABLE NETWORK RECOVERY & DYNAMIC COLORING (Green = WAN/ISP Internet, Blue = LAN Network, Red = Disconnected / Cable Mismatch)
   const getLinkStatus = (link, nodeList, linkList) => {
     const n1 = nodeList.find(n => n.id === link.from);
     const n2 = nodeList.find(n => n.id === link.to);
     if (!n1 || !n2) return { color: '#ef4444', label: 'Disconnected / Damaged Cable' };
+
+    // CCNA MDI/MDI-X Cable Mismatch Rule: Like-to-Like devices (PC-PC, Switch-Switch, Router-Router) require Crossover / Fiber cable
+    const isHost1 = n1.type === 'laptop' || n1.type === 'desktop';
+    const isHost2 = n2.type === 'laptop' || n2.type === 'desktop';
+    const isLikeToLike = (isHost1 && isHost2) || (n1.type === n2.type && n1.type !== 'cloud');
+
+    if (isLikeToLike && link.cableType === 'straight') {
+      return { color: '#ef4444', label: '🔴 Cable Mismatch (Requires Crossover Cable)' };
+    }
 
     const adj = {};
     nodeList.forEach(n => { adj[n.id] = []; });
