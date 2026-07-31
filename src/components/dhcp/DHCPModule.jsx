@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw, Server, Laptop, Router, CheckCircle2, Zap, Gauge, Mail, HelpCircle, Radio, Database, Terminal, SkipForward, Globe, XCircle, Info, FileCode, X, Layers, Cpu, Hash, Activity, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
-import { CleanHeader, CleanInfoBanner, SlideOutInspector } from '../common/EasyCard';
+import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
 
 export default function DHCPModule({ appMode = 'clean' }) {
+  const [showAnimation, setShowAnimation] = useState(true);
   const [activeStep, setActiveStep] = useState(0); // 0: Idle, 1: Discover, 2: Offer, 3: Request, 4: Ack
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSingleStep, setIsSingleStep] = useState(false);
@@ -327,26 +328,23 @@ export default function DHCPModule({ appMode = 'clean' }) {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
 
-      {/* CLEAN MODE HEADER & COLORFUL BASIC INFO WIDGET */}
+      {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
       {appMode !== 'expert' && (
-        <>
-          <CleanHeader
-            title="DHCP Automatic IP Assignment Made Simple"
-            subtitle="Watch how your computer gets an IP address automatically from the Network Router/DHCP Server"
-            icon={Zap}
-          />
-
-          <CleanInfoBanner
-            ip="192.168.1.105 (Leased)"
-            protocol="DHCP (UDP)"
-            port="UDP 67 / 68"
-            status={isRelayMode ? "DHCP Relay Active" : "Local LAN Broadcast"}
-            actionTitle={currentMeta.title}
-            actionDesc={currentMeta.subtitle}
-            stepNumber={activeStep}
-            totalSteps={4}
-          />
-        </>
+        <CleanWidget
+          title="DHCP Automatic IP Assignment Made Simple"
+          subtitle="Watch how your computer gets an IP address automatically from the Router/DHCP Server"
+          icon={Zap}
+          ip="192.168.1.105 (Leased)"
+          protocol="DHCP (UDP)"
+          port="UDP 67 / 68"
+          status={isRelayMode ? "DHCP Relay Active" : "Local LAN Broadcast"}
+          actionTitle={currentMeta.title}
+          actionDesc={currentMeta.subtitle}
+          stepNumber={activeStep}
+          totalSteps={4}
+          showAnimation={showAnimation}
+          setShowAnimation={setShowAnimation}
+        />
       )}
 
       {/* FLOATING MODAL POPUP FOR PACKET PAYLOAD INSPECTOR (EXPERT MODE ONLY) */}
@@ -554,20 +552,23 @@ export default function DHCPModule({ appMode = 'clean' }) {
           </div>
         </div>
 
-        {/* Dynamic Action Banner */}
-        <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 ${currentMeta.badgeColor}`}>
-          <div className="flex items-center gap-3">
-            <span className="px-3 py-1 rounded-xl text-xs font-mono font-black uppercase bg-slate-950/80 border border-white/10 shadow flex items-center gap-1.5">
-              {currentMeta.transmissionType === 'BROADCAST' && <Radio className="w-3.5 h-3.5 text-amber-400 animate-ping" />}
-              {currentMeta.badge}
-            </span>
-            <h3 className="text-lg font-black text-slate-100">{currentMeta.title}</h3>
+        {/* Dynamic Action Banner (EXPERT MODE ONLY) */}
+        {appMode === 'expert' && (
+          <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 ${currentMeta.badgeColor}`}>
+            <div className="flex items-center gap-3">
+              <span className="px-3 py-1 rounded-xl text-xs font-mono font-black uppercase bg-slate-950/80 border border-white/10 shadow flex items-center gap-1.5">
+                {currentMeta.transmissionType === 'BROADCAST' && <Radio className="w-3.5 h-3.5 text-amber-400 animate-ping" />}
+                {currentMeta.badge}
+              </span>
+              <h3 className="text-lg font-black text-slate-100">{currentMeta.title}</h3>
+            </div>
+            <p className="text-xs text-slate-200 font-medium text-center sm:text-right max-w-md">{currentMeta.subtitle}</p>
           </div>
-          <p className="text-xs text-slate-200 font-medium text-center sm:text-right max-w-md">{currentMeta.subtitle}</p>
-        </div>
+        )}
 
-        {/* ENLARGED WORKSPACE STAGE CANVAS */}
-        <div className="py-6 px-4 relative min-h-[580px] bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden">
+        {/* WORKSPACE STAGE CANVAS (TOGGLEABLE VIA ICON IN CLEAN MODE) */}
+        {(showAnimation || appMode === 'expert') && (
+          <div className={`py-6 px-4 relative bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden ${appMode !== 'expert' ? 'min-h-[360px]' : 'min-h-[580px]'}`}>
           
           {/* VISIBLE SVG NETWORK CABLE LINES */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
@@ -736,66 +737,70 @@ export default function DHCPModule({ appMode = 'clean' }) {
             </>
           )}
         </div>
+        )}
 
-        {/* LIVE PACKET VIEWER (REAL-TIME PROTOCOL HEADERS & PAYLOAD INSPECTOR) */}
-        <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-            <div className="flex items-center gap-2 text-amber-400 font-extrabold text-xs">
-              <Activity className="w-4 h-4 text-amber-400 animate-pulse" />
-              <span>LIVE PACKET VIEWER (REAL-TIME HEADERS & PAYLOAD)</span>
+        {/* LIVE PACKET VIEWER (REAL-TIME PROTOCOL HEADERS & PAYLOAD INSPECTOR - EXPERT MODE ONLY) */}
+        {appMode === 'expert' && (
+          <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+              <div className="flex items-center gap-2 text-amber-400 font-extrabold text-xs">
+                <Activity className="w-4 h-4 text-amber-400 animate-pulse" />
+                <span>LIVE PACKET VIEWER (REAL-TIME HEADERS & PAYLOAD)</span>
+              </div>
+              <span className="text-slate-400 text-[10px] font-bold">
+                {packetPos.currentPort || `Src: ${currentMeta.srcIp} → Dst: ${currentMeta.dstIp}`}
+              </span>
             </div>
-            <span className="text-slate-400 text-[10px] font-bold">
-              {packetPos.currentPort || `Src: ${currentMeta.srcIp} → Dst: ${currentMeta.dstIp}`}
-            </span>
+
+            {currentPayload ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Column 1: Network Headers */}
+                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
+                  <div className="flex items-center justify-between text-cyan-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                    <span>Protocol Stack Headers:</span>
+                    <span className="text-amber-400">{currentPayload.stepName}</span>
+                  </div>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">Ethernet (L2):</span> {currentPayload.l2Header}
+                  </p>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">IPv4 (L3):</span> <span className="text-cyan-300 font-bold">{currentPayload.l3Header}</span>
+                  </p>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">UDP (L4):</span> <span className="text-emerald-300 font-bold">{currentPayload.l4Header}</span>
+                  </p>
+                </div>
+
+                {/* Column 2: BOOTP/DHCP Payload Data */}
+                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
+                  <div className="flex items-center justify-between text-amber-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                    <span>DHCP Payload & Parameters:</span>
+                    <span className="text-slate-400 text-[10px]">xid: {currentPayload.xid}</span>
+                  </div>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">Client MAC (chaddr):</span> <span className="text-cyan-300 font-bold">{currentPayload.clientMac}</span>
+                  </p>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">Offered IP (yiaddr):</span> <span className="text-amber-300 font-bold">{currentPayload.yiaddr}</span>
+                  </p>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">Key DHCP Option:</span> <span className="text-emerald-300 font-bold">{currentPayload.options[0]}</span>
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
+                <p className="font-bold">No active DHCP packet in flight.</p>
+                <p className="text-[10px]">Click "Next DORA Step" or "Play Full DORA" to observe real-time packet headers.</p>
+              </div>
+            )}
           </div>
-
-          {currentPayload ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* Column 1: Network Headers */}
-              <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
-                <div className="flex items-center justify-between text-cyan-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
-                  <span>Protocol Stack Headers:</span>
-                  <span className="text-amber-400">{currentPayload.stepName}</span>
-                </div>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Ethernet (L2):</span> {currentPayload.l2Header}
-                </p>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">IPv4 (L3):</span> <span className="text-cyan-300 font-bold">{currentPayload.l3Header}</span>
-                </p>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">UDP (L4):</span> <span className="text-emerald-300 font-bold">{currentPayload.l4Header}</span>
-                </p>
-              </div>
-
-              {/* Column 2: BOOTP/DHCP Payload Data */}
-              <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
-                <div className="flex items-center justify-between text-amber-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
-                  <span>DHCP Payload & Parameters:</span>
-                  <span className="text-slate-400 text-[10px]">xid: {currentPayload.xid}</span>
-                </div>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Client MAC (chaddr):</span> <span className="text-cyan-300 font-bold">{currentPayload.clientMac}</span>
-                </p>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Offered IP (yiaddr):</span> <span className="text-amber-300 font-bold">{currentPayload.yiaddr}</span>
-                </p>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Key DHCP Option:</span> <span className="text-emerald-300 font-bold">{currentPayload.options[0]}</span>
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
-              <p className="font-bold">No active DHCP packet in flight.</p>
-              <p className="text-[10px]">Click "Next DORA Step" or "Play Full DORA" to observe real-time packet headers.</p>
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
-      {/* TECHNICAL INSPECTOR & EVENT LOGS (COLLAPSED SLIDE-OUT IN CLEAN MODE) */}
-      <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
+      {/* TECHNICAL INSPECTOR & EVENT LOGS (EXPERT MODE ONLY) */}
+      {appMode === 'expert' && (
+        <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
         <div className="space-y-4">
           
           {/* OS CLI COMMANDS & PACKET PAYLOAD INSPECTOR */}
@@ -899,6 +904,7 @@ export default function DHCPModule({ appMode = 'clean' }) {
           <TerminalLog logs={logs} onClear={() => setLogs([])} />
         </div>
       </SlideOutInspector>
+      )}
     </div>
   );
 }

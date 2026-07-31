@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Server, Laptop, ShieldCheck, Play, Pause, RotateCcw, CheckCircle2, Gauge, HelpCircle, FileCode, Terminal, SkipForward, Radio, Layers, Cpu, ArrowRight, X, Activity, Zap, HardDrive, Lock, RefreshCw, Send, Check, Inbox, Globe, Building2, Router, Search, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
-import { CleanHeader, CleanInfoBanner, SlideOutInspector } from '../common/EasyCard';
+import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
 
 export default function MailModule({ appMode = 'clean' }) {
+  const [showAnimation, setShowAnimation] = useState(true);
   const [activeStep, setActiveStep] = useState(0); // 0: Idle, 1: Submission (587), 2: DNS MX Query (Cross-domain only), 3: MTA Relay (25), 4: MRA Retrieval (993/995)
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSingleStep, setIsSingleStep] = useState(false);
@@ -502,26 +503,23 @@ export default function MailModule({ appMode = 'clean' }) {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
-      {/* CLEAN MODE HEADER & COLORFUL BASIC INFO WIDGET */}
+      {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
       {appMode !== 'expert' && (
-        <>
-          <CleanHeader
-            title="Mail Server Routing Made Simple"
-            subtitle={`Sending email from ${senderEmail} to ${recipientEmail}`}
-            icon={Mail}
-          />
-
-          <CleanInfoBanner
-            ip={recipientDomain}
-            protocol="SMTP / IMAP / POP3"
-            port="Port 587 / 25 / 993"
-            status={domainMode === 'cross' ? 'Cross-Domain MX Routing' : 'Intra-Domain Direct Delivery'}
-            actionTitle={currentMeta.title}
-            actionDesc={currentMeta.subtitle}
-            stepNumber={activeStep}
-            totalSteps={totalSteps}
-          />
-        </>
+        <CleanWidget
+          title="Mail Server Routing Made Simple"
+          subtitle={`Sending email from ${senderEmail} to ${recipientEmail}`}
+          icon={Mail}
+          ip={recipientDomain}
+          protocol="SMTP / IMAP / POP3"
+          port="Port 587 / 25 / 993"
+          status={domainMode === 'cross' ? 'Cross-Domain MX Routing' : 'Intra-Domain Direct Delivery'}
+          actionTitle={currentMeta.title}
+          actionDesc={currentMeta.subtitle}
+          stepNumber={activeStep}
+          totalSteps={totalSteps}
+          showAnimation={showAnimation}
+          setShowAnimation={setShowAnimation}
+        />
       )}
 
       {/* FLOATING MODAL POPUP FOR MAIL PAYLOAD INSPECTOR (EXPERT MODE ONLY) */}
@@ -1000,34 +998,36 @@ export default function MailModule({ appMode = 'clean' }) {
         )}
       </div>
 
-      {/* STEP INSPECTION CARDS & LOGS (COLLAPSED SLIDE-OUT IN CLEAN MODE) */}
-      <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 font-mono">
-            {(domainMode === 'cross' ? [1, 2, 3, 4] : [1, 2, 3]).map((stepNum) => {
-              const meta = stepMeta[stepNum];
-              return (
-                <div key={stepNum} className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 flex flex-col justify-between">
-                  <div className="space-y-1 text-xs">
-                    <span className="text-amber-400 font-bold">{meta.title.split(':')[0]}</span>
-                    <p className="text-slate-300 text-[11px] leading-relaxed">{meta.subtitle}</p>
+      {/* STEP INSPECTION CARDS & LOGS (EXPERT MODE ONLY) */}
+      {appMode === 'expert' && (
+        <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 font-mono">
+              {(domainMode === 'cross' ? [1, 2, 3, 4] : [1, 2, 3]).map((stepNum) => {
+                const meta = stepMeta[stepNum];
+                return (
+                  <div key={stepNum} className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 flex flex-col justify-between">
+                    <div className="space-y-1 text-xs">
+                      <span className="text-amber-400 font-bold">{meta.title.split(':')[0]}</span>
+                      <p className="text-slate-300 text-[11px] leading-relaxed">{meta.subtitle}</p>
+                    </div>
+
+                    <button
+                      onClick={() => setModalPayloadStep(stepNum)}
+                      className="w-full py-2 px-3 rounded-xl text-xs font-extrabold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <FileCode className="w-4 h-4" />
+                      <span>Inspect Mail Payload & Headers 🔍</span>
+                    </button>
                   </div>
+                );
+              })}
+            </div>
 
-                  <button
-                    onClick={() => setModalPayloadStep(stepNum)}
-                    className="w-full py-2 px-3 rounded-xl text-xs font-extrabold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                  >
-                    <FileCode className="w-4 h-4" />
-                    <span>Inspect Mail Payload & Headers 🔍</span>
-                  </button>
-                </div>
-              );
-            })}
+            <TerminalLog logs={logs} onClear={() => setLogs([])} />
           </div>
-
-          <TerminalLog logs={logs} onClear={() => setLogs([])} />
-        </div>
-      </SlideOutInspector>
+        </SlideOutInspector>
+      )}
     </div>
   );
 }

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Globe, Building2, Router, Server, Laptop, Search, Play, Pause, RotateCcw, CheckCircle2, Gauge, Mail, ChevronDown, ChevronUp, HelpCircle, FileCode, Terminal, SkipForward, Radio, Layers, Cpu, ArrowRight, ShieldCheck, X, Activity, Zap, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
-import { CleanHeader, CleanInfoBanner, SlideOutInspector } from '../common/EasyCard';
+import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
 
 export default function DNSModule({ appMode = 'clean' }) {
+  const [showAnimation, setShowAnimation] = useState(true);
   const [activeStep, setActiveStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSingleStep, setIsSingleStep] = useState(false);
@@ -395,26 +396,23 @@ export default function DNSModule({ appMode = 'clean' }) {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
-      {/* CLEAN MODE HEADER & COLORFUL BASIC INFO WIDGET */}
+      {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
       {appMode !== 'expert' && (
-        <>
-          <CleanHeader
-            title="DNS Hostname Lookup Made Simple"
-            subtitle={`Translating hostname "${targetDomain}" into numerical IP address (${currDomain.resolvedIp})`}
-            icon={Globe}
-          />
-
-          <CleanInfoBanner
-            ip={currDomain.resolvedIp}
-            protocol="DNS (UDP)"
-            port={53}
-            status={isExternalDomain ? "Public Internet Query" : "Local AD Subnet"}
-            actionTitle={currentMeta.title}
-            actionDesc={currentMeta.subtitle}
-            stepNumber={activeStep}
-            totalSteps={totalSteps}
-          />
-        </>
+        <CleanWidget
+          title="DNS Hostname Lookup Made Simple"
+          subtitle={`Translating website "${targetDomain}" into numerical IP address (${currDomain.resolvedIp})`}
+          icon={Globe}
+          ip={currDomain.resolvedIp}
+          protocol="DNS (UDP)"
+          port={53}
+          status={isExternalDomain ? "Public Internet Query" : "Local AD Subnet"}
+          actionTitle={currentMeta.title}
+          actionDesc={currentMeta.subtitle}
+          stepNumber={activeStep}
+          totalSteps={totalSteps}
+          showAnimation={showAnimation}
+          setShowAnimation={setShowAnimation}
+        />
       )}
 
       {/* FLOATING MODAL POPUP FOR PACKET & NAT PAYLOAD INSPECTOR (EXPERT MODE ONLY) */}
@@ -571,20 +569,23 @@ export default function DNSModule({ appMode = 'clean' }) {
           </div>
         </div>
 
-        {/* Dynamic Action Status Banner */}
-        <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 ${currentMeta.badgeColor}`}>
-          <div className="flex items-center gap-3">
-            <span className="px-3 py-1 rounded-xl text-xs font-mono font-black uppercase bg-slate-950/80 border border-white/10 shadow flex items-center gap-1.5">
-              <Radio className="w-3.5 h-3.5 text-cyan-400 animate-ping" />
-              {currentMeta.badge}
-            </span>
-            <h3 className="text-lg font-black text-slate-100">{currentMeta.title}</h3>
+        {/* Dynamic Action Status Banner (EXPERT MODE ONLY) */}
+        {appMode === 'expert' && (
+          <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 ${currentMeta.badgeColor}`}>
+            <div className="flex items-center gap-3">
+              <span className="px-3 py-1 rounded-xl text-xs font-mono font-black uppercase bg-slate-950/80 border border-white/10 shadow flex items-center gap-1.5">
+                <Radio className="w-3.5 h-3.5 text-cyan-400 animate-ping" />
+                {currentMeta.badge}
+              </span>
+              <h3 className="text-lg font-black text-slate-100">{currentMeta.title}</h3>
+            </div>
+            <p className="text-xs text-slate-200 font-medium text-center sm:text-right max-w-md">{currentMeta.subtitle}</p>
           </div>
-          <p className="text-xs text-slate-200 font-medium text-center sm:text-right max-w-md">{currentMeta.subtitle}</p>
-        </div>
+        )}
 
-        {/* ENLARGED TOPOLOGY STAGE (PRIVATE LAN ➔ L2 SWITCH ➔ ISP ROUTER WITH NAT ➔ ISP ➔ PUBLIC DNS) */}
-        <div className="py-6 px-4 relative min-h-[520px] bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden">
+        {/* WORKSPACE STAGE CANVAS (TOGGLEABLE VIA ICON IN CLEAN MODE) */}
+        {(showAnimation || appMode === 'expert') && (
+          <div className={`py-6 px-4 relative bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden ${appMode !== 'expert' ? 'min-h-[340px]' : 'min-h-[520px]'}`}>
           
           {/* VISIBLE NETWORK CONNECTION LINES (WIRES) */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
@@ -755,6 +756,7 @@ export default function DNSModule({ appMode = 'clean' }) {
             </div>
           )}
         </div>
+        )}
 
         {/* STEP INSPECTION BUTTONS & DETAILS (EXPERT MODE ONLY) */}
         {appMode === 'expert' && (
@@ -782,68 +784,70 @@ export default function DNSModule({ appMode = 'clean' }) {
         )}
       </div>
 
-      {/* TECHNICAL PACKET INSPECTOR & EVENT LOGS (COLLAPSED SLIDE-OUT IN CLEAN MODE, OPEN IN EXPERT MODE) */}
-      <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
-          
-          {/* LEFT COLUMN: LIVE REAL-TIME PACKET CONTENT INSPECTOR */}
-          <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-sm">
-                <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
-                <span>Live Packet Content Inspector</span>
-              </div>
-              <span className="px-2 py-0.5 rounded text-[10px] bg-slate-900 text-slate-400 border border-slate-800 font-bold">
-                Step {activeStep}/{totalSteps} Active
-              </span>
-            </div>
-
-            {currentPayload ? (
-              <div className="space-y-2.5">
-                <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800/80 space-y-1.5">
-                  <div className="flex items-center justify-between text-slate-400 text-[11px] font-bold">
-                    <span>Packet Type / Operation:</span>
-                    <span className="text-amber-400">{currentPayload.stepName}</span>
-                  </div>
-
-                  <p className="text-slate-200 text-[11px]">
-                    <span className="text-slate-500 font-bold">Ethernet (L2):</span> {currentPayload.l2Header}
-                  </p>
-                  <p className="text-slate-200 text-[11px]">
-                    <span className="text-slate-500 font-bold">IPv4 (L3):</span> <span className="text-cyan-300 font-bold">{currentPayload.l3Header}</span>
-                  </p>
-                  <p className="text-slate-200 text-[11px]">
-                    <span className="text-slate-500 font-bold">UDP (L4):</span> <span className="text-emerald-300 font-bold">{currentPayload.l4Header}</span>
-                  </p>
+      {/* TECHNICAL PACKET INSPECTOR & EVENT LOGS (EXPERT MODE ONLY) */}
+      {appMode === 'expert' && (
+        <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
+            
+            {/* LEFT COLUMN: LIVE REAL-TIME PACKET CONTENT INSPECTOR */}
+            <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-sm">
+                  <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
+                  <span>Live Packet Content Inspector</span>
                 </div>
+                <span className="px-2 py-0.5 rounded text-[10px] bg-slate-900 text-slate-400 border border-slate-800 font-bold">
+                  Step {activeStep}/{totalSteps} Active
+                </span>
+              </div>
 
-                {/* HIGHLIGHTED NAT MODIFICATION / ADDRESS REWRITING LINE (DIFFERENT COLOR) */}
-                {isExternalDomain && (activeStep === 2 || activeStep === 4) && (
-                  <div className="p-3 rounded-2xl border bg-amber-950/90 border-amber-500 text-amber-200 space-y-1 shadow-lg animate-pulse">
-                    <div className="flex items-center gap-1.5 text-xs font-black text-amber-300 uppercase tracking-wider">
-                      <Zap className="w-4 h-4 fill-current text-amber-400" />
-                      <span>ROUTER NAT ADDRESS REWRITING DETECTED!</span>
+              {currentPayload ? (
+                <div className="space-y-2.5">
+                  <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800/80 space-y-1.5">
+                    <div className="flex items-center justify-between text-slate-400 text-[11px] font-bold">
+                      <span>Packet Type / Operation:</span>
+                      <span className="text-amber-400">{currentPayload.stepName}</span>
                     </div>
-                    <p className="text-[11px] font-extrabold text-amber-100 leading-relaxed">
-                      {activeStep === 2
-                        ? `⚡ INBOUND SNAT: Router modified Source Private IP 192.168.1.105:54321 ➔ Public WAN IP 203.0.113.45:41001 (Targeting ${currDomain.dnsIp})`
-                        : `⚡ OUTBOUND REVERSE NAT: Router restored Destination Public WAN IP 203.0.113.45:41001 ➔ Private IP 192.168.1.105:54321`}
+
+                    <p className="text-slate-200 text-[11px]">
+                      <span className="text-slate-500 font-bold">Ethernet (L2):</span> {currentPayload.l2Header}
+                    </p>
+                    <p className="text-slate-200 text-[11px]">
+                      <span className="text-slate-500 font-bold">IPv4 (L3):</span> <span className="text-cyan-300 font-bold">{currentPayload.l3Header}</span>
+                    </p>
+                    <p className="text-slate-200 text-[11px]">
+                      <span className="text-slate-500 font-bold">UDP (L4):</span> <span className="text-emerald-300 font-bold">{currentPayload.l4Header}</span>
                     </p>
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
-                <p className="font-bold">No active packet frame in flight.</p>
-                <p className="text-[10px]">Select hostname above and click "Start DNS Lookup" to inspect packet headers in real time.</p>
-              </div>
-            )}
-          </div>
 
-          {/* RIGHT COLUMN: REAL-TIME NETWORK EVENT LOGS */}
-          <TerminalLog logs={logs} onClear={() => setLogs([])} />
-        </div>
-      </SlideOutInspector>
+                  {/* HIGHLIGHTED NAT MODIFICATION / ADDRESS REWRITING LINE (DIFFERENT COLOR) */}
+                  {isExternalDomain && (activeStep === 2 || activeStep === 4) && (
+                    <div className="p-3 rounded-2xl border bg-amber-950/90 border-amber-500 text-amber-200 space-y-1 shadow-lg animate-pulse">
+                      <div className="flex items-center gap-1.5 text-xs font-black text-amber-300 uppercase tracking-wider">
+                        <Zap className="w-4 h-4 fill-current text-amber-400" />
+                        <span>ROUTER NAT ADDRESS REWRITING DETECTED!</span>
+                      </div>
+                      <p className="text-[11px] font-extrabold text-amber-100 leading-relaxed">
+                        {activeStep === 2
+                          ? `⚡ INBOUND SNAT: Router modified Source Private IP 192.168.1.105:54321 ➔ Public WAN IP 203.0.113.45:41001 (Targeting ${currDomain.dnsIp})`
+                          : `⚡ OUTBOUND REVERSE NAT: Router restored Destination Public WAN IP 203.0.113.45:41001 ➔ Private IP 192.168.1.105:54321`}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
+                  <p className="font-bold">No active packet frame in flight.</p>
+                  <p className="text-[10px]">Select hostname above and click "Start DNS Lookup" to inspect packet headers in real time.</p>
+                </div>
+              )}
+            </div>
+
+            {/* RIGHT COLUMN: REAL-TIME NETWORK EVENT LOGS */}
+            <TerminalLog logs={logs} onClear={() => setLogs([])} />
+          </div>
+        </SlideOutInspector>
+      )}
     </div>
   );
 }

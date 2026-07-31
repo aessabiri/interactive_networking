@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Key, Lock, UserCheck, Server, Play, Pause, RotateCcw, FolderTree, Gauge, Mail, ChevronDown, ChevronUp, HelpCircle, FileCode, Terminal, SkipForward, Globe, XCircle, Info, X, Layers, Cpu, Hash, Activity, Zap, HardDrive, Radio, Laptop, Router, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
-import { CleanHeader, CleanInfoBanner, SlideOutInspector } from '../common/EasyCard';
+import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
 
 export default function ADModule({ appMode = 'clean' }) {
+  const [showAnimation, setShowAnimation] = useState(true);
   const [activeStep, setActiveStep] = useState(0); // 0: Idle, 1: AS-REQ, 2: AS-REP, 3: TGS-REQ, 4: TGS-REP & AP-REQ
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSingleStep, setIsSingleStep] = useState(false);
@@ -310,26 +311,23 @@ export default function ADModule({ appMode = 'clean' }) {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
 
-      {/* CLEAN MODE HEADER & COLORFUL BASIC INFO WIDGET */}
+      {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
       {appMode !== 'expert' && (
-        <>
-          <CleanHeader
-            title="Active Directory & Kerberos Security Made Simple"
-            subtitle="Understand how Windows Domain Controllers log in users securely using encrypted digital tickets"
-            icon={ShieldCheck}
-          />
-
-          <CleanInfoBanner
-            ip="192.168.1.10 (DC01 Domain Controller)"
-            protocol="Kerberos (TCP/UDP)"
-            port="Port 88 (KDC)"
-            status={activeStep >= 2 ? "Ticket Granted" : "Unauthenticated"}
-            actionTitle={currentMeta.title}
-            actionDesc={currentMeta.subtitle}
-            stepNumber={activeStep}
-            totalSteps={4}
-          />
-        </>
+        <CleanWidget
+          title="Active Directory & Kerberos Security Made Simple"
+          subtitle="Understand how Windows Domain Controllers log in users securely using encrypted digital tickets"
+          icon={ShieldCheck}
+          ip="192.168.1.10 (DC01 Domain Controller)"
+          protocol="Kerberos (TCP/UDP)"
+          port="Port 88 (KDC)"
+          status={activeStep >= 2 ? "Ticket Granted" : "Unauthenticated"}
+          actionTitle={currentMeta.title}
+          actionDesc={currentMeta.subtitle}
+          stepNumber={activeStep}
+          totalSteps={4}
+          showAnimation={showAnimation}
+          setShowAnimation={setShowAnimation}
+        />
       )}
 
       {/* FLOATING MODAL POPUP FOR PACKET & TICKET PAYLOAD INSPECTOR (EXPERT MODE ONLY) */}
@@ -803,52 +801,54 @@ export default function ADModule({ appMode = 'clean' }) {
         </div>
       </div>
 
-      {/* SIDE-BY-SIDE TICKET CACHE SUMMARY & LOGS (SLIDE-OUT IN CLEAN MODE) */}
-      <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
-          
-          {/* LEFT: LSA TICKET CACHE SUMMARY */}
-          <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <div className="flex items-center gap-2 text-purple-400 font-extrabold text-sm">
-                <Lock className="w-4 h-4 text-purple-400" />
-                <span>Windows LSA Ticket Cache (klist)</span>
-              </div>
-              <button
-                onClick={handleReset}
-                className="px-2 py-0.5 rounded text-[10px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 cursor-pointer"
-              >
-                Purge Cache (klist purge)
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <div className={`p-3 rounded-2xl border transition-all ${
-                activeStep >= 2 ? 'bg-purple-950/70 border-purple-500 text-purple-200' : 'bg-slate-950/50 border-slate-800 text-slate-500'
-              }`}>
-                <div className="flex items-center justify-between font-bold">
-                  <span>🎫 Ticket Granting Ticket (TGT)</span>
-                  <span>{activeStep >= 2 ? 'VALID (krbtgt)' : 'EMPTY'}</span>
+      {/* SIDE-BY-SIDE TICKET CACHE SUMMARY & LOGS (EXPERT MODE ONLY) */}
+      {appMode === 'expert' && (
+        <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
+            
+            {/* LEFT: LSA TICKET CACHE SUMMARY */}
+            <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                <div className="flex items-center gap-2 text-purple-400 font-extrabold text-sm">
+                  <Lock className="w-4 h-4 text-purple-400" />
+                  <span>Windows LSA Ticket Cache (klist)</span>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">Client: {username}@CORP.LOCAL | Realm: CORP.LOCAL</p>
+                <button
+                  onClick={handleReset}
+                  className="px-2 py-0.5 rounded text-[10px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 cursor-pointer"
+                >
+                  Purge Cache (klist purge)
+                </button>
               </div>
 
-              <div className={`p-3 rounded-2xl border transition-all ${
-                activeStep >= 4 ? 'bg-emerald-950/70 border-emerald-500 text-emerald-200' : 'bg-slate-950/50 border-slate-800 text-slate-500'
-              }`}>
-                <div className="flex items-center justify-between font-bold">
-                  <span>🎟️ Service Ticket (ST)</span>
-                  <span>{activeStep >= 4 ? 'VALID (cifs/FILESVR01)' : 'EMPTY'}</span>
+              <div className="space-y-2">
+                <div className={`p-3 rounded-2xl border transition-all ${
+                  activeStep >= 2 ? 'bg-purple-950/70 border-purple-500 text-purple-200' : 'bg-slate-950/50 border-slate-800 text-slate-500'
+                }`}>
+                  <div className="flex items-center justify-between font-bold">
+                    <span>🎫 Ticket Granting Ticket (TGT)</span>
+                    <span>{activeStep >= 2 ? 'VALID (krbtgt)' : 'EMPTY'}</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">Client: {username}@CORP.LOCAL | Realm: CORP.LOCAL</p>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">Target SPN: cifs/FILESVR01.corp.local | SMB Port 445</p>
+
+                <div className={`p-3 rounded-2xl border transition-all ${
+                  activeStep >= 4 ? 'bg-emerald-950/70 border-emerald-500 text-emerald-200' : 'bg-slate-950/50 border-slate-800 text-slate-500'
+                }`}>
+                  <div className="flex items-center justify-between font-bold">
+                    <span>🎟️ Service Ticket (ST)</span>
+                    <span>{activeStep >= 4 ? 'VALID (cifs/FILESVR01)' : 'EMPTY'}</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">Target SPN: cifs/FILESVR01.corp.local | SMB Port 445</p>
+                </div>
               </div>
             </div>
+
+            {/* RIGHT: TERMINAL LOGS */}
+            <TerminalLog logs={logs} onClear={() => setLogs([])} />
           </div>
-
-          {/* RIGHT: TERMINAL LOGS */}
-          <TerminalLog logs={logs} onClear={() => setLogs([])} />
-        </div>
-      </SlideOutInspector>
+        </SlideOutInspector>
+      )}
     </div>
   );
 }

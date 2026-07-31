@@ -1,96 +1,121 @@
 import React, { useState } from 'react';
-import { Sparkles, ArrowRight, CheckCircle2, Shield, Globe, Server, Laptop, Router, Zap, ChevronDown, ChevronUp, Sliders, Activity } from 'lucide-react';
+import { Sparkles, ArrowRight, CheckCircle2, Shield, Globe, Server, Laptop, Router, Zap, ChevronDown, ChevronUp, Sliders, Activity, MonitorPlay } from 'lucide-react';
 
-export function CleanHeader({ title, subtitle, icon: Icon = Sparkles }) {
+// UNIFIED SUPER-COMPACT CLEAN MODE WIDGET (ZERO SCROLL, SINGLE CARD)
+export function CleanWidget({ 
+  title, 
+  subtitle, 
+  icon: Icon = Sparkles,
+  ip, 
+  protocol, 
+  port, 
+  status, 
+  actionTitle, 
+  actionDesc, 
+  stepNumber, 
+  totalSteps,
+  showAnimation = true,
+  setShowAnimation
+}) {
   return (
-    <div className="p-5 rounded-3xl bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 border border-emerald-500/30 flex items-center justify-between gap-4 shadow-xl">
-      <div className="flex items-center gap-3.5">
-        <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse">
-          <Icon className="w-8 h-8" />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black uppercase bg-emerald-950 text-emerald-300 border border-emerald-600 shadow-sm">
-              🌱 Clean Mode
-            </span>
-            <h2 className="text-xl font-black text-slate-100">{title}</h2>
-          </div>
-          <p className="text-xs text-slate-300 mt-0.5 font-medium">{subtitle}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Backward compatibility alias for EasyHeader
-export const EasyHeader = CleanHeader;
-
-export function CleanInfoBanner({ ip, protocol, port, status, actionTitle, actionDesc, stepNumber, totalSteps }) {
-  return (
-    <div className="glass-panel p-6 rounded-3xl border border-emerald-500/30 bg-slate-900/90 space-y-4 shadow-2xl font-sans relative overflow-hidden">
+    <div className="glass-panel p-4.5 rounded-3xl border border-emerald-500/30 bg-slate-900/95 space-y-3.5 shadow-2xl font-sans relative overflow-hidden">
       
-      {/* GLOW DECORATION */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+      {/* BACKGROUND DECORATIVE GLOW */}
+      <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
-      {/* COLORFUL BASIC INFO BADGES (IP, PROTOCOL, PORT, STATUS) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
+      {/* TOP ROW: TITLE & COLORFUL BADGES */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
         
-        {/* Step Badge */}
-        {stepNumber !== undefined && stepNumber > 0 && (
-          <span className="px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 border border-emerald-300 animate-pulse">
-            <Sparkles className="w-4 h-4 fill-current" />
-            <span>Stage {stepNumber} of {totalSteps}</span>
-          </span>
-        )}
-        {stepNumber === 0 && (
-          <span className="px-4 py-2 rounded-2xl bg-slate-800 text-emerald-300 font-bold text-sm shadow flex items-center gap-1.5 border border-slate-700">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
-            <span>Ready to Start</span>
-          </span>
-        )}
+        {/* Module Title & Clean Mode Tag */}
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-inner">
+            <Icon className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-black uppercase bg-emerald-950 text-emerald-300 border border-emerald-600 shadow-sm">
+                🌱 Clean Mode
+              </span>
+              <h2 className="text-lg font-black text-slate-100 tracking-tight">{title}</h2>
+            </div>
+            <p className="text-xs text-slate-400 font-medium">{subtitle}</p>
+          </div>
+        </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 font-mono">
+        {/* COLORFUL HIGH-CONTRAST BASIC INFO BADGES */}
+        <div className="flex flex-wrap items-center gap-2 font-mono">
           {ip && (
-            <div className="px-4 py-2 rounded-2xl bg-cyan-950/90 text-cyan-300 border border-cyan-600/80 shadow flex items-center gap-2">
-              <Globe className="w-4 h-4 text-cyan-400" />
-              <span className="text-[10px] text-slate-400 font-bold uppercase">IP / Host:</span>
-              <span className="text-base font-black">{ip}</span>
+            <div className="px-3 py-1.5 rounded-xl bg-cyan-950/90 text-cyan-300 border border-cyan-600/80 shadow flex items-center gap-1.5">
+              <Globe className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-[10px] text-slate-400 font-bold uppercase">IP:</span>
+              <span className="text-xs font-black text-cyan-200">{ip}</span>
             </div>
           )}
 
           {protocol && (
-            <div className="px-4 py-2 rounded-2xl bg-purple-950/90 text-purple-300 border border-purple-600/80 shadow flex items-center gap-2">
-              <Zap className="w-4 h-4 text-purple-400" />
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Protocol:</span>
-              <span className="text-base font-black">{protocol}</span>
+            <div className="px-3 py-1.5 rounded-xl bg-purple-950/90 text-purple-300 border border-purple-600/80 shadow flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-purple-400" />
+              <span className="text-[10px] text-slate-400 font-bold uppercase">Proto:</span>
+              <span className="text-xs font-black text-purple-200">{protocol}</span>
             </div>
           )}
 
           {port !== undefined && port !== null && (
-            <div className="px-4 py-2 rounded-2xl bg-amber-950/90 text-amber-300 border border-amber-600/80 shadow flex items-center gap-2">
-              <Server className="w-4 h-4 text-amber-400" />
+            <div className="px-3 py-1.5 rounded-xl bg-amber-950/90 text-amber-300 border border-amber-600/80 shadow flex items-center gap-1.5">
+              <Server className="w-3.5 h-3.5 text-amber-400" />
               <span className="text-[10px] text-slate-400 font-bold uppercase">Port:</span>
-              <span className="text-base font-black">{port}</span>
+              <span className="text-xs font-black text-amber-200">{port}</span>
             </div>
           )}
 
           {status && (
-            <div className="px-4 py-2 rounded-2xl bg-emerald-950/90 text-emerald-300 border border-emerald-600/80 shadow flex items-center gap-2">
-              <Shield className="w-4 h-4 text-emerald-400" />
+            <div className="px-3 py-1.5 rounded-xl bg-emerald-950/90 text-emerald-300 border border-emerald-600/80 shadow flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-emerald-400" />
               <span className="text-[10px] text-slate-400 font-bold uppercase">Status:</span>
-              <span className="text-base font-black">{status}</span>
+              <span className="text-xs font-black text-emerald-200">{status}</span>
             </div>
+          )}
+
+          {/* ANIMATION TOGGLE BUTTON AS AN ICON */}
+          {setShowAnimation && (
+            <button
+              onClick={() => setShowAnimation(!showAnimation)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer border ${
+                showAnimation
+                  ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
+                  : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+              }`}
+              title="Toggle Topology Animation Canvas"
+            >
+              <MonitorPlay className="w-4 h-4 fill-current" />
+              <span>{showAnimation ? 'Hide Canvas 🎬' : 'Show Canvas 🎬'}</span>
+            </button>
           )}
         </div>
       </div>
 
-      {/* PLAIN ENGLISH ACTION TITLE & EXPLANATION */}
-      <div className="space-y-1.5 p-4.5 rounded-2xl bg-slate-950/90 border border-slate-800/90 shadow-inner">
-        <h3 className="text-lg font-black text-emerald-300 flex items-center gap-2">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-          <span>{actionTitle}</span>
-        </h3>
-        <p className="text-sm text-slate-200 leading-relaxed font-medium">
+      {/* BOTTOM ROW: STAGE PILL & ACTION DESCRIPTION */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-2xl bg-slate-950/90 border border-slate-800/90 shadow-inner">
+        <div className="flex items-center gap-2.5">
+          {stepNumber !== undefined && stepNumber > 0 ? (
+            <span className="px-3 py-1 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 flex items-center gap-1 border border-emerald-300 shrink-0">
+              <Sparkles className="w-3.5 h-3.5 fill-current" />
+              <span>Stage {stepNumber}/{totalSteps}</span>
+            </span>
+          ) : (
+            <span className="px-3 py-1 rounded-xl bg-slate-800 text-emerald-300 font-bold text-xs shadow flex items-center gap-1 border border-slate-700 shrink-0">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Ready</span>
+            </span>
+          )}
+
+          <h3 className="text-sm font-black text-emerald-300 flex items-center gap-1.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>{actionTitle}</span>
+          </h3>
+        </div>
+
+        <p className="text-xs text-slate-300 font-medium leading-relaxed max-w-xl">
           {actionDesc}
         </p>
       </div>
@@ -98,10 +123,17 @@ export function CleanInfoBanner({ ip, protocol, port, status, actionTitle, actio
   );
 }
 
-// Backward compatibility alias for EasyInfoBanner
+// Backward compatibility exports
+export function CleanHeader({ title, subtitle, icon }) {
+  return <CleanWidget title={title} subtitle={subtitle} icon={icon} />;
+}
+export const EasyHeader = CleanHeader;
+
+export function CleanInfoBanner(props) {
+  return <CleanWidget {...props} />;
+}
 export const EasyInfoBanner = CleanInfoBanner;
 
-// STYLISH SLIDE-OUT COLLAPSIBLE TECHNICAL INSPECTOR FOR CLEAN MODE
 export function SlideOutInspector({ title = "Slide Out Technical Deep Dive & Wire Logs", children }) {
   const [isOpen, setIsOpen] = useState(false);
 

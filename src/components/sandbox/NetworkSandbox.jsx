@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { Network, Laptop, Server, Router, ShieldCheck, Globe, Play, Trash2, Plus, Zap, Gauge, CheckCircle2, Settings, Cpu, FileCode, Terminal, X, Radio, HardDrive, Mail, Layers, Activity, Printer, Wifi, Database, Download, Upload, FileJson, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
-import { CleanHeader, CleanInfoBanner, SlideOutInspector } from '../common/EasyCard';
+import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
 
 export default function NetworkSandbox({ appMode = 'clean' }) {
+  const [showAnimation, setShowAnimation] = useState(true);
   // Initial Nodes on Canvas (Includes connected INTERNET-ISP node)
   const [nodes, setNodes] = useState([
     {
@@ -630,24 +631,21 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
 
-      {/* CLEAN MODE HEADER & COLORFUL BASIC INFO WIDGET */}
+      {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
       {appMode !== 'expert' && (
-        <>
-          <CleanHeader
-            title="Interactive Network Topology Sandbox"
-            subtitle="Drag devices onto the canvas, wire cables together, and send test traffic between computers"
-            icon={Network}
-          />
-
-          <CleanInfoBanner
-            ip={selectedNode ? selectedNode.ip : 'Select a Device'}
-            protocol={simType.toUpperCase()}
-            port="Simulated Traffic"
-            status={simPacketPos ? "Packet Transmission Active ⚡" : "Topology Ready"}
-            actionTitle={statusBanner.title}
-            actionDesc={statusBanner.subtitle}
-          />
-        </>
+        <CleanWidget
+          title="Interactive Network Topology Sandbox"
+          subtitle="Drag devices onto the canvas, wire cables together, and send test traffic between computers"
+          icon={Network}
+          ip={selectedNode ? selectedNode.ip : 'Select a Device'}
+          protocol={simType.toUpperCase()}
+          port="Simulated Traffic"
+          status={simPacketPos ? "Packet Transmission Active ⚡" : "Topology Ready"}
+          actionTitle={statusBanner.title}
+          actionDesc={statusBanner.subtitle}
+          showAnimation={showAnimation}
+          setShowAnimation={setShowAnimation}
+        />
       )}
 
       {/* DISCONNECT CABLE SELECTION MODAL POPUP (IF MORE THAN 1 CONNECTION) */}
@@ -1195,62 +1193,64 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
           })}
         </div>
 
-        {/* LIVE PACKET CONTENT INSPECTOR PANEL (COLLAPSED SLIDE-OUT IN CLEAN MODE) */}
-        <SlideOutInspector title="Slide Out Sandbox Technical Deep Dive & Wire Logs">
-          <div className="space-y-4">
-            <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-                <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-xs">
-                  <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
-                  <span>SANDBOX LIVE PACKET CONTENT INSPECTOR</span>
+        {/* LIVE PACKET CONTENT INSPECTOR PANEL (EXPERT MODE ONLY) */}
+        {appMode === 'expert' && (
+          <SlideOutInspector title="Slide Out Sandbox Technical Deep Dive & Wire Logs">
+            <div className="space-y-4">
+              <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
+                <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                  <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-xs">
+                    <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
+                    <span>SANDBOX LIVE PACKET CONTENT INSPECTOR</span>
+                  </div>
+                  <span className="text-amber-400 text-[10px] font-bold">
+                    {livePacketData ? livePacketData.currentHop : 'Idle (Waiting for Simulation)'}
+                  </span>
                 </div>
-                <span className="text-amber-400 text-[10px] font-bold">
-                  {livePacketData ? livePacketData.currentHop : 'Idle (Waiting for Simulation)'}
-                </span>
+
+                {livePacketData ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between text-blue-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                        <span>Layer 2 & Layer 3 Stack:</span>
+                        <span className="text-amber-400">{livePacketData.protocolName}</span>
+                      </div>
+                      <p className="text-slate-300 text-[11px]">
+                        <span className="text-slate-500 font-bold">EtherType:</span> <span className="text-amber-300 font-bold">{livePacketData.etherType}</span>
+                      </p>
+                      <p className="text-slate-300 text-[11px]">
+                        <span className="text-slate-500 font-bold">Layer 2 MACs:</span> <span className="text-cyan-300 font-bold">{livePacketData.l2}</span>
+                      </p>
+                      <p className="text-slate-300 text-[11px]">
+                        <span className="text-slate-500 font-bold">Layer 3 IPs:</span> <span className="text-emerald-300 font-bold">{livePacketData.l3}</span>
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between text-cyan-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                        <span>Layer 4 & Protocol Payload:</span>
+                        <span className="text-slate-400 text-[10px]">{livePacketData.currentHop}</span>
+                      </div>
+                      <p className="text-slate-300 text-[11px]">
+                        <span className="text-slate-500 font-bold">Transport Layer:</span> <span className="text-purple-300 font-bold">{livePacketData.l4}</span>
+                      </p>
+                      <p className="text-slate-300 text-[11px]">
+                        <span className="text-slate-500 font-bold">Payload Data:</span> <span className="text-amber-300 font-bold">{livePacketData.payload}</span>
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
+                    <p className="font-bold">No active packet frame in flight.</p>
+                    <p className="text-[10px]">Select source/target devices and click "Run Traffic Simulation" to inspect packet headers in real time.</p>
+                  </div>
+                )}
               </div>
 
-              {livePacketData ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1.5">
-                    <div className="flex items-center justify-between text-blue-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
-                      <span>Layer 2 & Layer 3 Stack:</span>
-                      <span className="text-amber-400">{livePacketData.protocolName}</span>
-                    </div>
-                    <p className="text-slate-300 text-[11px]">
-                      <span className="text-slate-500 font-bold">EtherType:</span> <span className="text-amber-300 font-bold">{livePacketData.etherType}</span>
-                    </p>
-                    <p className="text-slate-300 text-[11px]">
-                      <span className="text-slate-500 font-bold">Layer 2 MACs:</span> <span className="text-cyan-300 font-bold">{livePacketData.l2}</span>
-                    </p>
-                    <p className="text-slate-300 text-[11px]">
-                      <span className="text-slate-500 font-bold">Layer 3 IPs:</span> <span className="text-emerald-300 font-bold">{livePacketData.l3}</span>
-                    </p>
-                  </div>
-
-                  <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1.5">
-                    <div className="flex items-center justify-between text-cyan-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
-                      <span>Layer 4 & Protocol Payload:</span>
-                      <span className="text-slate-400 text-[10px]">{livePacketData.currentHop}</span>
-                    </div>
-                    <p className="text-slate-300 text-[11px]">
-                      <span className="text-slate-500 font-bold">Transport Layer:</span> <span className="text-purple-300 font-bold">{livePacketData.l4}</span>
-                    </p>
-                    <p className="text-slate-300 text-[11px]">
-                      <span className="text-slate-500 font-bold">Payload Data:</span> <span className="text-amber-300 font-bold">{livePacketData.payload}</span>
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
-                  <p className="font-bold">No active packet frame in flight.</p>
-                  <p className="text-[10px]">Select source/target devices and click "Run Traffic Simulation" to inspect packet headers in real time.</p>
-                </div>
-              )}
+              <TerminalLog logs={logs} onClear={() => setLogs([])} />
             </div>
-
-            <TerminalLog logs={logs} onClear={() => setLogs([])} />
-          </div>
-        </SlideOutInspector>
+          </SlideOutInspector>
+        )}
       </div>
 
       {/* SELECTED DEVICE INSPECTOR */}

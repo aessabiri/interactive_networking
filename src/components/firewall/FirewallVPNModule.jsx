@@ -30,9 +30,10 @@ import {
   Send
 } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
-import { CleanHeader, CleanInfoBanner, SlideOutInspector } from '../common/EasyCard';
+import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
 
 export default function FirewallVPNModule({ appMode = 'clean' }) {
+  const [showAnimation, setShowAnimation] = useState(true);
   const [activeSubTab, setActiveSubTab] = useState('stateful'); // 'stateful', 'nat', 'vpn', 'tls'
   const [speed, setSpeed] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -160,24 +161,21 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
-      {/* CLEAN MODE HEADER & COLORFUL BASIC INFO WIDGET */}
+      {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
       {appMode !== 'expert' && (
-        <>
-          <CleanHeader
-            title="Firewall, NAT & VPN Security Made Simple"
-            subtitle="Understand how Firewalls block dangerous traffic and how VPN Tunnels encrypt data over the Internet"
-            icon={ShieldCheck}
-          />
-
-          <CleanInfoBanner
-            ip="192.168.1.105 (LAN) → 8.8.8.8 (Internet)"
-            protocol={selectedService.toUpperCase()}
-            port={selectedService === 'https' ? 443 : selectedService === 'ssh' ? 22 : selectedService === 'rdp' ? 3389 : selectedService === 'telnet' ? 23 : 'ICMP'}
-            status={firewallAction === 'ALLOW' ? '🟢 TRAFFIC ALLOWED' : firewallAction === 'DROP' ? '🔴 TRAFFIC DROPPED' : 'Awaiting Transmission'}
-            actionTitle={firewallAction ? `Traffic Verdict: ${firewallAction}` : 'Ready to Send Test Traffic'}
-            actionDesc={firewallAction === 'ALLOW' ? '🟢 PERMITTED: The firewall verified this service is secure and allowed it through!' : firewallAction === 'DROP' ? '🔴 BLOCKED: The firewall detected blocked or insecure traffic and dropped the packet!' : 'Select a traffic service (HTTPS, SSH, RDP) above and click "Transmit Packet Through Firewall".'}
-          />
-        </>
+        <CleanWidget
+          title="Firewall, NAT & VPN Security Made Simple"
+          subtitle="Understand how Firewalls block dangerous traffic and how VPN Tunnels encrypt data over the Internet"
+          icon={ShieldCheck}
+          ip="192.168.1.105 (LAN) → 8.8.8.8 (Internet)"
+          protocol={selectedService.toUpperCase()}
+          port={selectedService === 'https' ? 443 : selectedService === 'ssh' ? 22 : selectedService === 'rdp' ? 3389 : selectedService === 'telnet' ? 23 : 'ICMP'}
+          status={firewallAction === 'ALLOW' ? '🟢 ALLOWED' : firewallAction === 'DROP' ? '🔴 DROPPED' : 'Ready'}
+          actionTitle={firewallAction ? `Traffic Verdict: ${firewallAction}` : 'Ready to Send Test Traffic'}
+          actionDesc={firewallAction === 'ALLOW' ? '🟢 PERMITTED: Firewall verified this service is secure and allowed it through!' : firewallAction === 'DROP' ? '🔴 BLOCKED: Firewall detected insecure traffic and dropped the packet!' : 'Select a service (HTTPS, SSH, RDP) above and click "Transmit Packet Through Firewall".'}
+          showAnimation={showAnimation}
+          setShowAnimation={setShowAnimation}
+        />
       )}
 
       {/* MODULE HEADER BAR */}
@@ -634,10 +632,12 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
         </div>
       )}
 
-      {/* TERMINAL EVENT LOGS (SLIDE-OUT IN CLEAN MODE) */}
-      <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
-        <TerminalLog logs={logs} onClear={() => setLogs([])} />
-      </SlideOutInspector>
+      {/* TERMINAL EVENT LOGS (EXPERT MODE ONLY) */}
+      {appMode === 'expert' && (
+        <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
+          <TerminalLog logs={logs} onClear={() => setLogs([])} />
+        </SlideOutInspector>
+      )}
     </div>
   );
 }

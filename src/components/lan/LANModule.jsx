@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Layers, Network, Router, Play, Pause, RotateCcw, CheckCircle2, Gauge, Mail, ChevronDown, ChevronUp, HelpCircle, FileCode, Terminal, SkipForward, Globe, XCircle, Info, X, Cpu, Hash, Activity, Zap, Laptop, Radio, ShieldCheck, Server, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
-import { CleanHeader, CleanInfoBanner, SlideOutInspector } from '../common/EasyCard';
+import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
 
 export default function LANModule({ appMode = 'clean' }) {
+  const [showAnimation, setShowAnimation] = useState(true);
   const [activeStep, setActiveStep] = useState(0); // 0: Idle, 1: ARP Broadcast Request, 2: Switch CAM Learn, 3: Unicast ARP Reply, 4: ICMP Ping Active
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSingleStep, setIsSingleStep] = useState(false);
@@ -292,26 +293,23 @@ export default function LANModule({ appMode = 'clean' }) {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
 
-      {/* CLEAN MODE HEADER & COLORFUL BASIC INFO WIDGET */}
+      {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
       {appMode !== 'expert' && (
-        <>
-          <CleanHeader
-            title="Local Network (LAN) & ARP Routing Made Simple"
-            subtitle="Learn how network switches connect computers inside a office using MAC addresses and ARP resolution"
-            icon={Layers}
-          />
-
-          <CleanInfoBanner
-            ip="192.168.1.105 → 192.168.1.200"
-            protocol="ARP / ICMP Ping"
-            port="Ethernet Layer 2"
-            status={activeStep >= 3 ? "MAC Address Resolved" : "Unresolved ARP"}
-            actionTitle={currentMeta.title}
-            actionDesc={currentMeta.subtitle}
-            stepNumber={activeStep}
-            totalSteps={4}
-          />
-        </>
+        <CleanWidget
+          title="Local Network (LAN) & ARP Routing Made Simple"
+          subtitle="Learn how network switches connect computers inside an office using MAC addresses and ARP resolution"
+          icon={Layers}
+          ip="192.168.1.105 → 192.168.1.200"
+          protocol="ARP / ICMP Ping"
+          port="Ethernet Layer 2"
+          status={activeStep >= 3 ? "MAC Address Resolved" : "Unresolved ARP"}
+          actionTitle={currentMeta.title}
+          actionDesc={currentMeta.subtitle}
+          stepNumber={activeStep}
+          totalSteps={4}
+          showAnimation={showAnimation}
+          setShowAnimation={setShowAnimation}
+        />
       )}
 
       {/* FLOATING MODAL POPUP FOR ETHERNET FRAME & ARP INSPECTOR (EXPERT MODE ONLY) */}
@@ -762,67 +760,69 @@ export default function LANModule({ appMode = 'clean' }) {
         </div>
       </div>
 
-      {/* SIDE-BY-SIDE SWITCH CAM TABLE & HOST ARP CACHE (SLIDE-OUT IN CLEAN MODE) */}
-      <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
-          
-          {/* LEFT: SWITCH CAM TABLE & HOST ARP CACHE */}
-          <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <div className="flex items-center gap-2 text-blue-400 font-extrabold text-sm">
-                <Layers className="w-4 h-4 text-blue-400" />
-                <span>Switch CAM Table & Host ARP Cache</span>
-              </div>
-              <button
-                onClick={handleReset}
-                className="px-2 py-0.5 rounded text-[10px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 cursor-pointer"
-              >
-                Clear Tables (arp -d *)
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-                <div className="flex items-center justify-between text-blue-400 font-bold border-b border-slate-800 pb-1">
-                  <span>🧠 Switch CAM Table (MAC ➔ Port)</span>
-                  <span className="text-[10px] text-slate-500">VLAN 1</span>
+      {/* CAM TABLE SUMMARY & LOGS (EXPERT MODE ONLY) */}
+      {appMode === 'expert' && (
+        <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
+            
+            {/* LEFT: SWITCH CAM TABLE & HOST ARP TABLE */}
+            <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-sm">
+                  <Network className="w-4 h-4 text-cyan-400" />
+                  <span>Switch CAM Table & Host ARP Table</span>
                 </div>
-                <div className="grid grid-cols-3 text-slate-400 text-[10px] font-bold">
-                  <div>Port</div>
-                  <div>Learned MAC</div>
-                  <div>Status</div>
-                </div>
-                <div className={`grid grid-cols-3 p-1.5 rounded-lg border text-[11px] ${activeStep >= 1 ? 'bg-blue-950/60 border-blue-500 text-blue-200 font-bold' : 'bg-slate-900/40 border-slate-800 text-slate-600'}`}>
-                  <div>Port 1</div>
-                  <div>{activeStep >= 1 ? '00:11:22:33:44:55' : 'EMPTY'}</div>
-                  <div>{activeStep >= 1 ? 'PC-A Bound' : 'Empty'}</div>
-                </div>
-                <div className={`grid grid-cols-3 p-1.5 rounded-lg border text-[11px] ${activeStep >= 3 ? 'bg-cyan-950/60 border-cyan-500 text-cyan-200 font-bold' : 'bg-slate-900/40 border-slate-800 text-slate-600'}`}>
-                  <div>Port 2</div>
-                  <div>{activeStep >= 3 ? '00:66:77:88:99:AA' : 'EMPTY'}</div>
-                  <div>{activeStep >= 3 ? 'PC-B Bound' : 'Empty'}</div>
-                </div>
+                <button
+                  onClick={handleReset}
+                  className="px-2 py-0.5 rounded text-[10px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 cursor-pointer"
+                >
+                  Clear Tables (arp -d *)
+                </button>
               </div>
 
-              <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-                <div className="flex items-center justify-between text-emerald-400 font-bold border-b border-slate-800 pb-1">
-                  <span>💻 PC-A Local ARP Cache (arp -a)</span>
-                  <span className="text-[10px] text-slate-500">Interface 192.168.1.50</span>
+              <div className="space-y-2">
+                <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between text-blue-400 font-bold border-b border-slate-800 pb-1">
+                    <span>🧠 Switch CAM Table (MAC ➔ Port)</span>
+                    <span className="text-[10px] text-slate-500">VLAN 1</span>
+                  </div>
+                  <div className="grid grid-cols-3 text-slate-400 text-[10px] font-bold">
+                    <div>Port</div>
+                    <div>Learned MAC</div>
+                    <div>Status</div>
+                  </div>
+                  <div className={`grid grid-cols-3 p-1.5 rounded-lg border text-[11px] ${activeStep >= 1 ? 'bg-blue-950/60 border-blue-500 text-blue-200 font-bold' : 'bg-slate-900/40 border-slate-800 text-slate-600'}`}>
+                    <div>Port 1</div>
+                    <div>{activeStep >= 1 ? '00:11:22:33:44:55' : 'EMPTY'}</div>
+                    <div>{activeStep >= 1 ? 'PC-A Bound' : 'Empty'}</div>
+                  </div>
+                  <div className={`grid grid-cols-3 p-1.5 rounded-lg border text-[11px] ${activeStep >= 3 ? 'bg-cyan-950/60 border-cyan-500 text-cyan-200 font-bold' : 'bg-slate-900/40 border-slate-800 text-slate-600'}`}>
+                    <div>Port 2</div>
+                    <div>{activeStep >= 3 ? '00:66:77:88:99:AA' : 'EMPTY'}</div>
+                    <div>{activeStep >= 3 ? 'PC-B Bound' : 'Empty'}</div>
+                  </div>
                 </div>
-                <div className={`p-2 rounded-xl border ${activeStep >= 3 ? 'bg-emerald-950/70 border-emerald-500 text-emerald-200' : 'bg-slate-900/40 border-slate-800 text-slate-600'}`}>
-                  <div className="flex items-center justify-between font-bold">
-                    <span>Target IP 192.168.1.200</span>
-                    <span>{activeStep >= 3 ? '00:66:77:88:99:AA (Dynamic)' : 'UNRESOLVED'}</span>
+
+                <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between text-emerald-400 font-bold border-b border-slate-800 pb-1">
+                    <span>💻 PC-A Local ARP Cache (arp -a)</span>
+                    <span className="text-[10px] text-slate-500">Interface 192.168.1.50</span>
+                  </div>
+                  <div className={`p-2 rounded-xl border ${activeStep >= 3 ? 'bg-emerald-950/70 border-emerald-500 text-emerald-200' : 'bg-slate-900/40 border-slate-800 text-slate-600'}`}>
+                    <div className="flex items-center justify-between font-bold">
+                      <span>Target IP 192.168.1.200</span>
+                      <span>{activeStep >= 3 ? '00:66:77:88:99:AA (Dynamic)' : 'UNRESOLVED'}</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* RIGHT: TERMINAL LOGS */}
-          <TerminalLog logs={logs} onClear={() => setLogs([])} />
-        </div>
-      </SlideOutInspector>
+            {/* RIGHT: TERMINAL LOGS */}
+            <TerminalLog logs={logs} onClear={() => setLogs([])} />
+          </div>
+        </SlideOutInspector>
+      )}
     </div>
   );
 }
