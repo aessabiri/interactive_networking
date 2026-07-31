@@ -15,7 +15,7 @@ export default function MailModule() {
   const [activeOsTab, setActiveOsTab] = useState('exchange');
 
   const [logs, setLogs] = useState([
-    { time: new Date().toLocaleTimeString(), tag: 'MAIL', message: 'Multi-Tier Enterprise Mail Architecture with DNS MX Resolution initialized.' }
+    { time: new Date().toLocaleTimeString(), tag: 'MAIL', message: 'Multi-Tier Enterprise Mail Architecture with ISP-Connected DNS MX Resolution initialized.' }
   ]);
 
   // Dynamic Domain Parameters
@@ -31,8 +31,8 @@ export default function MailModule() {
   // Step Metadata for Same-Domain vs Cross-Domain Mail Flow
   const stepMetaCross = {
     0: {
-      title: 'Ready for Cross-Domain Mail Traversal with DNS MX Query',
-      subtitle: `Watch packet: 1. MUA Submission ➔ 2. DNS MX Query for ${recipientDomain} ➔ 3. MTA Relay over ISP WAN ➔ 4. MRA Retrieval!`,
+      title: 'Ready for Cross-Domain Mail Traversal with ISP-Hosted DNS MX Query',
+      subtitle: `Watch packet: 1. MUA Submission ➔ 2. DNS MX Query via ISP (8.8.8.8) ➔ 3. MTA Relay over ISP WAN ➔ 4. MRA Retrieval!`,
       badge: 'IDLE',
       badgeColor: 'bg-slate-800 text-slate-400 border-slate-700',
       sender: null,
@@ -57,39 +57,39 @@ export default function MailModule() {
           `From: "Student Trainee" <${senderEmail}>`,
           `To: "Alex Partner" <${recipientEmail}>`,
           'Subject: Inter-Domain B2B Contract & Infrastructure Report',
-          'Date: Sat, 01 Aug 2026 00:39:00 +0200',
+          'Date: Sat, 01 Aug 2026 00:41:00 +0200',
           'MIME-Version: 1.0',
           'Content-Type: text/plain; charset=utf-8',
           `DKIM-Signature: v=1; a=rsa-sha256; d=${senderDomain}; s=202608...`,
           '',
-          'Hello, this email was sent across different domains via DNS MX resolution!'
+          'Hello, this email was sent across different domains via ISP-connected DNS MX resolution!'
         ]
       }
     },
     2: {
-      title: `🔍 STEP 2 (EXTRA STEP): LOCAL MTA ➔ DNS SERVER ➔ LOCAL MTA (DNS MX QUERY FOR @${recipientDomain.toUpperCase()})`,
-      subtitle: `Local MTA detects external domain "@${recipientDomain}". Queries DNS Server for MX record of ${recipientDomain} and receives IP ${resolvedMxIp}!`,
-      badge: `DNS MX RESOLUTION (${recipientDomain} ➔ ${resolvedMxIp})`,
+      title: `🔍 STEP 2 (EXTRA STEP): LOCAL MTA ➔ LOCAL ROUTER ➔ ISP ➔ PUBLIC DNS SERVER (MX QUERY FOR @${recipientDomain.toUpperCase()})`,
+      subtitle: `Local MTA queries Public DNS (8.8.8.8) through ISP Backbone for MX record of ${recipientDomain} and receives IP ${resolvedMxIp}!`,
+      badge: `DNS MX RESOLUTION VIA ISP (${recipientDomain} ➔ ${resolvedMxIp})`,
       badgeColor: 'bg-purple-950 text-purple-400 border-purple-500 animate-pulse',
       sender: 'MTA_LOCAL',
       target: 'DNS',
       payload: {
-        stepName: `2. DNS MX Record Lookup (${recipientDomain})`,
-        protocol: 'DNS Query / Answer (RFC 1035)',
-        l2Header: 'Src MAC: 00:0C:29:88:77:66 → Dst MAC: 00:0C:29:8E:7F:11 (DNS Server)',
-        l3Header: 'Src IP: 192.168.1.50 (Local MTA) → Dst IP: 8.8.8.8 / 192.168.1.10 (DNS)',
+        stepName: `2. DNS MX Record Lookup via ISP DNS (${recipientDomain})`,
+        protocol: 'DNS Query / Answer (RFC 1035 over UDP Port 53)',
+        l2Header: 'Src MAC: 00:0C:29:88:77:66 → Dst MAC: 00:11:22:33:44:01 (Local Router Gateway)',
+        l3Header: 'Src IP: 192.168.1.50 (Local MTA) → Dst IP: 8.8.8.8 (Public DNS Server via ISP)',
         l4Header: 'UDP Src Port: 53100 → Dst Port: 53 (DNS Query)',
-        cmdHandshake: `Standard Query MX ${recipientDomain} ➔ Answer: ${recipientDomain} MX 10 ${mxHost} ➔ A ${resolvedMxIp}`,
-        archComponents: `Local MTA (${senderDomain}) ➔ DNS Server Query ➔ Resolved MX IP ${resolvedMxIp} returned to MTA`,
+        cmdHandshake: `Query: MX ${recipientDomain} ➔ Sent to 8.8.8.8 via ISP ➔ Answer: ${recipientDomain} MX 10 ${mxHost} ➔ A ${resolvedMxIp}`,
+        archComponents: `Local MTA (${senderDomain}) ➔ Local Router ➔ ISP Backbone ➔ ISP Public DNS (8.8.8.8) ➔ Resolved IP ${resolvedMxIp}`,
         dataBody: [
           `;; QUESTION SECTION:`,
           `;; ${recipientDomain}. IN MX`,
           '',
-          `;; ANSWER SECTION:`,
+          `;; ANSWER SECTION (from ISP DNS Server 8.8.8.8):`,
           `${recipientDomain}. 3600 IN MX 10 ${mxHost}.`,
           `${mxHost}. 3600 IN A ${resolvedMxIp}`,
           '',
-          `Result: Local MTA discovers Mailbox Server IP ${resolvedMxIp} for ${recipientDomain}!`
+          `Result: Local MTA receives destination IP ${resolvedMxIp} from ISP-connected Public DNS!`
         ]
       }
     },
@@ -144,8 +144,8 @@ export default function MailModule() {
             ? `IMAP4 MRA: Multi-device sync enabled for ${recipientEmail}. Message stored in INBOX.`
             : `POP3 MRA: Downloaded to local storage for ${recipientEmail}. Server copy marked for deletion.`,
           `MDA Delivery Database: ${serverStack === 'exchange' ? 'Microsoft Exchange ESE (.edb) Store' : 'Linux Dovecot LDA (Maildir)'}`,
-          'Status: Read / Unseen Synced (Inter-Domain Verified via DNS MX)',
-          'Body Payload: Hello, this email was sent across different domains via DNS MX resolution!'
+          'Status: Read / Unseen Synced (Inter-Domain Verified via ISP DNS MX)',
+          'Body Payload: Hello, this email was sent across different domains via ISP-connected DNS MX resolution!'
         ]
       }
     }
@@ -179,7 +179,7 @@ export default function MailModule() {
           `From: "Student Trainee" <${senderEmail}>`,
           `To: "Department Boss" <${recipientEmail}>`,
           'Subject: Intra-Domain Internal Department Report',
-          'Date: Sat, 01 Aug 2026 00:39:00 +0200',
+          'Date: Sat, 01 Aug 2026 00:41:00 +0200',
           'MIME-Version: 1.0',
           'Content-Type: text/plain; charset=utf-8',
           '',
@@ -306,7 +306,7 @@ export default function MailModule() {
     setIsSingleStep(false);
     setActiveStep(0);
     setPacketProgress(0);
-    setLogs([{ time: new Date().toLocaleTimeString(), tag: 'MAIL', message: `Mail state reset. Active Mode: ${domainMode === 'cross' ? `Cross-Domain (@${senderDomain} ➔ DNS MX Query ➔ @${recipientDomain})` : 'Same-Domain (@dts.local)'}` }]);
+    setLogs([{ time: new Date().toLocaleTimeString(), tag: 'MAIL', message: `Mail state reset. Active Mode: ${domainMode === 'cross' ? `Cross-Domain (@${senderDomain} ➔ ISP DNS MX Query ➔ @${recipientDomain})` : 'Same-Domain (@dts.local)'}` }]);
   };
 
   const currentMeta = stepMeta[activeStep] || stepMeta[0];
@@ -319,11 +319,11 @@ export default function MailModule() {
   // Local Switch: (19%, 40%)
   // Local MSA/MTA: (28%, 68%)
   // Local Gateway Router: (38%, 20%)
-  // DNS Server (Top-Center-Left): (48%, 18%)
-  // ISP Telecom POP Cloud: (60%, 20%)
-  // Remote Gateway Router: (75%, 20%)
-  // Remote MDA/MRA Server: (75%, 68%)
-  // Recipient MUA: (90%, 68%)
+  // ISP Telecom POP Cloud (Top-Center): (60%, 20%)
+  // Public DNS Server (Middle-Center - Directly Under ISP!): (60%, 48%)
+  // Remote Gateway Router: (78%, 20%)
+  // Remote MDA/MRA Server: (78%, 68%)
+  // Recipient MUA: (92%, 68%)
 
   const getPacketPos = () => {
     if (!isPlaying && activeStep === 0) return null;
@@ -350,21 +350,41 @@ export default function MailModule() {
           };
         }
       } else if (activeStep === 2) {
-        // Step 2 (EXTRA STEP FOR CROSS-DOMAIN): DNS MX Query (Local MTA 28%, 68% -> DNS Server 48%, 18% -> Local MTA 28%, 68%)
-        if (packetProgress <= 50) {
-          const t = packetProgress / 50;
+        // Step 2 (DNS MX QUERY VIA ISP):
+        // Subphase 1 (0-25%): Local MTA (28%, 68%) -> Local Router (38%, 20%)
+        // Subphase 2 (25-50%): Local Router (38%, 20%) -> ISP Backbone (60%, 20%) -> DNS Server (60%, 48%)
+        // Subphase 3 (50-75%): DNS Server (60%, 48%) -> ISP Backbone (60%, 20%)
+        // Subphase 4 (75-100%): ISP Backbone (60%, 20%) -> Local Router (38%, 20%) -> Local MTA (28%, 68%)
+        if (packetProgress <= 25) {
+          const t = packetProgress / 25;
           return {
-            left: `${28 + t * 20}%`,
-            top: `${68 - t * 50}%`,
-            label: `DNS MX Query: ${recipientDomain}?`,
+            left: `${28 + t * 10}%`,
+            top: `${68 - t * 48}%`,
+            label: 'Local MTA ➔ Router',
             bgColor: 'bg-gradient-to-r from-purple-400 to-indigo-500 text-white shadow-purple-500/50 animate-pulse'
           };
-        } else {
-          const t = (packetProgress - 50) / 50;
+        } else if (packetProgress <= 50) {
+          const t = (packetProgress - 25) / 25;
           return {
-            left: `${48 - t * 20}%`,
-            top: `${18 + t * 50}%`,
-            label: `MX Resolved ➔ ${resolvedMxIp}`,
+            left: `${38 + t * 22}%`,
+            top: `${20 + t * 28}%`,
+            label: `Router ➔ ISP ➔ DNS MX Query: ${recipientDomain}?`,
+            bgColor: 'bg-gradient-to-r from-purple-400 to-indigo-500 text-white shadow-purple-500/50 animate-pulse'
+          };
+        } else if (packetProgress <= 75) {
+          const t = (packetProgress - 50) / 25;
+          return {
+            left: '60%',
+            top: `${48 - t * 28}%`,
+            label: `DNS Answer ➔ ISP: ${resolvedMxIp}`,
+            bgColor: 'bg-gradient-to-r from-emerald-400 to-teal-300 text-slate-950 shadow-emerald-500/50'
+          };
+        } else {
+          const t = (packetProgress - 75) / 25;
+          return {
+            left: `${60 - t * 32}%`,
+            top: `${20 + t * 48}%`,
+            label: `MX Resolved ➔ Local MTA (${resolvedMxIp})`,
             bgColor: 'bg-gradient-to-r from-emerald-400 to-teal-300 text-slate-950 shadow-emerald-500/50'
           };
         }
@@ -372,8 +392,8 @@ export default function MailModule() {
         // Step 3: Multi-Hop Server Relay across Routers & ISP:
         // Subphase 1 (0-25%): Local MTA (28%, 68%) -> Local Router (38%, 20%)
         // Subphase 2 (25-50%): Local Router (38%, 20%) -> ISP Telecom POP (60%, 20%)
-        // Subphase 3 (50-75%): ISP POP (60%, 20%) -> Remote Router (75%, 20%)
-        // Subphase 4 (75-100%): Remote Router (75%, 20%) -> Remote MDA Server (75%, 68%)
+        // Subphase 3 (50-75%): ISP POP (60%, 20%) -> Remote Router (78%, 20%)
+        // Subphase 4 (75-100%): Remote Router (78%, 20%) -> Remote MDA Server (78%, 68%)
         if (packetProgress <= 25) {
           const t = packetProgress / 25;
           return {
@@ -393,7 +413,7 @@ export default function MailModule() {
         } else if (packetProgress <= 75) {
           const t = (packetProgress - 50) / 25;
           return {
-            left: `${60 + t * 15}%`,
+            left: `${60 + t * 18}%`,
             top: '20%',
             label: `ISP ➔ ${mxHost}`,
             bgColor: 'bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 shadow-blue-500/50'
@@ -401,16 +421,16 @@ export default function MailModule() {
         } else {
           const t = (packetProgress - 75) / 25;
           return {
-            left: '75%',
+            left: '78%',
             top: `${20 + t * 48}%`,
             label: `Remote Router ➔ ${recipientDomain} MTA`,
             bgColor: 'bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 shadow-blue-500/50'
           };
         }
       } else if (activeStep === 4) {
-        // Step 4: Remote MDA/MRA (75%, 68%) -> Recipient MUA (90%, 68%) (IMAP 993 / POP3 995)
+        // Step 4: Remote MDA/MRA (78%, 68%) -> Recipient MUA (92%, 68%) (IMAP 993 / POP3 995)
         return {
-          left: `${75 + p * 15}%`,
+          left: `${78 + p * 14}%`,
           top: '68%',
           label: mailProtocol === 'smtp_imap' ? 'MRA ➔ MUA IMAP4 (Port 993)' : 'MRA ➔ MUA POP3 (Port 995)',
           bgColor: 'bg-gradient-to-r from-emerald-400 to-teal-300 text-slate-950 shadow-emerald-500/50 animate-bounce'
@@ -438,14 +458,14 @@ export default function MailModule() {
         }
       } else if (activeStep === 2) {
         return {
-          left: `${28 + p * 47}%`,
+          left: `${28 + p * 50}%`,
           top: '68%',
           label: 'Internal MTA Handoff ➔ MDA Store',
           bgColor: 'bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 shadow-blue-500/50'
         };
       } else if (activeStep === 3) {
         return {
-          left: `${75 + p * 15}%`,
+          left: `${78 + p * 14}%`,
           top: '68%',
           label: mailProtocol === 'smtp_imap' ? 'MRA ➔ MUA IMAP4 (Port 993)' : 'MRA ➔ MUA POP3 (Port 995)',
           bgColor: 'bg-gradient-to-r from-emerald-400 to-teal-300 text-slate-950 shadow-emerald-500/50 animate-bounce'
@@ -562,7 +582,7 @@ export default function MailModule() {
               }`}
             >
               <Globe className="w-3.5 h-3.5" />
-              <span>🌐 Cross-Domain (@dts-herford.de ➔ DNS MX ➔ @company-partner.com)</span>
+              <span>🌐 Cross-Domain (@dts-herford.de ➔ ISP DNS MX ➔ @company-partner.com)</span>
             </button>
           </div>
         </div>
@@ -723,8 +743,8 @@ export default function MailModule() {
         <p className="text-xs text-slate-200 font-medium text-center sm:text-right max-w-md">{currentMeta.subtitle}</p>
       </div>
 
-      {/* ENLARGED MULTI-TIER TOPOLOGY STAGE WITH ROUTERS, DNS SERVER & ISP CLOUD */}
-      <div className="py-8 px-4 relative min-h-[580px] bg-slate-950/70 rounded-3xl border border-slate-800/80 overflow-hidden font-mono select-none">
+      {/* ENLARGED MULTI-TIER TOPOLOGY STAGE WITH ROUTERS, ISP CLOUD & DIRECTLY CONNECTED DNS SERVER */}
+      <div className="py-8 px-4 relative min-h-[620px] bg-slate-950/70 rounded-3xl border border-slate-800/80 overflow-hidden font-mono select-none">
         
         {/* NETWORK BOUNDARY CONTAINERS */}
         {/* Private Subnet A Container */}
@@ -735,14 +755,14 @@ export default function MailModule() {
         </div>
 
         {/* Public WAN & ISP Transit Container */}
-        <div className="absolute left-[36%] top-[4%] w-[44%] h-[38%] border-2 border-dashed border-amber-500/40 rounded-3xl pointer-events-none p-3 text-center">
+        <div className="absolute left-[36%] top-[4%] w-[42%] h-[58%] border-2 border-dashed border-amber-500/40 rounded-3xl pointer-events-none p-3 text-center">
           <span className="px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/90 text-amber-300 border border-amber-600 shadow">
-            PUBLIC WAN, DNS MX & ISP INTERNET BACKBONE ({domainMode === 'cross' ? `DNS MX: ${recipientDomain} ➔ ${resolvedMxIp}` : 'Intra-Domain Direct'})
+            PUBLIC WAN & ISP BACKBONE (DNS MX: {domainMode === 'cross' ? `${recipientDomain} ➔ ${resolvedMxIp}` : 'Intra-Domain Direct'})
           </span>
         </div>
 
         {/* Private Subnet B Container */}
-        <div className="absolute right-[2%] top-[34%] w-[25%] h-[62%] border-2 border-dashed border-emerald-800/40 rounded-3xl pointer-events-none p-3 text-right">
+        <div className="absolute right-[2%] top-[34%] w-[23%] h-[62%] border-2 border-dashed border-emerald-800/40 rounded-3xl pointer-events-none p-3 text-right">
           <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800">
             RECIPIENT SUBNET B (@{recipientDomain})
           </span>
@@ -756,25 +776,25 @@ export default function MailModule() {
           {/* Cable 2: Local MSA/MTA (28%, 68%) -> Local Switch (19%, 40%) */}
           <line x1="28%" y1="68%" x2="19%" y2="40%" stroke="#f59e0b" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.8" />
 
-          {/* Cable 3: Local MSA/MTA (28%, 68%) -> DNS Server (48%, 18%) [DNS MX QUERY WIRE] */}
-          {domainMode === 'cross' && (
-            <line x1="28%" y1="68%" x2="48%" y2="18%" stroke="#a855f7" strokeWidth="4" strokeDasharray="6 4" className="animate-wire-dash" strokeOpacity="0.85" />
-          )}
-
-          {/* Cable 4: Local Switch (19%, 40%) -> Local Router (38%, 20%) */}
+          {/* Cable 3: Local Switch (19%, 40%) -> Local Router (38%, 20%) */}
           <line x1="19%" y1="40%" x2="38%" y2="20%" stroke="#3b82f6" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.8" />
 
-          {/* Cable 5: Local Router (38%, 20%) -> ISP Telecom POP (60%, 20%) [WAN WIRE] */}
+          {/* Cable 4: Local Router (38%, 20%) -> ISP Telecom POP (60%, 20%) [WAN WIRE] */}
           <line x1="38%" y1="20%" x2="60%" y2="20%" stroke="#10b981" strokeWidth="5" strokeDasharray="10 6" className="animate-wire-dash" strokeOpacity="0.9" />
 
-          {/* Cable 6: ISP Telecom POP (60%, 20%) -> Remote Router (75%, 20%) [WAN WIRE] */}
-          <line x1="60%" y1="20%" x2="75%" y2="20%" stroke="#10b981" strokeWidth="5" strokeDasharray="10 6" className="animate-wire-dash" strokeOpacity="0.9" />
+          {/* Cable 5 (CRITICAL EXCLUSIVE CONNECTION): ISP Telecom POP (60%, 20%) -> DNS Server (60%, 48%) [CONNECTED ONLY TO ISP!] */}
+          {domainMode === 'cross' && (
+            <line x1="60%" y1="20%" x2="60%" y2="48%" stroke="#a855f7" strokeWidth="5" strokeDasharray="6 4" className="animate-wire-dash" strokeOpacity="0.95" />
+          )}
 
-          {/* Cable 7: Remote Router (75%, 20%) -> Remote MDA/MRA Server (75%, 68%) */}
-          <line x1="75%" y1="20%" x2="75%" y2="68%" stroke="#3b82f6" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.8" />
+          {/* Cable 6: ISP Telecom POP (60%, 20%) -> Remote Router (78%, 20%) [WAN WIRE] */}
+          <line x1="60%" y1="20%" x2="78%" y2="20%" stroke="#10b981" strokeWidth="5" strokeDasharray="10 6" className="animate-wire-dash" strokeOpacity="0.9" />
 
-          {/* Cable 8: Remote MDA/MRA Server (75%, 68%) -> Recipient MUA (90%, 68%) */}
-          <line x1="75%" y1="68%" x2="90%" y2="68%" stroke="#10b981" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.8" />
+          {/* Cable 7: Remote Router (78%, 20%) -> Remote MDA/MRA Server (78%, 68%) */}
+          <line x1="78%" y1="20%" x2="78%" y2="68%" stroke="#3b82f6" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.8" />
+
+          {/* Cable 8: Remote MDA/MRA Server (78%, 68%) -> Recipient MUA (92%, 68%) */}
+          <line x1="78%" y1="68%" x2="92%" y2="68%" stroke="#10b981" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.8" />
         </svg>
 
         {/* 1. SENDER CLIENT MUA (BOTTOM-LEFT: 10%, 68%) */}
@@ -830,7 +850,7 @@ export default function MailModule() {
             <ShieldCheck className="w-3 h-3 text-amber-400" /> LOCAL ROUTER
           </span>
           <div className={`p-4 rounded-2xl border-4 transition-all ${
-            domainMode === 'cross' && activeStep === 3 ? 'bg-amber-900/90 border-amber-400 shadow-2xl scale-110' : 'bg-slate-900 border-slate-700'
+            domainMode === 'cross' && (activeStep === 2 || activeStep === 3) ? 'bg-amber-900/90 border-amber-400 shadow-2xl scale-110' : 'bg-slate-900 border-slate-700'
           }`}>
             <Router className="w-10 h-10 text-amber-400" />
           </div>
@@ -840,29 +860,13 @@ export default function MailModule() {
           </div>
         </div>
 
-        {/* 5. DNS SERVER NODE FOR CROSS-DOMAIN MX RESOLUTION (TOP-CENTER-LEFT: 48%, 18%) */}
-        <div className="absolute left-[48%] top-[18%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 z-10">
-          <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-purple-950 text-purple-300 border border-purple-700 shadow flex items-center gap-1">
-            <Search className="w-3 h-3 text-purple-400" /> DNS SERVER (UDP 53)
-          </span>
-          <div className={`p-4 rounded-2xl border-4 transition-all ${
-            domainMode === 'cross' && activeStep === 2 ? 'bg-purple-900 border-purple-400 shadow-2xl scale-110 animate-bounce' : 'bg-slate-900 border-slate-700'
-          }`}>
-            <Server className="w-9 h-9 text-purple-400" />
-          </div>
-          <div className="font-mono text-[10px] text-center">
-            <p className="font-bold text-purple-300">DNS MX RESOLVER</p>
-            <p className="text-slate-400">MX {recipientDomain} ➔ {resolvedMxIp}</p>
-          </div>
-        </div>
-
-        {/* 6. ISP TELECOM POP / INTERNET BACKBONE CLOUD (TOP-CENTER: 60%, 20%) */}
+        {/* 5. ISP TELECOM POP / INTERNET BACKBONE CLOUD (TOP-CENTER: 60%, 20%) */}
         <div className="absolute left-[60%] top-[20%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 z-10">
           <span className="px-3 py-1 rounded-full text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-500 shadow-2xl shadow-emerald-500/50 font-black flex items-center gap-1 animate-pulse">
             <Globe className="w-3.5 h-3.5 text-emerald-400" /> ISP BACKBONE 🌐
           </span>
           <div className={`p-5 rounded-3xl border-4 transition-all duration-300 ${
-            domainMode === 'cross' && activeStep === 3 && packetProgress > 25 && packetProgress < 75
+            (domainMode === 'cross' && (activeStep === 2 || (activeStep === 3 && packetProgress > 25 && packetProgress < 75)))
               ? 'bg-emerald-950 border-emerald-400 shadow-2xl shadow-emerald-500/60 scale-110 animate-bounce'
               : 'bg-emerald-950/80 border-emerald-500/80'
           }`}>
@@ -874,8 +878,24 @@ export default function MailModule() {
           </div>
         </div>
 
-        {/* 7. REMOTE GATEWAY ROUTER (TOP-RIGHT: 75%, 20%) */}
-        <div className="absolute left-[75%] top-[20%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 z-10">
+        {/* 6. PUBLIC DNS SERVER - MOVED DIRECTLY UNDERNEATH ISP CLOUD & CONNECTED ONLY TO ISP! (60%, 48%) */}
+        <div className="absolute left-[60%] top-[48%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 z-10">
+          <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono font-extrabold bg-purple-950 text-purple-300 border border-purple-600 shadow-xl flex items-center gap-1">
+            <Search className="w-3.5 h-3.5 text-purple-400" /> ISP PUBLIC DNS (8.8.8.8)
+          </span>
+          <div className={`p-5 rounded-3xl border-4 transition-all duration-300 ${
+            domainMode === 'cross' && activeStep === 2 ? 'bg-purple-900 border-purple-400 shadow-2xl shadow-purple-500/60 scale-110 animate-bounce' : 'bg-slate-900 border-slate-700'
+          }`}>
+            <Server className="w-11 h-11 text-purple-400" />
+          </div>
+          <div className="font-mono text-[10px] text-center">
+            <p className="font-extrabold text-purple-300">ISP DNS MX RESOLVER</p>
+            <p className="text-purple-400 font-bold">MX {recipientDomain} ➔ {resolvedMxIp}</p>
+          </div>
+        </div>
+
+        {/* 7. REMOTE GATEWAY ROUTER (TOP-RIGHT: 78%, 20%) */}
+        <div className="absolute left-[78%] top-[20%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 z-10">
           <span className="px-2.5 py-0.5 rounded-full text-[9px] bg-blue-950 text-blue-300 border border-blue-600 shadow font-extrabold flex items-center gap-1">
             <ShieldCheck className="w-3 h-3 text-blue-400" /> REMOTE ROUTER
           </span>
@@ -890,8 +910,8 @@ export default function MailModule() {
           </div>
         </div>
 
-        {/* 8. DESTINATION INBOUND MDA / MRA SERVER (BOTTOM-CENTER-RIGHT: 75%, 68%) */}
-        <div className="absolute left-[75%] top-[68%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 z-10">
+        {/* 8. DESTINATION INBOUND MDA / MRA SERVER (BOTTOM-CENTER-RIGHT: 78%, 68%) */}
+        <div className="absolute left-[78%] top-[68%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 z-10">
           <span className="px-2.5 py-0.5 rounded-full text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-700 shadow font-extrabold">
             {serverStack === 'exchange' ? `Exchange MDA (${recipientDomain})` : `Dovecot MDA/MRA (${recipientDomain})`}
           </span>
@@ -908,8 +928,8 @@ export default function MailModule() {
           </div>
         </div>
 
-        {/* 9. RECIPIENT CLIENT MUA (BOTTOM-RIGHT: 90%, 68%) */}
-        <div className="absolute left-[90%] top-[68%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 z-10">
+        {/* 9. RECIPIENT CLIENT MUA (BOTTOM-RIGHT: 92%, 68%) */}
+        <div className="absolute left-[92%] top-[68%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 z-10">
           <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-700 shadow font-extrabold">
             Recipient MUA (Outlook)
           </span>
