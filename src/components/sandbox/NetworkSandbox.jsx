@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Network, Laptop, Server, Router, ShieldCheck, Globe, Play, Trash2, Plus, Zap, Gauge, CheckCircle2, Settings, Cpu, FileCode, Terminal, X, Radio, HardDrive, Mail, Layers, Activity } from 'lucide-react';
+import { Network, Laptop, Server, Router, ShieldCheck, Globe, Play, Trash2, Plus, Zap, Gauge, CheckCircle2, Settings, Cpu, FileCode, Terminal, X, Radio, HardDrive, Mail, Layers, Activity, AlertTriangle } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 
 export default function NetworkSandbox() {
@@ -86,6 +86,39 @@ export default function NetworkSandbox() {
 
   const canvasRef = useRef(null);
 
+  // BFS GRAPH PATHFINDING ALGORITHM (Finds shortest connected cable path through switches & routers)
+  const findShortestCablePath = (startId, endId, nodeList, linkList) => {
+    if (startId === endId) return [startId];
+    
+    const adj = {};
+    nodeList.forEach(n => { adj[n.id] = []; });
+    linkList.forEach(l => {
+      if (adj[l.from] && adj[l.to]) {
+        adj[l.from].push(l.to);
+        adj[l.to].push(l.from);
+      }
+    });
+
+    const queue = [[startId]];
+    const visited = new Set([startId]);
+
+    while (queue.length > 0) {
+      const path = queue.shift();
+      const current = path[path.length - 1];
+
+      if (current === endId) return path;
+
+      for (const neighbor of (adj[current] || [])) {
+        if (!visited.has(neighbor)) {
+          visited.add(neighbor);
+          queue.push([...path, neighbor]);
+        }
+      }
+    }
+
+    return null; // No connected path!
+  };
+
   // Add Device from Palette
   const handleAddNode = (type) => {
     const id = `node_${Date.now()}`;
@@ -140,7 +173,7 @@ export default function NetworkSandbox() {
       if (!connectingFromId) {
         setConnectingFromId(nodeId);
         const sourceNode = nodes.find(n => n.id === nodeId);
-        setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: `Wiring Cable: Click second device to connect to ${sourceNode?.name}...` }]);
+        setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: `Wiring Cable: Click 2nd device to connect to ${sourceNode?.name}...` }]);
       } else if (connectingFromId !== nodeId) {
         const fromNode = nodes.find(n => n.id === connectingFromId);
         const toNode = nodes.find(n => n.id === nodeId);
@@ -183,12 +216,29 @@ export default function NetworkSandbox() {
     setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: `Removed device ${nodeId} and associated cable links.` }]);
   };
 
-  // Run Traffic Simulation
+  // Run Traffic Simulation with Graph Pathfinding Traversal
   const handleRunSimulation = () => {
     if (simSource === simTarget) return;
-    setIsSimulating(true);
+
     const srcNode = nodes.find(n => n.id === simSource);
     const dstNode = nodes.find(n => n.id === simTarget);
+
+    // Calculate actual multi-hop cable path using BFS
+    const cablePath = findShortestCablePath(simSource, simTarget, nodes, links);
+
+    if (!cablePath) {
+      setStatusBanner({
+        title: '❌ NO CONNECTED CABLE PATH!',
+        subtitle: `Cannot transmit: ${srcNode?.name} and ${dstNode?.name} are not wired together! Use "🔌 Add Cable Wire" to connect them.`
+      });
+      setLogs(prev => [
+        ...prev,
+        { time: new Date().toLocaleTimeString(), tag: 'ROUTING_ERROR', message: `FAIL: No cable connection path between ${srcNode?.name} and ${dstNode?.name}. Packet dropped.` }
+      ]);
+      return;
+    }
+
+    setIsSimulating(true);
 
     const typeNames = {
       dhcp: 'DHCP DORA Lease Request',
@@ -198,37 +248,50 @@ export default function NetworkSandbox() {
       esxi: 'VMware ESXi Host vSphere Management'
     };
 
+    const pathNames = cablePath.map(id => nodes.find(n => n.id === id)?.name).join(' ➔ ');
+
     setStatusBanner({
-      title: `⚡ TRANSMITTING ${typeNames[simType]}...`,
-      subtitle: `${srcNode?.name} (${srcNode?.ip}) ➔ ${dstNode?.name} (${dstNode?.ip})`
+      title: `⚡ ROUTING ${typeNames[simType]}...`,
+      subtitle: `Path Found: ${pathNames}`
     });
 
     setLogs(prev => [
       ...prev,
-      { time: new Date().toLocaleTimeString(), tag: simType.toUpperCase(), message: `Transmitting ${typeNames[simType]} from ${srcNode?.name} to ${dstNode?.name}` }
+      { time: new Date().toLocaleTimeString(), tag: simType.toUpperCase(), message: `Routing ${typeNames[simType]} along path: ${pathNames}` }
     ]);
 
+    const numSegments = cablePath.length - 1;
     let progress = 0;
+
     const interval = setInterval(() => {
-      progress += 0.05 * speed;
+      progress += (0.04 * speed) / numSegments;
       if (progress <= 1) {
-        const curX = srcNode.x + (dstNode.x - srcNode.x) * progress;
-        const curY = srcNode.y + (dstNode.y - srcNode.y) * progress;
-        setSimPacketPos({ x: curX, y: curY });
+        const totalScaled = progress * numSegments;
+        const segIndex = Math.min(Math.floor(totalScaled), numSegments - 1);
+        const segProgress = totalScaled - segIndex;
+
+        const nodeA = nodes.find(n => n.id === cablePath[segIndex]);
+        const nodeB = nodes.find(n => n.id === cablePath[segIndex + 1]);
+
+        if (nodeA && nodeB) {
+          const curX = nodeA.x + (nodeB.x - nodeA.x) * segProgress;
+          const curY = nodeA.y + (nodeB.y - nodeA.y) * segProgress;
+          setSimPacketPos({ x: curX, y: curY });
+        }
       } else {
         clearInterval(interval);
         setSimPacketPos(null);
         setIsSimulating(false);
         setStatusBanner({
-          title: `✅ ${typeNames[simType]} COMPLETED!`,
-          subtitle: `Response delivered back to ${srcNode?.name}`
+          title: `✅ ${typeNames[simType]} DELIVERED!`,
+          subtitle: `Packet traversed cable path (${pathNames}) successfully!`
         });
         setLogs(prev => [
           ...prev,
-          { time: new Date().toLocaleTimeString(), tag: simType.toUpperCase(), message: `SUCCESS: Response received from ${dstNode?.name}!` }
+          { time: new Date().toLocaleTimeString(), tag: simType.toUpperCase(), message: `SUCCESS: Delivered to ${dstNode?.name} across ${numSegments} cable hop(s)!` }
         ]);
       }
-    }, 50);
+    }, 40);
   };
 
   // Node Icon Helper
@@ -422,7 +485,7 @@ export default function NetworkSandbox() {
                 isCableMode ? 'bg-cyan-500 text-slate-950 shadow-md animate-pulse' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
               }`}
             >
-              {isCableMode ? '⚡ Click 1st Device...' : '🔌 Add Cable Wire'}
+              {isCableMode ? (connectingFromId ? '⚡ Click 2nd Device...' : '⚡ Click 1st Device...') : '🔌 Add Cable Wire'}
             </button>
           </div>
 
