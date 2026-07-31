@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Key, Lock, UserCheck, Server, Play, Pause, RotateCcw, FolderTree, Gauge, Mail, ChevronDown, ChevronUp, HelpCircle, FileCode, Terminal, SkipForward, Globe, XCircle, Info, X, Layers, Cpu, Hash, Activity, Zap, HardDrive, Radio } from 'lucide-react';
+import { ShieldCheck, Key, Lock, UserCheck, Server, Play, Pause, RotateCcw, FolderTree, Gauge, Mail, ChevronDown, ChevronUp, HelpCircle, FileCode, Terminal, SkipForward, Globe, XCircle, Info, X, Layers, Cpu, Hash, Activity, Zap, HardDrive, Radio, Laptop } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 
 export default function ADModule() {
@@ -208,7 +208,7 @@ export default function ADModule() {
     setLogs([{ time: new Date().toLocaleTimeString(), tag: 'DC', message: 'Kerberos tickets purged (klist purge).' }]);
   };
 
-  const currentMeta = stepMeta[activeStep];
+  const currentMeta = stepMeta[activeStep] || stepMeta[0];
   const isFinalStepComplete = activeStep === 4;
   const activeModalData = modalPayloadStep ? stepMeta[modalPayloadStep]?.payload : null;
   const currentPayload = currentMeta.payload;
