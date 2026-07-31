@@ -89,7 +89,7 @@ export default function NetworkSandbox() {
 
   const canvasRef = useRef(null);
 
-  // BFS CABLE NETWORK RECOVERY & COLORING (Green = WAN/ISP Internet, Blue = LAN Network, Red = Disconnected/No LAN)
+  // BFS CABLE NETWORK RECOVERY & DYNAMIC COLORING (Green = WAN/ISP Internet, Blue = LAN Network, Red = Disconnected/No LAN)
   const getLinkStatus = (link, nodeList, linkList) => {
     const n1 = nodeList.find(n => n.id === link.from);
     const n2 = nodeList.find(n => n.id === link.to);
@@ -280,9 +280,16 @@ export default function NetworkSandbox() {
 
   // Disconnect Cable Logic (Prompt modal if multiple connections)
   const handleInitiateDisconnect = (nodeId) => {
-    const connectedLinks = links.filter(l => l.from === nodeId || l.to === nodeId);
+    const targetId = nodeId || selectedNodeId;
+    if (!targetId) {
+      setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: `Click a device on the canvas first to disconnect its cable wires.` }]);
+      return;
+    }
+
+    const connectedLinks = links.filter(l => l.from === targetId || l.to === targetId);
     if (connectedLinks.length === 0) {
-      setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: `Device has no connected cable wires.` }]);
+      const targetNode = nodes.find(n => n.id === targetId);
+      setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: `${targetNode?.name || 'Device'} has no connected cable wires.` }]);
       return;
     }
 
@@ -295,7 +302,7 @@ export default function NetworkSandbox() {
       setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: `Disconnected cable between ${fromNode?.name} and ${toNode?.name}.` }]);
     } else {
       // Multiple cable connections: prompt modal selection!
-      setDisconnectModalNodeId(nodeId);
+      setDisconnectModalNodeId(targetId);
     }
   };
 
@@ -312,7 +319,7 @@ export default function NetworkSandbox() {
     if (!cablePath) {
       setStatusBanner({
         title: '❌ NO CONNECTED CABLE PATH!',
-        subtitle: `Cannot transmit: ${srcNode?.name} and ${dstNode?.name} are not wired together! Use "🔌 Add Cable Wire" to connect them.`
+        subtitle: `Cannot transmit: ${srcNode?.name} and ${dstNode?.name} are not wired together! Use "🔌 Add Cable" to connect them.`
       });
       setLogs(prev => [
         ...prev,
@@ -427,7 +434,9 @@ export default function NetworkSandbox() {
           setLivePacketData({
             ...baseTemplate,
             protocolName: `${typeNames[simType]} (${phaseLabel})`,
-            currentHop: `${phaseLabel}: Hop ${segIndex + 1} of ${numSegments} (${nodeA.name} ➔ ${nodeB.name})`
+            currentHop: `${phaseLabel}: Hop ${segIndex + 1} of ${numSegments} (${nodeA.name} ➔ ${nodeB.name})`,
+            nodeAId: nodeA.id,
+            nodeBId: nodeB.id
           });
         }
       } else if (!isReturnPhase) {
@@ -674,9 +683,9 @@ export default function NetworkSandbox() {
       {/* REMADE UNIFIED WORKSPACE CONTROLS & CABLE/PROTOCOL TOOLBAR */}
       <div className="glass-panel p-4 rounded-3xl border border-slate-800 flex flex-wrap items-center justify-between gap-4 shadow-2xl bg-slate-900/90 font-mono text-xs">
         
-        {/* Left Group: Cable Wiring Controls */}
+        {/* Left Group: Cable Type Selection */}
         <div className="flex items-center gap-2 bg-slate-950/90 px-3.5 py-2 rounded-2xl border border-slate-800">
-          <span className="text-slate-400 font-bold">Cable Wire:</span>
+          <span className="text-slate-400 font-bold">Cable Type:</span>
           <select
             value={selectedCableType}
             onChange={(e) => setSelectedCableType(e.target.value)}
@@ -688,15 +697,6 @@ export default function NetworkSandbox() {
             <option value="serial">Serial WAN Cable</option>
             <option value="coax">Coaxial Cable</option>
           </select>
-
-          <button
-            onClick={() => { setIsCableMode(!isCableMode); setConnectingFromId(null); }}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
-              isCableMode ? 'bg-cyan-500 text-slate-950 shadow-md animate-pulse' : 'bg-slate-800 text-slate-200 hover:bg-slate-700 border border-slate-700'
-            }`}
-          >
-            <span>{isCableMode ? (connectingFromId ? '⚡ Click 2nd Device...' : '⚡ Click 1st Device...') : '🔌 Add Cable Wire'}</span>
-          </button>
         </div>
 
         {/* Center Group: Protocol & Source/Target Selectors */}
@@ -802,107 +802,132 @@ export default function NetworkSandbox() {
           onMouseUp={handleMouseUp}
           className="rounded-2xl border border-slate-800 h-[480px] relative overflow-hidden bg-[radial-gradient(#1e293b_1.5px,transparent_1.5px)] [background-size:20px_20px] bg-slate-950/90 select-none"
         >
-          {/* FLOATING '+ ADD DEVICE' POPOVER BUTTON AT TOP-RIGHT OF WORKPLACE CANVAS */}
-          <div className="absolute top-4 right-4 z-30 font-mono">
+          {/* FLOATING CONTROL PANEL AT TOP-RIGHT OF WORKPLACE CANVAS: 1. ADD DEVICE, 2. DISCONNECT, 3. ADD CABLE */}
+          <div className="absolute top-4 right-4 z-30 font-mono flex flex-col items-end gap-2">
+            
+            {/* 1. ADD DEVICE BUTTON & DROPDOWN POPOVER */}
+            <div className="relative">
+              <button
+                onClick={() => setIsAddDeviceMenuOpen(!isAddDeviceMenuOpen)}
+                className="w-40 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:scale-105 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-xl border border-cyan-300 cursor-pointer transition-all"
+              >
+                <Plus className={`w-4 h-4 transition-transform duration-200 ${isAddDeviceMenuOpen ? 'rotate-45' : ''}`} />
+                <span>+ Add Device</span>
+              </button>
+
+              {/* EXPANDED DROPDOWN POPOVER MENU WITH MORE DEVICES */}
+              {isAddDeviceMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-700 shadow-2xl p-2 font-mono text-xs space-y-1 z-40 animate-fadeIn max-h-[380px] overflow-y-auto">
+                  <div className="px-2 py-1 border-b border-slate-800 text-[10px] text-slate-400 font-bold uppercase">
+                    Select Device to Add:
+                  </div>
+                  
+                  <button
+                    onClick={() => { handleAddNode('laptop'); setIsAddDeviceMenuOpen(false); }}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-cyan-950 text-cyan-300 hover:text-cyan-200 border border-slate-800 hover:border-cyan-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <Laptop className="w-4 h-4 text-cyan-400" />
+                    <span>+ Laptop</span>
+                  </button>
+
+                  <button
+                    onClick={() => { handleAddNode('desktop'); setIsAddDeviceMenuOpen(false); }}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-blue-950 text-blue-300 hover:text-blue-200 border border-slate-800 hover:border-blue-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <Laptop className="w-4 h-4 text-blue-400" />
+                    <span>+ Desktop Workstation</span>
+                  </button>
+
+                  <button
+                    onClick={() => { handleAddNode('server'); setIsAddDeviceMenuOpen(false); }}
+                    className="w-full px-3 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <Settings className="w-4 h-4 text-amber-400" />
+                    <span>+ Generic Server ⚙️</span>
+                  </button>
+
+                  <button
+                    onClick={() => { handleAddNode('switch'); setIsAddDeviceMenuOpen(false); }}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-blue-950 text-blue-300 hover:text-blue-200 border border-slate-800 hover:border-blue-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <Layers className="w-4 h-4 text-blue-400" />
+                    <span>+ L2 Switch</span>
+                  </button>
+
+                  <button
+                    onClick={() => { handleAddNode('router'); setIsAddDeviceMenuOpen(false); }}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-purple-950 text-purple-300 hover:text-purple-200 border border-slate-800 hover:border-purple-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <Router className="w-4 h-4 text-purple-400" />
+                    <span>+ Gateway Router</span>
+                  </button>
+
+                  <button
+                    onClick={() => { handleAddNode('firewall'); setIsAddDeviceMenuOpen(false); }}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-rose-950 text-rose-300 hover:text-rose-200 border border-slate-800 hover:border-rose-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-rose-400" />
+                    <span>+ Hardware Firewall</span>
+                  </button>
+
+                  <button
+                    onClick={() => { handleAddNode('printer'); setIsAddDeviceMenuOpen(false); }}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-slate-800 text-slate-300 border border-slate-800 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <Printer className="w-4 h-4 text-slate-300" />
+                    <span>+ Network Printer</span>
+                  </button>
+
+                  <button
+                    onClick={() => { handleAddNode('wifi'); setIsAddDeviceMenuOpen(false); }}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-teal-950 text-teal-300 border border-slate-800 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <Wifi className="w-4 h-4 text-teal-400" />
+                    <span>+ Wireless AP (Wi-Fi)</span>
+                  </button>
+
+                  <button
+                    onClick={() => { handleAddNode('storage'); setIsAddDeviceMenuOpen(false); }}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-amber-950 text-amber-300 border border-slate-800 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <Database className="w-4 h-4 text-amber-300" />
+                    <span>+ SAN / NAS Storage</span>
+                  </button>
+
+                  <button
+                    onClick={() => { handleAddNode('cloud'); setIsAddDeviceMenuOpen(false); }}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-slate-800 text-slate-300 border border-slate-800 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <Globe className="w-4 h-4 text-cyan-300" />
+                    <span>+ Internet Cloud</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* 2. DISCONNECT BUTTON (NAMED EXACTLY 'Disconnect' DIRECTLY UNDER ADD DEVICE) */}
             <button
-              onClick={() => setIsAddDeviceMenuOpen(!isAddDeviceMenuOpen)}
-              className="px-3.5 py-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:scale-105 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-xl border border-cyan-300 cursor-pointer transition-all"
+              onClick={() => handleInitiateDisconnect(selectedNodeId)}
+              className="w-40 px-3.5 py-2 rounded-2xl bg-rose-950/90 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-700/80 font-black text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer"
+              title="Disconnect cable wires connected to the selected device"
             >
-              <Plus className={`w-4 h-4 transition-transform duration-200 ${isAddDeviceMenuOpen ? 'rotate-45' : ''}`} />
-              <span>Add Device</span>
+              <span>✂️ Disconnect</span>
             </button>
 
-            {/* EXPANDED DROPDOWN POPOVER MENU WITH MORE DEVICES */}
-            {isAddDeviceMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-700 shadow-2xl p-2 font-mono text-xs space-y-1 z-40 animate-fadeIn max-h-[380px] overflow-y-auto">
-                <div className="px-2 py-1 border-b border-slate-800 text-[10px] text-slate-400 font-bold uppercase">
-                  Select Device to Add:
-                </div>
-                
-                <button
-                  onClick={() => { handleAddNode('laptop'); setIsAddDeviceMenuOpen(false); }}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-cyan-950 text-cyan-300 hover:text-cyan-200 border border-slate-800 hover:border-cyan-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
-                >
-                  <Laptop className="w-4 h-4 text-cyan-400" />
-                  <span>+ Laptop</span>
-                </button>
-
-                <button
-                  onClick={() => { handleAddNode('desktop'); setIsAddDeviceMenuOpen(false); }}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-blue-950 text-blue-300 hover:text-blue-200 border border-slate-800 hover:border-blue-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
-                >
-                  <Laptop className="w-4 h-4 text-blue-400" />
-                  <span>+ Desktop Workstation</span>
-                </button>
-
-                <button
-                  onClick={() => { handleAddNode('server'); setIsAddDeviceMenuOpen(false); }}
-                  className="w-full px-3 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold flex items-center gap-2 transition-all cursor-pointer"
-                >
-                  <Settings className="w-4 h-4 text-amber-400" />
-                  <span>+ Generic Server ⚙️</span>
-                </button>
-
-                <button
-                  onClick={() => { handleAddNode('switch'); setIsAddDeviceMenuOpen(false); }}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-blue-950 text-blue-300 hover:text-blue-200 border border-slate-800 hover:border-blue-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
-                >
-                  <Layers className="w-4 h-4 text-blue-400" />
-                  <span>+ L2 Switch</span>
-                </button>
-
-                <button
-                  onClick={() => { handleAddNode('router'); setIsAddDeviceMenuOpen(false); }}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-purple-950 text-purple-300 hover:text-purple-200 border border-slate-800 hover:border-purple-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
-                >
-                  <Router className="w-4 h-4 text-purple-400" />
-                  <span>+ Gateway Router</span>
-                </button>
-
-                <button
-                  onClick={() => { handleAddNode('firewall'); setIsAddDeviceMenuOpen(false); }}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-rose-950 text-rose-300 hover:text-rose-200 border border-slate-800 hover:border-rose-700 font-bold flex items-center gap-2 transition-all cursor-pointer"
-                >
-                  <ShieldCheck className="w-4 h-4 text-rose-400" />
-                  <span>+ Hardware Firewall</span>
-                </button>
-
-                <button
-                  onClick={() => { handleAddNode('printer'); setIsAddDeviceMenuOpen(false); }}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-slate-800 text-slate-300 border border-slate-800 font-bold flex items-center gap-2 transition-all cursor-pointer"
-                >
-                  <Printer className="w-4 h-4 text-slate-300" />
-                  <span>+ Network Printer</span>
-                </button>
-
-                <button
-                  onClick={() => { handleAddNode('wifi'); setIsAddDeviceMenuOpen(false); }}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-teal-950 text-teal-300 border border-slate-800 font-bold flex items-center gap-2 transition-all cursor-pointer"
-                >
-                  <Wifi className="w-4 h-4 text-teal-400" />
-                  <span>+ Wireless AP (Wi-Fi)</span>
-                </button>
-
-                <button
-                  onClick={() => { handleAddNode('storage'); setIsAddDeviceMenuOpen(false); }}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-amber-950 text-amber-300 border border-slate-800 font-bold flex items-center gap-2 transition-all cursor-pointer"
-                >
-                  <Database className="w-4 h-4 text-amber-300" />
-                  <span>+ SAN / NAS Storage</span>
-                </button>
-
-                <button
-                  onClick={() => { handleAddNode('cloud'); setIsAddDeviceMenuOpen(false); }}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-slate-800 text-slate-300 border border-slate-800 font-bold flex items-center gap-2 transition-all cursor-pointer"
-                >
-                  <Globe className="w-4 h-4 text-cyan-300" />
-                  <span>+ Internet Cloud</span>
-                </button>
-              </div>
-            )}
+            {/* 3. ADD CABLE BUTTON (PLACED DIRECTLY UNDER DISCONNECT BUTTON) */}
+            <button
+              onClick={() => { setIsCableMode(!isCableMode); setConnectingFromId(null); }}
+              className={`w-40 px-3.5 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-lg ${
+                isCableMode
+                  ? 'bg-cyan-500 text-slate-950 shadow-cyan-500/30 animate-pulse border border-cyan-300'
+                  : 'bg-slate-900/90 hover:bg-slate-800 text-cyan-300 border border-slate-700'
+              }`}
+            >
+              <span>{isCableMode ? (connectingFromId ? '⚡ Click 2nd Device...' : '⚡ Click 1st Device...') : '🔌 Add Cable'}</span>
+            </button>
           </div>
 
-          {/* CABLES SVG WITH DYNAMIC NETWORK STATUS COLORING (GREEN = WAN ISP, BLUE = LAN, RED = DISCONNECTED) */}
+          {/* CABLES SVG WITH DYNAMIC NETWORK STATUS COLORING & ACTIVE PACKET PULSE */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none">
             {links.map(link => {
               const n1 = nodes.find(n => n.id === link.from);
@@ -911,6 +936,19 @@ export default function NetworkSandbox() {
 
               const status = getLinkStatus(link, nodes, links);
 
+              // Check if active packet is currently traversing this specific wire link
+              const isPacketTraversingLink = livePacketData && (
+                (livePacketData.nodeAId === link.from && livePacketData.nodeBId === link.to) ||
+                (livePacketData.nodeAId === link.to && livePacketData.nodeBId === link.from)
+              );
+
+              // Cable stroke color dynamically shifts!
+              const wireStrokeColor = isPacketTraversingLink
+                ? (simPacketPos?.isReturn ? '#10b981' : '#22d3ee')
+                : status.color;
+
+              const wireStrokeWidth = isPacketTraversingLink ? '6' : '4';
+
               return (
                 <line
                   key={link.id}
@@ -918,10 +956,10 @@ export default function NetworkSandbox() {
                   y1={n1.y + 45}
                   x2={n2.x + 60}
                   y2={n2.y + 45}
-                  stroke={status.color}
-                  strokeWidth="4"
-                  strokeOpacity="0.9"
-                  className="animate-wire-dash"
+                  stroke={wireStrokeColor}
+                  strokeWidth={wireStrokeWidth}
+                  strokeOpacity="0.95"
+                  className="animate-wire-dash transition-colors duration-300"
                 />
               );
             })}
@@ -1038,7 +1076,7 @@ export default function NetworkSandbox() {
       {/* SELECTED DEVICE INSPECTOR & LOGS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
         
-        {/* LEFT COLUMN: SELECTED DEVICE DETAILS & DISCONNECT CABLE BUTTON */}
+        {/* LEFT COLUMN: SELECTED DEVICE DETAILS */}
         <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 shadow-xl">
           <div className="flex items-center justify-between border-b border-slate-800 pb-2">
             <span className="text-cyan-400 font-extrabold text-sm">Selected Device Inspector</span>
