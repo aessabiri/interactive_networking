@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Network, Laptop, Server, Router, ShieldCheck, Globe, Play, Trash2, Plus, Zap, Gauge, CheckCircle2, Settings, Cpu, FileCode, Terminal, X, Radio, HardDrive, Mail, Layers, Activity, Printer, Wifi, Database, Download, Upload, FileJson, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
-import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
+import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
 
 export default function NetworkSandbox({ appMode = 'clean' }) {
   const [showAnimation, setShowAnimation] = useState(true);
@@ -901,32 +901,27 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
           </div>
 
           {/* Speed Selector */}
-          <div className="flex items-center gap-1 bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-800">
-            <Gauge className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="font-bold">Speed:</span>
-            {[0.5, 1, 2].map((s) => (
-              <button
-                key={s}
-                onClick={() => setSpeed(s)}
-                className={`px-2 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
-                  speed === s ? 'bg-cyan-500 text-slate-950 shadow' : 'hover:bg-slate-800 text-slate-400'
-                }`}
-              >
-                {s}x
-              </button>
-            ))}
-          </div>
+          <CleanControlButton
+            icon={Gauge}
+            label="Animation Speed"
+            description={`${speed}x Speed`}
+            onClick={() => {
+              const nextSpeed = speed === 0.5 ? 1 : speed === 1 ? 2 : 0.5;
+              setSpeed(nextSpeed);
+            }}
+            color="amber"
+          />
         </div>
 
         {/* Right Group: Play Action Button */}
-        <button
+        <CleanControlButton
+          icon={Play}
+          label="Run Traffic Simulation"
+          description="Send Packet Across Canvas"
           onClick={handleRunSimulation}
           disabled={isSimulating}
-          className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-indigo-500 to-blue-600 hover:scale-105 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-cyan-500/30 cursor-pointer transition-all border border-cyan-300"
-        >
-          <Play className="w-4 h-4 fill-current" />
-          <span>Run Traffic Simulation</span>
-        </button>
+          color="cyan"
+        />
       </div>
 
       {/* TOPOLOGY CANVAS STAGE */}

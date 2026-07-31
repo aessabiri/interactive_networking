@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Key, Lock, UserCheck, Server, Play, Pause, RotateCcw, FolderTree, Gauge, Mail, ChevronDown, ChevronUp, HelpCircle, FileCode, Terminal, SkipForward, Globe, XCircle, Info, X, Layers, Cpu, Hash, Activity, Zap, HardDrive, Radio, Laptop, Router, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
-import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
+import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
 
 export default function ADModule({ appMode = 'clean' }) {
   const [showAnimation, setShowAnimation] = useState(true);
@@ -459,69 +459,66 @@ export default function ADModule({ appMode = 'clean' }) {
         </div>
 
         {/* WORKSPACE CONTROL TOOLBAR */}
-        <div className="glass-panel p-2.5 rounded-2xl border border-slate-800/90 bg-slate-900/95 flex flex-wrap items-center justify-between gap-3 shadow-xl">
-          <div className="flex items-center gap-3">
-            <button
+        <div className="glass-panel p-3 rounded-3xl border border-slate-800/90 bg-slate-900/95 flex flex-wrap items-center justify-between gap-3 shadow-xl">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <CleanControlButton
+              icon={isNtlmFallback ? Key : ShieldCheck}
+              label={isNtlmFallback ? 'NTLM Fallback Mode' : 'Kerberos v5 Mode'}
+              description={isNtlmFallback ? 'Legacy Challenge-Response' : 'AES Ticket Encryption'}
               onClick={() => setIsNtlmFallback(!isNtlmFallback)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition-all ${
-                isNtlmFallback ? 'bg-amber-950 text-amber-300 border-amber-700 shadow-md' : 'bg-slate-800 text-slate-300 border-slate-700'
-              }`}
-            >
-              {isNtlmFallback ? '⚠️ NTLM Fallback Mode' : '🔐 Kerberos v5 Mode'}
-            </button>
+              active={!isNtlmFallback}
+              color="purple"
+            />
 
-            {/* Speed Selector */}
-            <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-mono text-slate-300">
-              <Gauge className="w-4 h-4 text-purple-400" />
-              <span className="font-bold">Animation Speed:</span>
-              {[0.25, 0.5, 1].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSpeed(s)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                    speed === s ? 'bg-purple-500 text-white shadow-md' : 'hover:bg-slate-800 text-slate-400'
-                  }`}
-                >
-                  {s}x
-                </button>
-              ))}
-            </div>
+            <CleanControlButton
+              icon={Gauge}
+              label="Animation Speed"
+              description={`${speed}x Speed`}
+              onClick={() => {
+                const nextSpeed = speed === 0.25 ? 0.5 : speed === 0.5 ? 1 : 0.25;
+                setSpeed(nextSpeed);
+              }}
+              color="amber"
+            />
           </div>
 
           {/* Action Control Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             {isFinalStepComplete ? (
-              <button
+              <CleanControlButton
+                icon={RotateCcw}
+                label="Reset & Purge Tickets"
+                description="klist purge"
                 onClick={handleReset}
-                className="px-6 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:scale-105 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/30 cursor-pointer transition-all animate-bounce"
-              >
-                <RotateCcw className="w-4 h-4" /> Reset & Purge Tickets (klist purge)
-              </button>
+                color="emerald"
+              />
             ) : (
               <>
-                <button
+                <CleanControlButton
+                  icon={SkipForward}
+                  label="Next Handshake Step"
+                  description={`Step ${activeStep + 1} of 4`}
                   onClick={handleStepForward}
                   disabled={isPlaying}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-purple-400 text-xs font-extrabold flex items-center gap-1.5 border border-slate-700 cursor-pointer transition-colors"
-                >
-                  <SkipForward className="w-4 h-4 fill-current" /> Next Step ({activeStep + 1}/4)
-                </button>
+                  color="purple"
+                />
 
-                <button
+                <CleanControlButton
+                  icon={isPlaying ? Pause : Play}
+                  label={isPlaying ? 'Pause Handshake' : 'Start Kerberos Login'}
+                  description={isPlaying ? 'Click to Pause' : 'Auto-run ticket acquisition'}
                   onClick={handlePlayFull}
-                  className={`px-5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shadow-lg ${
-                    isPlaying
-                      ? 'bg-purple-500 text-white shadow-purple-500/20'
-                      : 'bg-gradient-to-r from-purple-500 via-indigo-600 to-purple-700 hover:scale-105 text-white shadow-purple-500/30'
-                  }`}
-                >
-                  {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-                  {isPlaying ? 'Pause' : 'Start Kerberos Login'}
-                </button>
+                  active={isPlaying}
+                  color="purple"
+                />
 
-                <button onClick={handleReset} className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer" title="Reset">
-                  <RotateCcw className="w-4 h-4" />
-                </button>
+                <CleanControlButton
+                  icon={RotateCcw}
+                  label="Reset"
+                  description="Purge Ticket Cache"
+                  onClick={handleReset}
+                  color="rose"
+                />
               </>
             )}
           </div>

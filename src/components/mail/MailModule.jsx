@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Server, Laptop, ShieldCheck, Play, Pause, RotateCcw, CheckCircle2, Gauge, HelpCircle, FileCode, Terminal, SkipForward, Radio, Layers, Cpu, ArrowRight, X, Activity, Zap, HardDrive, Lock, RefreshCw, Send, Check, Inbox, Globe, Building2, Router, Search, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
-import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
+import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
 
 export default function MailModule({ appMode = 'clean' }) {
   const [showAnimation, setShowAnimation] = useState(true);
@@ -714,60 +714,57 @@ export default function MailModule({ appMode = 'clean' }) {
       </div>
 
       {/* WORKSPACE CONTROL TOOLBAR */}
-      <div className="glass-panel p-2.5 rounded-2xl border border-slate-800/90 bg-slate-900/95 flex flex-wrap items-center justify-between gap-3 shadow-xl font-mono text-xs">
-        <div className="flex items-center gap-3">
-          {/* Speed Selector */}
-          <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-slate-300">
-            <Gauge className="w-4 h-4 text-amber-400" />
-            <span className="font-bold">Animation Speed:</span>
-            {[0.25, 0.5, 1].map((s) => (
-              <button
-                key={s}
-                onClick={() => setSpeed(s)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                  speed === s ? 'bg-amber-500 text-slate-950 shadow-md' : 'hover:bg-slate-800 text-slate-400'
-                }`}
-              >
-                {s}x
-              </button>
-            ))}
-          </div>
+      <div className="glass-panel p-3 rounded-3xl border border-slate-800/90 bg-slate-900/95 flex flex-wrap items-center justify-between gap-3 shadow-xl">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <CleanControlButton
+            icon={Gauge}
+            label="Animation Speed"
+            description={`${speed}x Speed`}
+            onClick={() => {
+              const nextSpeed = speed === 0.25 ? 0.5 : speed === 0.5 ? 1 : 0.25;
+              setSpeed(nextSpeed);
+            }}
+            color="amber"
+          />
         </div>
 
         {/* Action Control Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           {isFinalStepComplete ? (
-            <button
+            <CleanControlButton
+              icon={RotateCcw}
+              label="Reset Mail Flow"
+              description="Start over from Step 0"
               onClick={handleReset}
-              className="px-6 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:scale-105 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/30 cursor-pointer transition-all animate-bounce"
-            >
-              <RotateCcw className="w-4 h-4" /> Reset Mail Flow
-            </button>
+              color="emerald"
+            />
           ) : (
             <>
-              <button
+              <CleanControlButton
+                icon={SkipForward}
+                label="Next Step"
+                description={`Step ${activeStep + 1} of ${totalSteps}`}
                 onClick={handleStepForward}
                 disabled={isPlaying}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-extrabold flex items-center gap-1.5 border border-slate-700 cursor-pointer transition-colors"
-              >
-                <SkipForward className="w-4 h-4 fill-current" /> Next Step ({activeStep + 1}/{totalSteps})
-              </button>
+                color="amber"
+              />
 
-              <button
+              <CleanControlButton
+                icon={isPlaying ? Pause : Play}
+                label={isPlaying ? 'Pause Delivery' : 'Start Mail Delivery'}
+                description={isPlaying ? 'Click to Pause' : 'Auto-run mail routing'}
                 onClick={handlePlayFull}
-                className={`px-5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shadow-lg ${
-                  isPlaying
-                    ? 'bg-amber-500 text-slate-950 shadow-amber-500/20'
-                    : 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:scale-105 text-slate-950 shadow-amber-500/30'
-                }`}
-              >
-                {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-                {isPlaying ? 'Pause' : 'Start Mail Delivery'}
-              </button>
+                active={isPlaying}
+                color="amber"
+              />
 
-              <button onClick={handleReset} className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer" title="Reset">
-                <RotateCcw className="w-4 h-4" />
-              </button>
+              <CleanControlButton
+                icon={RotateCcw}
+                label="Reset"
+                description="Reset Mail Flow"
+                onClick={handleReset}
+                color="rose"
+              />
             </>
           )}
         </div>

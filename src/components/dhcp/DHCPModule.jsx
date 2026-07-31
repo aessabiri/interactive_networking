@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw, Server, Laptop, Router, CheckCircle2, Zap, Gauge, Mail, HelpCircle, Radio, Database, Terminal, SkipForward, Globe, XCircle, Info, FileCode, X, Layers, Cpu, Hash, Activity, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
-import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
+import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
 
 export default function DHCPModule({ appMode = 'clean' }) {
   const [showAnimation, setShowAnimation] = useState(true);
@@ -484,69 +484,68 @@ export default function DHCPModule({ appMode = 'clean' }) {
         </div>
 
         {/* WORKSPACE CONTROL TOOLBAR */}
-        <div className="glass-panel p-2.5 rounded-2xl border border-slate-800/90 bg-slate-900/95 flex flex-wrap items-center justify-between gap-3 shadow-xl">
-          <div className="flex items-center gap-3">
-            <button
+        <div className="glass-panel p-3 rounded-3xl border border-slate-800/90 bg-slate-900/95 flex flex-wrap items-center justify-between gap-3 shadow-xl">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Relay Mode Toggle Button */}
+            <CleanControlButton
+              icon={isRelayMode ? Globe : Zap}
+              label={isRelayMode ? 'Relay Agent Mode' : 'Direct LAN Mode'}
+              description={isRelayMode ? 'Forward via IP Helper' : 'Local LAN Broadcast'}
               onClick={() => setIsRelayMode(!isRelayMode)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition-all ${
-                isRelayMode ? 'bg-purple-950 text-purple-300 border-purple-700 shadow-md' : 'bg-slate-800 text-slate-300 border-slate-700'
-              }`}
-            >
-              {isRelayMode ? '🌐 Relay Agent Mode' : '🔌 Direct LAN Mode'}
-            </button>
+              active={isRelayMode}
+              color="purple"
+            />
 
-            {/* Speed Selector */}
-            <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-mono text-slate-300">
-              <Gauge className="w-4 h-4 text-amber-400" />
-              <span className="font-bold">Animation Speed:</span>
-              {[0.25, 0.5, 1].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSpeed(s)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                    speed === s ? 'bg-amber-500 text-slate-950 shadow-md' : 'hover:bg-slate-800 text-slate-400'
-                  }`}
-                >
-                  {s}x
-                </button>
-              ))}
-            </div>
+            {/* Animation Speed Selector */}
+            <CleanControlButton
+              icon={Gauge}
+              label="Animation Speed"
+              description={`${speed}x Speed`}
+              onClick={() => {
+                const nextSpeed = speed === 0.25 ? 0.5 : speed === 0.5 ? 1 : 0.25;
+                setSpeed(nextSpeed);
+              }}
+              color="amber"
+            />
           </div>
 
           {/* Action Control Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             {isFinalStepComplete ? (
-              <button
+              <CleanControlButton
+                icon={RotateCcw}
+                label="Reset & Restart DORA"
+                description="Start over from Step 0"
                 onClick={handleReset}
-                className="px-6 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:scale-105 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/30 cursor-pointer transition-all animate-bounce"
-              >
-                <RotateCcw className="w-4 h-4" /> Reset & Restart DORA
-              </button>
+                color="emerald"
+              />
             ) : (
               <>
-                <button
+                <CleanControlButton
+                  icon={SkipForward}
+                  label="Next DORA Step"
+                  description={`Step ${activeStep + 1} of 4`}
                   onClick={handleStepForward}
                   disabled={isPlaying}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-extrabold flex items-center gap-1.5 border border-slate-700 cursor-pointer transition-colors"
-                >
-                  <SkipForward className="w-4 h-4 fill-current" /> Next DORA Step ({activeStep + 1}/4)
-                </button>
+                  color="cyan"
+                />
 
-                <button
+                <CleanControlButton
+                  icon={isPlaying ? Pause : Play}
+                  label={isPlaying ? 'Pause Handshake' : 'Play Full DORA'}
+                  description={isPlaying ? 'Click to Pause' : 'Auto-run all 4 steps'}
                   onClick={handlePlayFull}
-                  className={`px-5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shadow-lg ${
-                    isPlaying
-                      ? 'bg-amber-500 text-slate-950 shadow-amber-500/20'
-                      : 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:scale-105 text-slate-950 shadow-amber-500/30'
-                  }`}
-                >
-                  {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-                  {isPlaying ? 'Pause' : 'Play Full DORA'}
-                </button>
+                  active={isPlaying}
+                  color="amber"
+                />
 
-                <button onClick={handleReset} className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer" title="Reset">
-                  <RotateCcw className="w-4 h-4" />
-                </button>
+                <CleanControlButton
+                  icon={RotateCcw}
+                  label="Reset"
+                  description="Reset Handshake"
+                  onClick={handleReset}
+                  color="rose"
+                />
               </>
             )}
           </div>

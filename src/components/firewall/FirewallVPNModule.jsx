@@ -30,7 +30,7 @@ import {
   Send
 } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
-import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
+import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
 
 export default function FirewallVPNModule({ appMode = 'clean' }) {
   const [showAnimation, setShowAnimation] = useState(true);
@@ -249,19 +249,23 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
+            <div className="flex flex-wrap items-center gap-2.5">
+              <CleanControlButton
+                icon={Play}
+                label="Transmit Packet Through Firewall"
+                description="Test Stateful Inspection Rule"
                 onClick={handleTestFirewallPacket}
                 disabled={isPlaying}
-                className="px-6 py-2 rounded-xl bg-gradient-to-r from-rose-500 via-red-500 to-amber-500 hover:scale-105 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-rose-500/30 cursor-pointer transition-all border border-rose-300"
-              >
-                <Play className="w-4 h-4 fill-current" />
-                <span>Transmit Packet Through Firewall</span>
-              </button>
+                color="rose"
+              />
 
-              <button onClick={handleReset} className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer" title="Reset">
-                <RotateCcw className="w-4 h-4" />
-              </button>
+              <CleanControlButton
+                icon={RotateCcw}
+                label="Reset"
+                description="Reset Firewall State"
+                onClick={handleReset}
+                color="rose"
+              />
             </div>
           </div>
 

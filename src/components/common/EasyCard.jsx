@@ -1,5 +1,56 @@
 import React, { useState } from 'react';
-import { Sparkles, ArrowRight, CheckCircle2, Shield, Globe, Server, Laptop, Router, Zap, ChevronDown, ChevronUp, Sliders, Activity, MonitorPlay } from 'lucide-react';
+import { Sparkles, ArrowRight, CheckCircle2, Shield, Globe, Server, Laptop, Router, Zap, ChevronDown, ChevronUp, Sliders, Activity, MonitorPlay, Play, Pause, RotateCcw, SkipForward } from 'lucide-react';
+
+// ROUNDED CIRCLE ICON CONTROL BUTTON FOR CLEAN MODE
+export function CleanControlButton({
+  icon: Icon = Play,
+  label,
+  description,
+  onClick,
+  active = false,
+  disabled = false,
+  color = 'cyan' // 'emerald', 'cyan', 'amber', 'purple', 'rose'
+}) {
+  const colorMap = {
+    emerald: active ? 'bg-emerald-500 text-slate-950 border-emerald-300 shadow-emerald-500/30' : 'bg-slate-900/90 hover:bg-slate-800 text-emerald-300 border-slate-700',
+    cyan: active ? 'bg-cyan-500 text-slate-950 border-cyan-300 shadow-cyan-500/30' : 'bg-slate-900/90 hover:bg-slate-800 text-cyan-300 border-slate-700',
+    amber: active ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-amber-500/30' : 'bg-slate-900/90 hover:bg-slate-800 text-amber-300 border-slate-700',
+    purple: active ? 'bg-purple-500 text-slate-950 border-purple-300 shadow-purple-500/30' : 'bg-slate-900/90 hover:bg-slate-800 text-purple-300 border-slate-700',
+    rose: active ? 'bg-rose-500 text-white border-rose-400 shadow-rose-500/30' : 'bg-slate-900/90 hover:bg-slate-800 text-rose-300 border-slate-700'
+  };
+
+  const iconBgMap = {
+    emerald: active ? 'bg-slate-950 text-emerald-400' : 'bg-emerald-950/80 text-emerald-400 border border-emerald-700/60',
+    cyan: active ? 'bg-slate-950 text-cyan-400' : 'bg-cyan-950/80 text-cyan-400 border border-cyan-700/60',
+    amber: active ? 'bg-slate-950 text-amber-400' : 'bg-amber-950/80 text-amber-400 border border-amber-700/60',
+    purple: active ? 'bg-slate-950 text-purple-400' : 'bg-purple-950/80 text-purple-400 border border-purple-700/60',
+    rose: active ? 'bg-slate-950 text-rose-400' : 'bg-rose-950/80 text-rose-400 border border-rose-700/60'
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`group flex items-center gap-2.5 px-3 py-1.5 rounded-full transition-all cursor-pointer border shadow-lg ${colorMap[color] || colorMap.cyan} ${
+        disabled ? 'opacity-40 cursor-not-allowed' : 'hover:scale-102 active:scale-98'
+      }`}
+      title={description ? `${label}: ${description}` : label}
+    >
+      {/* ROUNDED CIRCLE ICON BADGE */}
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-inner transition-transform group-hover:rotate-6 ${iconBgMap[color] || iconBgMap.cyan}`}>
+        <Icon className="w-4 h-4 fill-current" />
+      </div>
+
+      {/* TEXT LABEL & DESCRIPTION */}
+      <div className="flex flex-col text-left font-sans pr-1">
+        <span className="text-xs font-black tracking-tight leading-tight">{label}</span>
+        {description && (
+          <span className="text-[9px] font-mono opacity-80 leading-none mt-0.5">{description}</span>
+        )}
+      </div>
+    </button>
+  );
+}
 
 // UNIFIED SUPER-COMPACT CLEAN MODE WIDGET (ZERO SCROLL, SINGLE CARD)
 export function CleanWidget({ 
@@ -28,7 +79,7 @@ export function CleanWidget({
         
         {/* Module Title & Clean Mode Tag */}
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-inner">
+          <div className="p-2.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-inner">
             <Icon className="w-6 h-6" />
           </div>
           <div>
@@ -45,51 +96,55 @@ export function CleanWidget({
         {/* COLORFUL HIGH-CONTRAST BASIC INFO BADGES */}
         <div className="flex flex-wrap items-center gap-2 font-mono">
           {ip && (
-            <div className="px-3 py-1.5 rounded-xl bg-cyan-950/90 text-cyan-300 border border-cyan-600/80 shadow flex items-center gap-1.5">
-              <Globe className="w-3.5 h-3.5 text-cyan-400" />
+            <div className="px-3 py-1 rounded-full bg-cyan-950/90 text-cyan-300 border border-cyan-600/80 shadow flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center">
+                <Globe className="w-3 h-3 text-cyan-400" />
+              </div>
               <span className="text-[10px] text-slate-400 font-bold uppercase">IP:</span>
               <span className="text-xs font-black text-cyan-200">{ip}</span>
             </div>
           )}
 
           {protocol && (
-            <div className="px-3 py-1.5 rounded-xl bg-purple-950/90 text-purple-300 border border-purple-600/80 shadow flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-purple-400" />
+            <div className="px-3 py-1 rounded-full bg-purple-950/90 text-purple-300 border border-purple-600/80 shadow flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center">
+                <Zap className="w-3 h-3 text-purple-400" />
+              </div>
               <span className="text-[10px] text-slate-400 font-bold uppercase">Proto:</span>
               <span className="text-xs font-black text-purple-200">{protocol}</span>
             </div>
           )}
 
           {port !== undefined && port !== null && (
-            <div className="px-3 py-1.5 rounded-xl bg-amber-950/90 text-amber-300 border border-amber-600/80 shadow flex items-center gap-1.5">
-              <Server className="w-3.5 h-3.5 text-amber-400" />
+            <div className="px-3 py-1 rounded-full bg-amber-950/90 text-amber-300 border border-amber-600/80 shadow flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center">
+                <Server className="w-3 h-3 text-amber-400" />
+              </div>
               <span className="text-[10px] text-slate-400 font-bold uppercase">Port:</span>
               <span className="text-xs font-black text-amber-200">{port}</span>
             </div>
           )}
 
           {status && (
-            <div className="px-3 py-1.5 rounded-xl bg-emerald-950/90 text-emerald-300 border border-emerald-600/80 shadow flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="px-3 py-1 rounded-full bg-emerald-950/90 text-emerald-300 border border-emerald-600/80 shadow flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <Shield className="w-3 h-3 text-emerald-400" />
+              </div>
               <span className="text-[10px] text-slate-400 font-bold uppercase">Status:</span>
               <span className="text-xs font-black text-emerald-200">{status}</span>
             </div>
           )}
 
-          {/* ANIMATION TOGGLE BUTTON AS AN ICON */}
+          {/* ANIMATION TOGGLE BUTTON AS A ROUNDED ICON BUTTON */}
           {setShowAnimation && (
-            <button
+            <CleanControlButton
+              icon={MonitorPlay}
+              label={showAnimation ? 'Hide Canvas 🎬' : 'Show Canvas 🎬'}
+              description={showAnimation ? 'Hide Topology Animation' : 'Show Topology Animation'}
               onClick={() => setShowAnimation(!showAnimation)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer border ${
-                showAnimation
-                  ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
-                  : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
-              }`}
-              title="Toggle Topology Animation Canvas"
-            >
-              <MonitorPlay className="w-4 h-4 fill-current" />
-              <span>{showAnimation ? 'Hide Canvas 🎬' : 'Show Canvas 🎬'}</span>
-            </button>
+              active={showAnimation}
+              color="emerald"
+            />
           )}
         </div>
       </div>
@@ -98,12 +153,12 @@ export function CleanWidget({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-2xl bg-slate-950/90 border border-slate-800/90 shadow-inner">
         <div className="flex items-center gap-2.5">
           {stepNumber !== undefined && stepNumber > 0 ? (
-            <span className="px-3 py-1 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 flex items-center gap-1 border border-emerald-300 shrink-0">
+            <span className="px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 flex items-center gap-1 border border-emerald-300 shrink-0">
               <Sparkles className="w-3.5 h-3.5 fill-current" />
               <span>Stage {stepNumber}/{totalSteps}</span>
             </span>
           ) : (
-            <span className="px-3 py-1 rounded-xl bg-slate-800 text-emerald-300 font-bold text-xs shadow flex items-center gap-1 border border-slate-700 shrink-0">
+            <span className="px-3 py-1 rounded-full bg-slate-800 text-emerald-300 font-bold text-xs shadow flex items-center gap-1 border border-slate-700 shrink-0">
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
               <span>Ready</span>
             </span>

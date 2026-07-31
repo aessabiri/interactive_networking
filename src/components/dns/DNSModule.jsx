@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Globe, Building2, Router, Server, Laptop, Search, Play, Pause, RotateCcw, CheckCircle2, Gauge, Mail, ChevronDown, ChevronUp, HelpCircle, FileCode, Terminal, SkipForward, Radio, Layers, Cpu, ArrowRight, ShieldCheck, X, Activity, Zap, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
-import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
+import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
 
 export default function DNSModule({ appMode = 'clean' }) {
   const [showAnimation, setShowAnimation] = useState(true);
@@ -511,61 +511,57 @@ export default function DNSModule({ appMode = 'clean' }) {
           </div>
 
           {/* Right Group: Animation Speed & Action Controls */}
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Animation Speed Selector */}
-            <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-slate-300">
-              <Gauge className="w-4 h-4 text-cyan-400" />
-              <span className="font-bold hidden sm:inline">Speed:</span>
-              {[0.25, 0.5, 1].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSpeed(s)}
-                  className={`px-2 py-0.5 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                    speed === s ? 'bg-cyan-500 text-slate-950 shadow-md' : 'hover:bg-slate-800 text-slate-400'
-                  }`}
-                >
-                  {s}x
-                </button>
-              ))}
-            </div>
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Speed Selector */}
+            <CleanControlButton
+              icon={Gauge}
+              label="Animation Speed"
+              description={`${speed}x Speed`}
+              onClick={() => {
+                const nextSpeed = speed === 0.25 ? 0.5 : speed === 0.5 ? 1 : 0.25;
+                setSpeed(nextSpeed);
+              }}
+              color="amber"
+            />
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2">
-              {isFinalStepComplete ? (
-                <button
+            {isFinalStepComplete ? (
+              <CleanControlButton
+                icon={RotateCcw}
+                label="Reset & Restart Query"
+                description="Start over from Step 0"
+                onClick={handleReset}
+                color="emerald"
+              />
+            ) : (
+              <>
+                <CleanControlButton
+                  icon={SkipForward}
+                  label="Next Step"
+                  description={`Step ${activeStep + 1} of ${totalSteps}`}
+                  onClick={handleStepForward}
+                  disabled={isPlaying}
+                  color="cyan"
+                />
+
+                <CleanControlButton
+                  icon={isPlaying ? Pause : Play}
+                  label={isPlaying ? 'Pause Lookup' : 'Start DNS Lookup'}
+                  description={isPlaying ? 'Click to Pause' : 'Auto-run DNS lookup'}
+                  onClick={handleStartPlay}
+                  active={isPlaying}
+                  color="cyan"
+                />
+
+                <CleanControlButton
+                  icon={RotateCcw}
+                  label="Reset"
+                  description="Reset Query"
                   onClick={handleReset}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:scale-105 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/30 cursor-pointer transition-all animate-bounce"
-                >
-                  <RotateCcw className="w-4 h-4" /> Reset & Restart Query
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={handleStepForward}
-                    disabled={isPlaying}
-                    className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs font-extrabold flex items-center gap-1.5 border border-slate-700 cursor-pointer transition-colors"
-                  >
-                    <SkipForward className="w-4 h-4 fill-current" /> Next Step ({activeStep + 1}/{totalSteps})
-                  </button>
-
-                  <button
-                    onClick={handleStartPlay}
-                    className={`px-5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shadow-lg ${
-                      isPlaying
-                        ? 'bg-cyan-500 text-slate-950 shadow-cyan-500/20'
-                        : 'bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-600 hover:scale-105 text-slate-950 shadow-cyan-500/30'
-                    }`}
-                  >
-                    {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-                    {isPlaying ? 'Pause' : 'Start DNS Lookup'}
-                  </button>
-
-                  <button onClick={handleReset} className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer" title="Reset">
-                    <RotateCcw className="w-4 h-4" />
-                  </button>
-                </>
-              )}
-            </div>
+                  color="rose"
+                />
+              </>
+            )}
           </div>
         </div>
 
