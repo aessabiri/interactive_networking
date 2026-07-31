@@ -713,70 +713,164 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
         </div>
       )}
 
-      {/* GENERIC SERVER CONFIGURATION GEAR MODAL POPUP */}
+      {/* UNIFIED FLOATING DEVICE CONFIGURATION GEAR MODAL POPUP (EVERY DEVICE) */}
       {editingServer && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="glass-panel max-w-xl w-full p-7 rounded-3xl border border-slate-700 shadow-2xl space-y-6 bg-slate-900/95 relative text-slate-100 max-h-[90vh] overflow-y-auto font-mono">
+          <div className="glass-panel max-w-xl w-full p-6 rounded-3xl border border-slate-700 shadow-2xl space-y-5 bg-slate-900/95 relative text-slate-100 max-h-[90vh] overflow-y-auto font-mono">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-3">
                 <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                  <Settings className="w-7 h-7 animate-spin-slow" />
+                  <Settings className="w-6 h-6 animate-spin-slow" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-slate-100 tracking-tight">Configure {editingServer.name}</h3>
-                  <p className="text-xs text-amber-400 font-bold">Generic Server Roles & OS Selection</p>
+                  <h3 className="text-lg font-black text-slate-100 tracking-tight">Configure {editingServer.name}</h3>
+                  <p className="text-xs text-amber-400 font-bold">Device Hostname, IP/MAC, OS & Server Roles</p>
                 </div>
               </div>
-              <button
-                onClick={() => setEditingServerId(null)}
-                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    handleDeleteNode(editingServer.id);
+                    setEditingServerId(null);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-slate-950 font-bold text-xs border border-rose-500/30 transition-all cursor-pointer flex items-center gap-1.5"
+                  title="Remove Device"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Remove Device</span>
+                </button>
+
+                <button
+                  onClick={() => setEditingServerId(null)}
+                  className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Device Hostname / Label */}
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-cyan-400 uppercase tracking-wider block">Device Hostname / Label:</label>
+              <input
+                type="text"
+                value={editingServer.name}
+                onChange={(e) => {
+                  const newName = e.target.value;
+                  setNodes(nodes.map(n => n.id === editingServer.id ? { ...n, name: newName } : n));
+                }}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-cyan-300 focus:outline-none focus:border-cyan-500"
+              />
+            </div>
+
+            {/* Network IP & Layer 2/3 Addressing */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-emerald-400 uppercase tracking-wider block">Network IP & Layer 2/3 Settings:</label>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div>
+                  <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">IPv4 Address:</label>
+                  <input
+                    type="text"
+                    value={editingServer.ip}
+                    onChange={(e) => {
+                      const newIp = e.target.value;
+                      setNodes(nodes.map(n => n.id === editingServer.id ? { ...n, ip: newIp } : n));
+                    }}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-300 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Subnet Mask:</label>
+                  <input
+                    type="text"
+                    value={editingServer.subnetMask || '255.255.255.0'}
+                    onChange={(e) => {
+                      const mask = e.target.value;
+                      setNodes(nodes.map(n => n.id === editingServer.id ? { ...n, subnetMask: mask } : n));
+                    }}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-amber-300 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Default Gateway IP:</label>
+                  <input
+                    type="text"
+                    value={editingServer.gateway || '192.168.1.1'}
+                    onChange={(e) => {
+                      const gw = e.target.value;
+                      setNodes(nodes.map(n => n.id === editingServer.id ? { ...n, gateway: gw } : n));
+                    }}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-purple-300 focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">MAC Address (Hardware):</label>
+                  <input
+                    type="text"
+                    value={editingServer.mac}
+                    onChange={(e) => {
+                      const mac = e.target.value;
+                      setNodes(nodes.map(n => n.id === editingServer.id ? { ...n, mac } : n));
+                    }}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-cyan-300 focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Operating System Selection */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-amber-400 uppercase tracking-wider block">1. Select Operating System / Hypervisor:</label>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-amber-400 uppercase tracking-wider block">Operating System / Firmware:</label>
               <select
-                value={editingServer.os}
+                value={editingServer.os || 'Windows 11 Enterprise'}
                 onChange={(e) => handleChangeOs(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs font-bold text-slate-200 focus:outline-none focus:border-amber-500 cursor-pointer"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs font-bold text-slate-200 focus:outline-none focus:border-amber-500 cursor-pointer"
               >
-                <option value="Windows Server 2022 Datacenter">🪟 Windows Server 2022 Datacenter (AD DS / DHCP / DNS)</option>
-                <option value="Linux Enterprise (Ubuntu / RHEL)">🐧 Linux Enterprise Server (Ubuntu 22.04 / RHEL 9)</option>
-                <option value="VMware ESXi 8.0 Bare-Metal Hypervisor">🧱 VMware ESXi 8.0 Bare-Metal Hypervisor (VM Host)</option>
+                <option value="Windows 11 Enterprise">💻 Windows 11 Enterprise (Client Workstation)</option>
+                <option value="Windows Server 2022 Datacenter">🪟 Windows Server 2022 Datacenter (AD DS / KDC / DHCP)</option>
+                <option value="Linux Enterprise (Ubuntu / RHEL)">🐧 Linux Enterprise Server (Ubuntu 24.04 / RHEL 9)</option>
+                <option value="Cisco IOS-XE Gateway OS">🔀 Cisco IOS-XE Enterprise Router Firmware</option>
+                <option value="FortiOS Enterprise Firewall">🛡️ FortiOS Stateful Inspection Firewall</option>
+                <option value="VMware ESXi 8.0 Bare-Metal Hypervisor">🧱 VMware ESXi 8.0 Bare-Metal Hypervisor Host</option>
                 <option value="Proxmox VE Hypervisor">🧱 Proxmox VE 8.1 Open Source Virtualization</option>
+                <option value="macOS Sonoma">🍏 Apple macOS Sonoma Workspace</option>
               </select>
             </div>
 
-            {/* Server Roles Checkboxes */}
-            <div className="space-y-3">
-              <label className="text-xs font-bold text-cyan-400 uppercase tracking-wider block">2. Enable Server Roles & Services:</label>
+            {/* Server & Gateway Roles Checkboxes */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-purple-400 uppercase tracking-wider block">Enable Roles & Services:</label>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 {[
-                  { id: 'dhcp', label: '🔌 DHCP Server (IP Lease Pool)', color: 'text-amber-300' },
-                  { id: 'ad', label: '🛡️ Active Directory (AD DS / KDC)', color: 'text-purple-300' },
-                  { id: 'dns', label: '🌐 DNS Server (Domain Lookup)', color: 'text-cyan-300' },
-                  { id: 'mail', label: '✉️ Mail Server (SMTP / IMAP)', color: 'text-blue-300' },
-                  { id: 'smb', label: '📁 SMB File Server / NAS', color: 'text-emerald-300' },
-                  { id: 'esxi', label: '🧱 Bare-Metal Hypervisor VM Host', color: 'text-rose-300' },
+                  { id: 'dhcp', label: '🔌 DHCP Server (IP Pool)', color: 'text-amber-300' },
+                  { id: 'ad', label: '🛡️ Active Directory (AD DS)', color: 'text-purple-300' },
+                  { id: 'dns', label: '🌐 DNS Server (Resolver)', color: 'text-cyan-300' },
+                  { id: 'mail', label: '✉️ Mail Server (SMTP/IMAP)', color: 'text-blue-300' },
+                  { id: 'smb', label: '📁 SMB File Share / NAS', color: 'text-emerald-300' },
+                  { id: 'nat', label: '🔀 NAT / PAT Gateway', color: 'text-teal-300' },
+                  { id: 'vpn', label: '🔒 IPsec VPN Security Tunnel', color: 'text-rose-300' },
+                  { id: 'firewall', label: '🧱 Stateful Firewall (SPI)', color: 'text-red-300' },
                 ].map((roleItem) => {
                   const isEnabled = (editingServer.roles || []).includes(roleItem.id);
                   return (
                     <div
                       key={roleItem.id}
                       onClick={() => handleToggleRole(roleItem.id)}
-                      className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                      className={`p-2 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                         isEnabled
                           ? 'bg-amber-950/70 border-amber-500 text-amber-200 shadow'
                           : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
                       }`}
                     >
-                      <span className={`font-bold text-xs ${roleItem.color}`}>{roleItem.label}</span>
+                      <span className={`font-bold text-[11px] ${roleItem.color}`}>{roleItem.label}</span>
                       <input
                         type="checkbox"
                         checked={isEnabled}
@@ -789,23 +883,23 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
               </div>
             </div>
 
-            {/* Configured Roles Badge Preview */}
-            <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-              <span className="text-[10px] text-slate-500 font-bold block uppercase">Active Roles Summary:</span>
-              <p className="text-xs text-amber-300 font-bold">
-                {editingServer.roles.length > 0
-                  ? editingServer.roles.map(r => r.toUpperCase()).join(' • ')
-                  : 'No roles enabled (Unconfigured Bare Metal)'}
-              </p>
-            </div>
-
             {/* Modal Footer */}
-            <div className="flex justify-end pt-2 border-t border-slate-800">
+            <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-3">
+              <button
+                onClick={() => {
+                  handleInitiateDisconnect(editingServer.id);
+                  setEditingServerId(null);
+                }}
+                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/80 text-rose-300 hover:text-rose-200 border border-slate-700 font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <span>✂️ Disconnect Wires</span>
+              </button>
+
               <button
                 onClick={() => setEditingServerId(null)}
-                className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-all cursor-pointer shadow-lg shadow-amber-500/20"
+                className="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:scale-105 text-slate-950 font-black text-xs transition-all cursor-pointer shadow-lg shadow-amber-500/20"
               >
-                Save & Apply Server Roles
+                Save & Close ⚙️
               </button>
             </div>
           </div>
@@ -1152,16 +1246,26 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
                     : 'bg-slate-900/95 border-slate-700 hover:border-slate-500 shadow-lg'
                 }`}
               >
-                {/* GEAR ICON FOR GENERIC SERVERS */}
-                {isServer && (
+                {/* ⚙️ GEAR ICON & QUICK DELETE BUTTON FOR EVERY DEVICE NODE */}
+                <div className="absolute -top-3 -right-3 flex items-center gap-1 z-30">
                   <button
                     onClick={(e) => { e.stopPropagation(); setEditingServerId(node.id); }}
-                    className="absolute -top-2 -right-2 p-2 rounded-full bg-amber-500 text-slate-950 shadow-lg hover:scale-110 transition-transform cursor-pointer border border-white z-30"
-                    title="Configure OS & Server Roles (DHCP, AD, DNS, ESXi)"
+                    className="p-1.5 rounded-full bg-slate-900 text-amber-400 border border-slate-700 shadow-xl hover:scale-115 hover:bg-amber-500 hover:text-slate-950 transition-all cursor-pointer"
+                    title={`Configure ${node.name} (${node.type})`}
                   >
-                    <Settings className="w-4 h-4 animate-spin-slow" />
+                    <Settings className="w-3.5 h-3.5" />
                   </button>
-                )}
+
+                  {isSelected && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeleteNode(node.id); }}
+                      className="p-1.5 rounded-full bg-slate-900 text-rose-400 border border-rose-800 shadow-xl hover:scale-115 hover:bg-rose-500 hover:text-white transition-all cursor-pointer"
+                      title={`Delete ${node.name}`}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
 
                 {getNodeIcon(node.type, node.roles, node.name)}
 
@@ -1245,118 +1349,6 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
               <TerminalLog logs={logs} onClear={() => setLogs([])} />
             </div>
           </SlideOutInspector>
-        )}
-      </div>
-
-      {/* SELECTED DEVICE INSPECTOR */}
-      <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-          <span className="text-cyan-400 font-extrabold text-sm">Selected Device Inspector</span>
-          {selectedNode && (
-            <button
-              onClick={() => handleDeleteNode(selectedNode.id)}
-              className="text-rose-400 hover:text-rose-300 text-xs flex items-center gap-1 cursor-pointer"
-            >
-              <Trash2 className="w-3.5 h-3.5" /> Remove Device
-            </button>
-          )}
-        </div>
-
-        {selectedNode ? (
-          <div className="space-y-2.5 text-slate-200">
-            <div>
-              <label className="text-[10px] text-slate-500 font-bold block uppercase">Device Name:</label>
-              <input
-                type="text"
-                value={selectedNode.name}
-                onChange={(e) => {
-                  const newName = e.target.value;
-                  setNodes(nodes.map(n => n.id === selectedNode.id ? { ...n, name: newName } : n));
-                }}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-cyan-300 focus:outline-none focus:border-cyan-500"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-[10px] text-slate-500 font-bold block uppercase">IPv4 Address:</label>
-                <input
-                  type="text"
-                  value={selectedNode.ip}
-                  onChange={(e) => {
-                    const newIp = e.target.value;
-                    setNodes(nodes.map(n => n.id === selectedNode.id ? { ...n, ip: newIp } : n));
-                  }}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-emerald-300 focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] text-slate-500 font-bold block uppercase">Subnet Mask:</label>
-                <input
-                  type="text"
-                  value={selectedNode.subnetMask || '255.255.255.0'}
-                  onChange={(e) => {
-                    const mask = e.target.value;
-                    setNodes(nodes.map(n => n.id === selectedNode.id ? { ...n, subnetMask: mask } : n));
-                  }}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-amber-300 focus:outline-none focus:border-amber-500"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-[10px] text-slate-500 font-bold block uppercase">Default Gateway:</label>
-                <input
-                  type="text"
-                  value={selectedNode.gateway || '192.168.1.1'}
-                  onChange={(e) => {
-                    const gw = e.target.value;
-                    setNodes(nodes.map(n => n.id === selectedNode.id ? { ...n, gateway: gw } : n));
-                  }}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-purple-300 focus:outline-none focus:border-purple-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] text-slate-500 font-bold block uppercase">VLAN Assignment:</label>
-                <input
-                  type="text"
-                  value={selectedNode.vlan || '1 (DEFAULT)'}
-                  onChange={(e) => {
-                    const vl = e.target.value;
-                    setNodes(nodes.map(n => n.id === selectedNode.id ? { ...n, vlan: vl } : n));
-                  }}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-cyan-400 focus:outline-none focus:border-cyan-500"
-                />
-              </div>
-            </div>
-
-            <p><span className="text-slate-500 font-bold">MAC Address:</span> <span className="text-slate-400 font-bold">{selectedNode.mac}</span></p>
-            <p><span className="text-slate-500 font-bold">Operating System:</span> <span className="text-purple-300 font-bold">{selectedNode.os}</span></p>
-            
-            <div className="pt-2 border-t border-slate-800 space-y-2">
-              <button
-                onClick={() => handleInitiateDisconnect(selectedNode.id)}
-                className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-rose-950/80 text-rose-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700 font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-2"
-              >
-                <span>✂️ Disconnect Cable Wires</span>
-              </button>
-
-              {selectedNode.type === 'server' && (
-                <button
-                  onClick={() => setEditingServerId(selectedNode.id)}
-                  className="w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-2 shadow"
-                >
-                  <Settings className="w-4 h-4" />
-                  Configure OS & Roles ⚙️
-                </button>
-              )}
-            </div>
-          </div>
-        ) : (
-          <p className="text-slate-500 text-center py-4">Click any device on the canvas to inspect settings.</p>
         )}
       </div>
     </div>
