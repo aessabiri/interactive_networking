@@ -13,61 +13,62 @@ import {
   Sliders
 } from 'lucide-react';
 
-export default function Navbar({ activeTab, setActiveTab, appMode = 'easy', setAppMode }) {
+export default function Navbar({ activeTab, setActiveTab, appMode = 'clean', setAppMode }) {
   const tabs = [
-    { id: 'dhcp', label: 'DHCP Protocol', icon: Zap, badge: 'DORA' },
-    { id: 'dns', label: 'DNS Resolver', icon: Globe, badge: 'Recursive/Iterative' },
-    { id: 'ad', label: 'Active Directory & DC', icon: ShieldCheck, badge: 'Kerberos & LDAP' },
-    { id: 'lan', label: 'LAN & Routing', icon: Layers, badge: 'ARP & OSI' },
-    { id: 'mail', label: 'Mail Server', icon: Mail, badge: 'SMTP / IMAP / POP3' },
-    { id: 'firewall', label: 'Firewall & VPN', icon: ShieldAlert, badge: 'Stateful & Tunnel' },
-    { id: 'sandbox', label: 'Topology Sandbox', icon: Network, badge: 'Drag & Drop Canvas' },
-    { id: 'notebook', label: 'DTS CLI & Quiz', icon: BookOpen, badge: 'Trainer' },
+    { id: 'dhcp', label: 'DHCP', fullName: 'DHCP Protocol', icon: Zap },
+    { id: 'dns', label: 'DNS', fullName: 'DNS Resolver', icon: Globe },
+    { id: 'ad', label: 'Active Directory', fullName: 'Active Directory & DC', icon: ShieldCheck },
+    { id: 'lan', label: 'LAN & Routing', fullName: 'LAN Switching & ARP', icon: Layers },
+    { id: 'mail', label: 'Mail Server', fullName: 'Mail SMTP/IMAP', icon: Mail },
+    { id: 'firewall', label: 'Firewall & VPN', fullName: 'Stateful Firewall & VPN', icon: ShieldAlert },
+    { id: 'sandbox', label: 'Sandbox Canvas', fullName: 'Topology Sandbox', icon: Network },
+    { id: 'notebook', label: 'CLI & Quiz', fullName: 'Lab Notebook', icon: BookOpen },
   ];
 
   return (
-    <header className="sticky top-0 z-50 glass-panel border-b border-slate-800 px-4 py-3 shadow-2xl">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+    <header className="sticky top-0 z-50 glass-panel border-b border-slate-800 bg-slate-950/90 backdrop-blur-xl px-4 py-2.5 shadow-2xl">
+      <div className="max-w-7xl mx-auto space-y-2.5">
         
-        {/* Brand Logo & Mode Toggle Switch */}
-        <div className="flex items-center justify-between w-full md:w-auto gap-4">
+        {/* TOP ROW: BRAND LOGO & MODE TOGGLE SWITCH */}
+        <div className="flex items-center justify-between gap-4">
+          
+          {/* Brand Logo */}
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-purple-600 shadow-lg shadow-cyan-500/20 text-white animate-pulse">
-              <Cpu className="w-6 h-6" />
+            <div className="p-2 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-purple-600 shadow-lg shadow-cyan-500/20 text-white">
+              <Cpu className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                <span className="font-black text-lg tracking-tight bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
                   NetPulse
                 </span>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800">
                   DTS Herford
                 </span>
               </div>
-              <p className="text-xs text-slate-400 font-mono">Enterprise Network Visualizer</p>
             </div>
           </div>
 
-          {/* CLEAN VS EXPERT MODE TOGGLE BUTTON */}
+          {/* MODE TOGGLE SEGMENTED SWITCH */}
           {setAppMode && (
-            <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 shadow-inner font-mono text-xs">
+            <div className="flex items-center p-1 rounded-full bg-slate-900 border border-slate-800 shadow-inner font-sans text-xs">
               <button
                 onClick={() => setAppMode('clean')}
-                className={`px-3.5 py-1.5 rounded-xl font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-full font-black flex items-center gap-1.5 transition-all cursor-pointer ${
                   appMode === 'clean' || appMode === 'easy'
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/20 scale-105'
+                    ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/25 scale-102 border border-emerald-300'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5 fill-current text-slate-950" />
+                <Sparkles className="w-3.5 h-3.5 fill-current" />
                 <span>🌱 Clean Mode</span>
               </button>
 
               <button
                 onClick={() => setAppMode('expert')}
-                className={`px-3 py-1.5 rounded-xl font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-full font-black flex items-center gap-1.5 transition-all cursor-pointer ${
                   appMode === 'expert'
-                    ? 'bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 text-white shadow-md shadow-cyan-500/20 scale-105'
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/25 scale-102 border border-cyan-400'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -78,8 +79,8 @@ export default function Navbar({ activeTab, setActiveTab, appMode = 'easy', setA
           )}
         </div>
 
-        {/* Navigation Tabs */}
-        <nav className="flex flex-wrap items-center gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
+        {/* BOTTOM ROW: CLEAN SEGMENTED NAVIGATION TABS */}
+        <nav className="flex items-center gap-1.5 overflow-x-auto p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800/90 scrollbar-none">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -87,21 +88,15 @@ export default function Navbar({ activeTab, setActiveTab, appMode = 'easy', setA
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all duration-200 cursor-pointer shrink-0 ${
                   isActive
-                    ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/20 font-semibold'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-lg shadow-cyan-500/20 scale-102 border border-cyan-300'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 border border-transparent'
                 }`}
+                title={tab.fullName}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-slate-950 stroke-[2.5]' : 'text-slate-400'}`} />
                 <span>{tab.label}</span>
-                {tab.badge && (
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
-                    isActive ? 'bg-cyan-950 text-cyan-200' : 'bg-slate-800 text-slate-400'
-                  }`}>
-                    {tab.badge}
-                  </span>
-                )}
               </button>
             );
           })}
