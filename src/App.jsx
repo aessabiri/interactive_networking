@@ -4,6 +4,7 @@ import DHCPModule from './components/dhcp/DHCPModule';
 import DNSModule from './components/dns/DNSModule';
 import ADModule from './components/active-directory/ADModule';
 import LANModule from './components/lan/LANModule';
+import MailModule from './components/mail/MailModule';
 import NetworkSandbox from './components/sandbox/NetworkSandbox';
 import LabNotebook from './components/notebook/LabNotebook';
 
@@ -21,6 +22,7 @@ export default function App() {
         {activeTab === 'dns' && <DNSModule />}
         {activeTab === 'ad' && <ADModule />}
         {activeTab === 'lan' && <LANModule />}
+        {activeTab === 'mail' && <MailModule />}
         {activeTab === 'sandbox' && <NetworkSandbox />}
         {activeTab === 'notebook' && <LabNotebook />}
       </main>
@@ -28,7 +30,7 @@ export default function App() {
       {/* Footer */}
       <footer className="border-t border-slate-900 bg-slate-950/80 px-4 py-4 text-center text-xs text-slate-500 font-mono">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>NetPulse Windows Network Infra Visualizer & Sandbox</span>
+          <span>NetPulse Enterprise Network Infra Visualizer & Sandbox</span>
           <span className="text-slate-600">DTS Herford Enterprise Training • Standalone Zero-Install HTML/JS</span>
         </div>
       </footer>
