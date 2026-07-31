@@ -2,10 +2,13 @@ import React, { useEffect, useRef } from 'react';
 import { Terminal, Trash2 } from 'lucide-react';
 
 export default function TerminalLog({ logs = [], onClear }) {
-  const logEndRef = useRef(null);
+  const containerRef = useRef(null);
 
+  // Scroll ONLY the internal console log container to bottom without scrolling main browser window
   useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
   }, [logs]);
 
   const getTagColor = (tag) => {
@@ -41,8 +44,8 @@ export default function TerminalLog({ logs = [], onClear }) {
         )}
       </div>
 
-      {/* Log Entries */}
-      <div className="p-3 overflow-y-auto font-mono text-xs space-y-1.5 flex-1 bg-slate-950/80">
+      {/* Log Entries Container (Internal Scroll Only) */}
+      <div ref={containerRef} className="p-3 overflow-y-auto font-mono text-xs space-y-1.5 flex-1 bg-slate-950/80">
         {logs.length === 0 ? (
           <div className="text-slate-600 text-center py-4 text-[11px]">
             Ready. Execute a simulation step to view real-time wire logs.
@@ -60,7 +63,6 @@ export default function TerminalLog({ logs = [], onClear }) {
             </div>
           ))
         )}
-        <div ref={logEndRef} />
       </div>
     </div>
   );
