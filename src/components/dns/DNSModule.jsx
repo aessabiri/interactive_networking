@@ -1,158 +1,392 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Search, Play, Pause, RotateCcw, Server, Laptop, Database, CheckCircle2, Gauge, Mail, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
+import { Globe, Cloud, Router, Server, Laptop, Search, Play, Pause, RotateCcw, CheckCircle2, Gauge, Mail, ChevronDown, ChevronUp, HelpCircle, FileCode, Terminal, SkipForward, Radio, Layers, Cpu, ArrowRight, ShieldCheck, X } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 
 export default function DNSModule() {
   const [activeStep, setActiveStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1);
-  const [targetDomain, setTargetDomain] = useState('dc01.corp.local');
-  const [showTechDetails, setShowTechDetails] = useState(false);
+  const [isSingleStep, setIsSingleStep] = useState(false);
+  const [speed, setSpeed] = useState(0.5); // Default 0.5x speed
+  const [targetDomain, setTargetDomain] = useState('google.com');
   const [packetProgress, setPacketProgress] = useState(0);
+  const [modalPayloadStep, setModalPayloadStep] = useState(null);
 
   const [logs, setLogs] = useState([
-    { time: '19:55:00', tag: 'DNS', message: 'DNS Resolver initialized. Configured DNS: 192.168.1.10.' }
+    { time: new Date().toLocaleTimeString(), tag: 'DNS', message: 'DNS & NAT Visualizer ready. Choose a domain to start lookup.' }
   ]);
 
-  const stepMeta = {
+  const isExternalDomain = !targetDomain.endsWith('.local');
+
+  // Step Metadata for Local vs External Queries
+  const stepMetaLocal = {
     0: {
-      title: 'Ready for DNS Resolution',
-      subtitle: 'Type or select a domain name and click "Start DNS Lookup" to see how hostnames turn into IP addresses!',
+      title: 'Ready for Local DNS Resolution',
+      subtitle: 'Target is in local domain (.local). Query stays inside private LAN (192.168.1.0/24). NAT is not required.',
       badge: 'IDLE',
       badgeColor: 'bg-slate-800 text-slate-400 border-slate-700',
+      type: 'NONE'
     },
     1: {
-      title: '🔍 ASKING LOCAL DNS SERVER...',
-      subtitle: `The PC asks Local DNS (192.168.1.10): "What is the IP address for ${targetDomain}?"`,
-      badge: 'STEP 1: RECURSIVE QUERY',
+      title: '📢 STEP 1: RECURSIVE LAN QUERY',
+      subtitle: `PC-01 (192.168.1.105) queries Local DNS Server DC01 (192.168.1.10): "What is the IP for ${targetDomain}?"`,
+      badge: 'LAN QUERY (UDP 53)',
       badgeColor: 'bg-cyan-950 text-cyan-400 border-cyan-500 animate-pulse',
       sender: 'PC',
+      target: 'DC01',
+      payload: {
+        stepName: '1. Internal LAN Query',
+        l2Header: 'Src MAC: 00:50:56:A1:B2:C3 → Dst MAC: 00:0C:29:88:77:66 (DC01)',
+        l3Header: 'Src IP: 192.168.1.105 (Private) → Dst IP: 192.168.1.10 (Private)',
+        l4Header: 'UDP Src Port: 53102 → Dst Port: 53 (DNS Query)',
+        natStatus: 'NAT NOT TRIGGERED (Traffic is local inside 192.168.1.0/24)',
+        queryDetail: `Standard Query A ${targetDomain}`,
+      }
     },
     2: {
-      title: '⚡ SEARCHING AD DATABASE ZONE...',
-      subtitle: 'DC01 inspects its Active Directory Forward Lookup Zone to find matching A / SRV records...',
-      badge: 'STEP 2: ZONE LOOKUP',
+      title: '⚡ STEP 2: ACTIVE DIRECTORY ZONE LOOKUP',
+      subtitle: 'DC01 inspects its Forward Lookup Zone "corp.local" in Active Directory database...',
+      badge: 'LOCAL AD ZONE LOOKUP',
       badgeColor: 'bg-purple-950 text-purple-400 border-purple-500 animate-pulse',
-      sender: 'SERVER',
+      sender: 'DC01',
+      target: 'DC01',
+      payload: {
+        stepName: '2. AD Zone Record Match',
+        l2Header: 'Internal Memory Lookup (ntds.dit)',
+        l3Header: 'Local Domain Match: corp.local',
+        l4Header: 'Record Type: Host (A) Record',
+        natStatus: 'NO NAT REQUIRED',
+        queryDetail: `${targetDomain} matched -> IP 192.168.1.10 (Authoritative Answer)`,
+      }
     },
     3: {
-      title: '✅ RESOLVED! IP RETURNED!',
-      subtitle: `DNS Server replies: "${targetDomain} is located at IP address 192.168.1.10!"`,
-      badge: 'STEP 3: RESOLVED',
+      title: '✅ STEP 3: AUTHORITATIVE ANSWER RETURNED',
+      subtitle: `DC01 replies to PC-01: "${targetDomain} is located at Private IP 192.168.1.10!"`,
+      badge: 'RESOLVED (LOCAL)',
       badgeColor: 'bg-emerald-950 text-emerald-400 border-emerald-500',
-      sender: 'SERVER',
+      sender: 'DC01',
+      target: 'PC',
+      payload: {
+        stepName: '3. Internal DNS Response',
+        l2Header: 'Src MAC: 00:0C:29:88:77:66 → Dst MAC: 00:50:56:A1:B2:C3',
+        l3Header: 'Src IP: 192.168.1.10 → Dst IP: 192.168.1.105',
+        l4Header: 'UDP Src Port: 53 → Dst Port: 53102',
+        natStatus: 'LOCAL RETURN (No NAT)',
+        queryDetail: `Answer: ${targetDomain} A 192.168.1.10 (TTL 86400s)`,
+      }
     }
   };
 
-  useEffect(() => {
-    let timer;
-    if (isPlaying) {
-      if (activeStep < 3) {
-        setPacketProgress(0);
-        const animInterval = setInterval(() => {
-          setPacketProgress(prev => Math.min(100, prev + 5));
-        }, 30 / speed);
-
-        timer = setTimeout(() => {
-          const next = activeStep + 1;
-          setActiveStep(next);
-          const meta = stepMeta[next];
-          setLogs(prev => [
-            ...prev,
-            { time: new Date().toLocaleTimeString(), tag: 'DNS', message: `${meta.title} - ${meta.subtitle}` }
-          ]);
-          if (next === 3) setIsPlaying(false);
-        }, 2200 / speed);
-      } else {
-        setIsPlaying(false);
+  const stepMetaExternal = {
+    0: {
+      title: 'Ready for Internet DNS Lookup + NAT',
+      subtitle: `Target "${targetDomain}" is a public domain. Query will traverse the ISP Router & NAT into the Internet Cloud ☁️!`,
+      badge: 'IDLE',
+      badgeColor: 'bg-slate-800 text-slate-400 border-slate-700',
+      type: 'NONE'
+    },
+    1: {
+      title: '📢 STEP 1: PC QUERIES LOCAL DNS / GATEWAY',
+      subtitle: `PC-01 (192.168.1.105) sends DNS query for "${targetDomain}" to ISP Gateway Router (192.168.1.1).`,
+      badge: 'LAN QUERY (UDP 53)',
+      badgeColor: 'bg-cyan-950 text-cyan-400 border-cyan-500 animate-pulse',
+      sender: 'PC',
+      target: 'ROUTER',
+      payload: {
+        stepName: '1. LAN DNS Query to Gateway',
+        l2Header: 'Src MAC: 00:50:56:A1:B2:C3 → Dst MAC: 00:11:22:33:44:55 (Router)',
+        l3Header: 'Src IP: 192.168.1.105 (Private) → Dst IP: 8.8.8.8 (Public DNS)',
+        l4Header: 'UDP Src Port: 54321 → Dst Port: 53',
+        natStatus: 'PRE-NAT (Private IP inside LAN)',
+        queryDetail: `Standard Query A ${targetDomain}`,
+      }
+    },
+    2: {
+      title: '🔀 STEP 2: ISP ROUTER NAT OPERATION (SNAT / PAT)',
+      subtitle: 'ISP Router rewrites Private IP 192.168.1.105:54321 → Public IP 203.0.113.45:41001 in NAT Table!',
+      badge: 'NAT TRANSLATION ACTIVE',
+      badgeColor: 'bg-amber-950 text-amber-400 border-amber-500 animate-pulse',
+      sender: 'ROUTER',
+      target: 'CLOUD',
+      payload: {
+        stepName: '2. Router NAT Translation (PAT)',
+        l2Header: 'Src MAC: 00:11:22:33:44:55 → Gateway ISP MAC: 00:AA:BB:CC:DD:EE',
+        l3Header: 'Src IP: 203.0.113.45 (PUBLIC WAN) → Dst IP: 8.8.8.8 (Public DNS)',
+        l4Header: 'UDP Src Port: 41001 (Translated Port) → Dst Port: 53',
+        natStatus: 'NAT TRANSLATED: 192.168.1.105:54321 ➔ 203.0.113.45:41001',
+        queryDetail: `SNAT Applied. Packet forwarded into Internet Cloud ☁️`,
+      }
+    },
+    3: {
+      title: '☁️ STEP 3: INTERNET CLOUD & PUBLIC DNS LOOKUP',
+      subtitle: 'Packet travels through Internet Cloud to Public DNS Server (8.8.8.8). Root & TLD servers resolve IP!',
+      badge: 'INTERNET CLOUD RESOLUTION',
+      badgeColor: 'bg-blue-950 text-blue-400 border-blue-500 animate-pulse',
+      sender: 'CLOUD',
+      target: 'PUBLIC_DNS',
+      payload: {
+        stepName: '3. Internet Cloud Resolution',
+        l2Header: 'WAN Fiber Optic / Internet Backbone Routing',
+        l3Header: 'Src IP: 203.0.113.45 → Dst IP: 8.8.8.8 (Google Public DNS)',
+        l4Header: 'UDP Src Port: 41001 → Dst Port: 53',
+        natStatus: 'TRANSITING PUBLIC INTERNET',
+        queryDetail: `8.8.8.8 returns: ${targetDomain} A 142.250.180.206`,
+      }
+    },
+    4: {
+      title: '✅ STEP 4: REVERSE NAT & ANSWER RETURNED TO PC',
+      subtitle: 'ISP Router matches NAT Table (203.0.113.45:41001 ➔ 192.168.1.105:54321) and delivers resolved IP to PC-01!',
+      badge: 'RESOLVED VIA NAT (142.250.180.206)',
+      badgeColor: 'bg-emerald-950 text-emerald-400 border-emerald-500',
+      sender: 'ROUTER',
+      target: 'PC',
+      payload: {
+        stepName: '4. Reverse NAT & Delivery',
+        l2Header: 'Src MAC: 00:11:22:33:44:55 → Dst MAC: 00:50:56:A1:B2:C3',
+        l3Header: 'Src IP: 8.8.8.8 → Dst IP: 192.168.1.105 (Restored Private IP)',
+        l4Header: 'UDP Src Port: 53 → Dst Port: 54321',
+        natStatus: 'REVERSE NAT SUCCESS: Restored Private IP 192.168.1.105',
+        queryDetail: `Client PC-01 receives IP: ${targetDomain} = 142.250.180.206`,
       }
     }
-    return () => clearTimeout(timer);
-  }, [isPlaying, activeStep, speed]);
+  };
+
+  const stepMeta = isExternalDomain ? stepMetaExternal : stepMetaLocal;
+  const totalSteps = isExternalDomain ? 4 : 3;
+
+  useEffect(() => {
+    let animInterval;
+    let timer;
+
+    if (isPlaying) {
+      setPacketProgress(0);
+      animInterval = setInterval(() => {
+        setPacketProgress(prev => Math.min(100, prev + 2));
+      }, 35 / speed);
+
+      if (isSingleStep) {
+        timer = setTimeout(() => {
+          setIsPlaying(false);
+          setIsSingleStep(false);
+        }, 2200 / speed);
+      } else {
+        timer = setTimeout(() => {
+          if (activeStep < totalSteps) {
+            const next = activeStep + 1;
+            setActiveStep(next);
+            const meta = stepMeta[next];
+            setLogs(prev => [
+              ...prev,
+              { time: new Date().toLocaleTimeString(), tag: 'DNS', message: `${meta.title} - ${meta.subtitle}` }
+            ]);
+          } else {
+            setIsPlaying(false);
+          }
+        }, 2500 / speed);
+      }
+    }
+
+    return () => {
+      clearInterval(animInterval);
+      clearTimeout(timer);
+    };
+  }, [isPlaying, activeStep, speed, isSingleStep, isExternalDomain]);
 
   const handleStartPlay = () => {
-    if (activeStep === 3) setActiveStep(1);
+    if (activeStep >= totalSteps) setActiveStep(1);
     else if (activeStep === 0) setActiveStep(1);
+    setIsSingleStep(false);
     setIsPlaying(true);
+  };
+
+  const handleStepForward = () => {
+    if (activeStep >= totalSteps) return;
+    const nextStep = activeStep + 1;
+    setActiveStep(nextStep);
+    setIsSingleStep(true);
+    setIsPlaying(true);
+    const meta = stepMeta[nextStep];
+    setLogs(prev => [
+      ...prev,
+      { time: new Date().toLocaleTimeString(), tag: 'DNS', message: `STEP ${nextStep}: ${meta.title}` }
+    ]);
   };
 
   const handleReset = () => {
     setIsPlaying(false);
+    setIsSingleStep(false);
     setActiveStep(0);
     setPacketProgress(0);
-    setLogs([{ time: new Date().toLocaleTimeString(), tag: 'DNS', message: 'DNS cache cleared.' }]);
+    setLogs([{ time: new Date().toLocaleTimeString(), tag: 'DNS', message: 'DNS cache & NAT state cleared.' }]);
   };
 
-  const currentMeta = stepMeta[activeStep];
+  const currentMeta = stepMeta[activeStep] || stepMeta[0];
+  const isFinalStepComplete = activeStep === totalSteps;
+  const activeModalData = modalPayloadStep ? stepMeta[modalPayloadStep]?.payload : null;
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Top Bar Controls */}
-      <div className="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl">
-        <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-inner">
-            <Globe className="w-7 h-7" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-black tracking-tight text-slate-100">DNS Resolver Visualizer</h2>
-            <p className="text-xs text-slate-400">See how computer hostnames are converted into IP addresses</p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 bg-slate-900/90 p-2 rounded-2xl border border-slate-800">
-          <div className="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded-xl border border-slate-800 text-xs font-mono text-slate-400">
-            <Gauge className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Speed:</span>
-            {[0.5, 1, 2].map((s) => (
+    <div className="space-y-6 max-w-6xl mx-auto relative">
+      
+      {/* FLOATING MODAL POPUP FOR PACKET & NAT PAYLOAD INSPECTOR (BIG FONTS) */}
+      {modalPayloadStep && activeModalData && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="glass-panel max-w-2xl w-full p-7 rounded-3xl border border-slate-700 shadow-2xl space-y-6 bg-slate-900/95 relative text-slate-100 max-h-[90vh] overflow-y-auto">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                  <FileCode className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-100 tracking-tight">{activeModalData.stepName} Payload</h3>
+                  <p className="text-xs text-amber-400 font-mono font-bold">{activeModalData.queryDetail}</p>
+                </div>
+              </div>
               <button
-                key={s}
-                onClick={() => setSpeed(s)}
-                className={`px-2 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
-                  speed === s ? 'bg-cyan-500 text-slate-950 shadow-md' : 'hover:bg-slate-800 text-slate-400'
-                }`}
+                onClick={() => setModalPayloadStep(null)}
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer"
               >
-                {s}x
+                <X className="w-5 h-5" />
               </button>
-            ))}
+            </div>
+
+            {/* Modal Body with BIG READABLE FONTS */}
+            <div className="space-y-4 font-mono">
+              
+              {/* NAT Status Banner */}
+              <div className="p-4 bg-amber-950/60 rounded-2xl border border-amber-700/60 space-y-1">
+                <span className="text-xs text-amber-400 font-bold uppercase tracking-wider block">Router NAT State (SNAT / PAT):</span>
+                <p className="text-base font-black text-amber-300">{activeModalData.natStatus}</p>
+              </div>
+
+              {/* L2, L3, L4 Headers Box */}
+              <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
+                <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-sm border-b border-slate-800 pb-2">
+                  <Layers className="w-4 h-4" />
+                  <span>Network Stack Packet Headers</span>
+                </div>
+                <div className="space-y-2 text-sm text-slate-200">
+                  <p><span className="text-slate-500 font-bold">Layer 2 (Ethernet):</span> <span className="text-cyan-300 font-bold">{activeModalData.l2Header}</span></p>
+                  <p><span className="text-slate-500 font-bold">Layer 3 (IPv4 Header):</span> <span className="text-amber-300 font-bold">{activeModalData.l3Header}</span></p>
+                  <p><span className="text-slate-500 font-bold">Layer 4 (UDP Ports):</span> <span className="text-emerald-300 font-bold">{activeModalData.l4Header}</span></p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex justify-end pt-2 border-t border-slate-800">
+              <button
+                onClick={() => setModalPayloadStep(null)}
+                className="px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-sm transition-all cursor-pointer shadow-lg shadow-cyan-500/20"
+              >
+                Close Inspector
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MAIN MASTER WORKSPACE STAGE FOR DNS & NAT */}
+      <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-5 shadow-2xl relative overflow-hidden">
+        
+        {/* DOMAIN TARGET SELECTOR & MODE BADGE */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <Search className="w-5 h-5 text-cyan-400" />
+            <div>
+              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-bold">Select Hostname to Resolve</span>
+              <select
+                value={targetDomain}
+                onChange={(e) => { setTargetDomain(e.target.value); handleReset(); }}
+                className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-cyan-300 focus:outline-none focus:border-cyan-500 cursor-pointer"
+              >
+                <optgroup label="🌐 Public Internet Domains (Triggers Router NAT & Internet Cloud)">
+                  <option value="google.com">google.com (Public Web - NAT Needed)</option>
+                  <option value="microsoft.com">microsoft.com (Public Cloud - NAT Needed)</option>
+                  <option value="github.com">github.com (Public Code - NAT Needed)</option>
+                </optgroup>
+                <optgroup label="🏢 Internal Active Directory Domains (LAN Resolution)">
+                  <option value="dc01.corp.local">dc01.corp.local (Local AD Domain Controller)</option>
+                  <option value="_ldap._tcp.dc._msdcs.corp.local">_ldap._tcp.dc._msdcs.corp.local (AD SRV Record)</option>
+                </optgroup>
+              </select>
+            </div>
           </div>
 
-          <button onClick={handleReset} className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer">
-            <RotateCcw className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={handleStartPlay}
-            className="px-5 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-lg shadow-cyan-500/30 cursor-pointer"
-          >
-            {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-            {isPlaying ? 'Pause' : 'Start DNS Lookup'}
-          </button>
+          <div className="flex items-center gap-2">
+            <span className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold border shadow ${
+              isExternalDomain ? 'bg-amber-950 text-amber-300 border-amber-700' : 'bg-purple-950 text-purple-300 border-purple-700'
+            }`}>
+              {isExternalDomain ? '🌐 PUBLIC INTERNET QUERY (NAT ACTIVE)' : '🏢 LOCAL AD LAN QUERY (NO NAT)'}
+            </span>
+          </div>
         </div>
-      </div>
 
-      {/* Domain Target Selector */}
-      <div className="glass-panel p-4 rounded-2xl border border-slate-800 flex items-center gap-3">
-        <Search className="w-5 h-5 text-cyan-400" />
-        <div className="flex-1">
-          <label className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">Target Hostname Query</label>
-          <select
-            value={targetDomain}
-            onChange={(e) => { setTargetDomain(e.target.value); handleReset(); }}
-            className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs font-mono text-cyan-300 focus:outline-none focus:border-cyan-500"
-          >
-            <option value="dc01.corp.local">dc01.corp.local (Domain Controller Host A Record)</option>
-            <option value="_ldap._tcp.dc._msdcs.corp.local">_ldap._tcp.dc._msdcs.corp.local (Active Directory SRV Record)</option>
-            <option value="filesvr.corp.local">filesvr.corp.local (File Share Server)</option>
-            <option value="www.corp.local">www.corp.local (Web Server CNAME Alias)</option>
-          </select>
+        {/* WORKSPACE CONTROL TOOLBAR */}
+        <div className="glass-panel p-2.5 rounded-2xl border border-slate-800/90 bg-slate-900/95 flex flex-wrap items-center justify-between gap-3 shadow-xl">
+          <div className="flex items-center gap-3">
+            {/* Speed Selector */}
+            <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-mono text-slate-300">
+              <Gauge className="w-4 h-4 text-cyan-400" />
+              <span className="font-bold">Animation Speed:</span>
+              {[0.25, 0.5, 1].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSpeed(s)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer transition-all ${
+                    speed === s ? 'bg-cyan-500 text-slate-950 shadow-md' : 'hover:bg-slate-800 text-slate-400'
+                  }`}
+                >
+                  {s}x
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Action Control Buttons */}
+          <div className="flex items-center gap-2">
+            {isFinalStepComplete ? (
+              <button
+                onClick={handleReset}
+                className="px-6 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:scale-105 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/30 cursor-pointer transition-all animate-bounce"
+              >
+                <RotateCcw className="w-4 h-4" /> Reset & Restart DNS Query
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={handleStepForward}
+                  disabled={isPlaying}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs font-extrabold flex items-center gap-1.5 border border-slate-700 cursor-pointer transition-colors"
+                >
+                  <SkipForward className="w-4 h-4 fill-current" /> Next Step ({activeStep + 1}/{totalSteps})
+                </button>
+
+                <button
+                  onClick={handleStartPlay}
+                  className={`px-5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shadow-lg ${
+                    isPlaying
+                      ? 'bg-cyan-500 text-slate-950 shadow-cyan-500/20'
+                      : 'bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-600 hover:scale-105 text-slate-950 shadow-cyan-500/30'
+                  }`}
+                >
+                  {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
+                  {isPlaying ? 'Pause' : 'Start DNS Lookup'}
+                </button>
+
+                <button onClick={handleReset} className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer" title="Reset">
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* BIG VISUAL STAGE */}
-      <div className="glass-panel p-8 rounded-3xl border border-slate-800 space-y-6 shadow-2xl relative overflow-hidden">
+        {/* Dynamic Action Status Banner */}
         <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 ${currentMeta.badgeColor}`}>
           <div className="flex items-center gap-3">
-            <span className="px-3 py-1 rounded-xl text-xs font-mono font-black uppercase bg-slate-950/80 border border-white/10 shadow">
+            <span className="px-3 py-1 rounded-xl text-xs font-mono font-black uppercase bg-slate-950/80 border border-white/10 shadow flex items-center gap-1.5">
+              <Radio className="w-3.5 h-3.5 text-cyan-400 animate-ping" />
               {currentMeta.badge}
             </span>
             <h3 className="text-lg font-black text-slate-100">{currentMeta.title}</h3>
@@ -160,77 +394,174 @@ export default function DNSModule() {
           <p className="text-xs text-slate-200 font-medium text-center sm:text-right max-w-md">{currentMeta.subtitle}</p>
         </div>
 
-        {/* Large Nodes & Cables */}
-        <div className="py-12 px-4 flex flex-col md:flex-row items-center justify-between gap-8 relative min-h-[300px]">
-          <div className="flex flex-col items-center gap-3 z-10">
-            <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
-              activeStep === 3 ? 'bg-emerald-950 border-emerald-400 scale-110 shadow-2xl shadow-emerald-500/30' : 'bg-slate-900 border-slate-700'
+        {/* ENLARGED TOPOLOGY STAGE (PRIVATE LAN ➔ ISP ROUTER WITH NAT ➔ INTERNET CLOUD ➔ PUBLIC DNS) */}
+        <div className="py-6 px-4 relative min-h-[520px] bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden">
+          
+          {/* VISIBLE NETWORK CONNECTION LINES */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+            {/* Cable 1: PC-01 (15%, 55%) -> ISP Router (45%, 55%) */}
+            <line x1="15%" y1="55%" x2="45%" y2="55%" stroke="#06b6d4" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.7" />
+            
+            {/* Cable 2: ISP Router (45%, 55%) -> Internet Cloud (72%, 25%) */}
+            <line x1="45%" y1="55%" x2="72%" y2="25%" stroke="#f59e0b" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.7" />
+
+            {/* Cable 3: Internet Cloud (72%, 25%) -> Public DNS (88%, 55%) */}
+            <line x1="72%" y1="25%" x2="88%" y2="55%" stroke="#3b82f6" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.7" />
+
+            {/* Cable 4: PC-01 (15%, 55%) -> Local DC01 DNS (28%, 18%) */}
+            <line x1="15%" y1="55%" x2="28%" y2="18%" stroke="#a855f7" strokeWidth="3" strokeDasharray="6 4" strokeOpacity="0.5" />
+          </svg>
+
+          {/* PRIVATE LAN BOUNDARY CONTAINER */}
+          <div className="absolute left-[2%] top-[5%] w-[48%] h-[90%] border-2 border-dashed border-cyan-800/40 rounded-3xl pointer-events-none p-3">
+            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/80 text-cyan-400 border border-cyan-800">
+              PRIVATE SUBNET (192.168.1.0/24)
+            </span>
+          </div>
+
+          {/* PUBLIC INTERNET / WAN BOUNDARY CONTAINER */}
+          <div className="absolute right-[2%] top-[5%] w-[48%] h-[90%] border-2 border-dashed border-amber-800/40 rounded-3xl pointer-events-none p-3 text-right">
+            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/80 text-amber-400 border border-amber-800">
+              PUBLIC INTERNET (WAN / 203.0.113.0/24)
+            </span>
+          </div>
+
+          {/* 1. PC-01 CLIENT (LEFT: 15%, 55%) */}
+          <div className="absolute left-[15%] top-[55%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-cyan-950 text-cyan-300 border border-cyan-700 shadow">
+              Private IP: 192.168.1.105
+            </span>
+            <div className={`p-5 rounded-3xl border-4 transition-all duration-300 ${
+              activeStep === 4
+                ? 'bg-emerald-950 border-emerald-400 shadow-2xl scale-110'
+                : 'bg-slate-900 border-slate-700'
             }`}>
-              <Laptop className="w-16 h-16 text-cyan-400" />
+              <Laptop className="w-12 h-12 text-cyan-400" />
+            </div>
+            <div className="text-center font-mono space-y-0.5">
+              <p className="text-xs font-extrabold text-slate-100">WORKSTATION-01</p>
+              <p className="text-[10px] text-slate-400">DNS Client</p>
+            </div>
+          </div>
+
+          {/* 2. LOCAL DC01 DNS SERVER (TOP-LEFT: 28%, 18%) */}
+          <div className="absolute left-[28%] top-[18%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 text-center z-10">
+            <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-purple-950 text-purple-300 border border-purple-700 shadow">
+              192.168.1.10 (UDP Port 53)
+            </span>
+            <div className={`p-4 rounded-2xl border-2 transition-all ${
+              !isExternalDomain && activeStep === 2 ? 'bg-purple-900 border-purple-400 scale-110 shadow-xl' : 'bg-slate-900 border-slate-700'
+            }`}>
+              <Server className="w-10 h-10 text-purple-400" />
+            </div>
+            <div className="font-mono text-[10px]">
+              <p className="font-bold text-purple-300">DC01 (LOCAL AD DNS)</p>
+              <p className="text-slate-500">Zone: corp.local</p>
+            </div>
+          </div>
+
+          {/* 3. ISP ROUTER WITH NAT OPERATION (CENTER-LEFT: 45%, 55%) */}
+          <div className="absolute left-[45%] top-[55%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
+            <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-amber-950 text-amber-300 border border-amber-600 shadow-lg flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" /> ISP ROUTER (NAT GATEWAY)
+            </span>
+            <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
+              isExternalDomain && (activeStep === 2 || activeStep === 4)
+                ? 'bg-amber-900/90 border-amber-400 shadow-2xl shadow-amber-500/40 scale-110 animate-pulse'
+                : 'bg-amber-950/80 border-amber-700 text-amber-300'
+            }`}>
+              <Router className="w-14 h-14 text-amber-400" />
             </div>
             <div className="text-center font-mono">
-              <p className="text-sm font-extrabold text-slate-100">DNS CLIENT PC</p>
-              <p className="text-xs text-slate-400">192.168.1.105</p>
+              <p className="text-xs font-extrabold text-amber-300">LAN: 192.168.1.1</p>
+              <p className="text-[10px] text-amber-400 font-bold">WAN: 203.0.113.45 (Public)</p>
             </div>
           </div>
 
-          <div className="flex-1 w-full md:w-auto h-12 relative flex items-center justify-center">
-            <div className="w-full h-3 bg-slate-900 rounded-full border border-slate-800 overflow-hidden relative shadow-inner">
-              <div className="w-full h-full bg-gradient-to-r from-cyan-500 via-purple-500 to-emerald-500 opacity-30"></div>
-            </div>
-            {isPlaying && (
-              <div
-                style={{ left: currentMeta.sender === 'PC' ? `${packetProgress}%` : `${100 - packetProgress}%` }}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 z-20 px-3 py-1.5 rounded-full bg-cyan-400 text-slate-950 font-black text-xs shadow-xl flex items-center gap-1.5 border-2 border-white"
-              >
-                <Mail className="w-4 h-4 fill-current" />
-                <span>DNS QUERY</span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-col items-center gap-3 z-10">
-            <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
-              activeStep === 2 ? 'bg-purple-950 border-purple-400 scale-110 shadow-2xl shadow-purple-500/30' : 'bg-slate-900 border-slate-700'
+          {/* 4. GLOWING INTERNET CLOUD (TOP-RIGHT: 72%, 25%) */}
+          <div className="absolute left-[72%] top-[25%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 text-center z-10">
+            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono bg-blue-950 text-blue-300 border border-blue-700 shadow flex items-center gap-1">
+              <Cloud className="w-3 h-3 text-blue-400" /> PUBLIC WAN BACKBONE
+            </span>
+            <div className={`p-5 rounded-3xl border-4 transition-all duration-300 ${
+              isExternalDomain && activeStep === 3
+                ? 'bg-blue-900/90 border-blue-400 shadow-2xl shadow-blue-500/50 scale-110 animate-bounce'
+                : 'bg-slate-900 border-slate-700'
             }`}>
-              <Server className="w-16 h-16 text-cyan-400" />
+              <Globe className="w-12 h-12 text-blue-400" />
             </div>
-            <div className="text-center font-mono space-y-1">
-              <p className="text-sm font-extrabold text-cyan-300">DC01 (LOCAL DNS)</p>
-              <p className="text-xs text-slate-400">IP: 192.168.1.10</p>
-              <span className="px-3 py-0.5 rounded-full text-[11px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
-                UDP Port 53 Listening
-              </span>
+            <div className="font-mono text-[10px]">
+              <p className="font-bold text-blue-300">INTERNET CLOUD ☁️</p>
+              <p className="text-slate-400">Root & TLD Servers</p>
             </div>
           </div>
+
+          {/* 5. PUBLIC DNS SERVER (RIGHT: 88%, 55%) */}
+          <div className="absolute left-[88%] top-[55%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
+            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-blue-950 text-blue-300 border border-blue-700 shadow">
+              Public IP: 8.8.8.8
+            </span>
+            <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
+              isExternalDomain && activeStep === 3
+                ? 'bg-blue-950 border-blue-400 shadow-2xl scale-105'
+                : 'bg-slate-900 border-slate-700'
+            }`}>
+              <Server className="w-14 h-14 text-blue-400" />
+            </div>
+            <div className="text-center font-mono space-y-0.5">
+              <p className="text-xs font-extrabold text-blue-300">GOOGLE PUBLIC DNS</p>
+              <p className="text-[10px] text-slate-400">Authoritative Resolver</p>
+            </div>
+          </div>
+
+          {/* NAT TRANSLATION LIVE TABLE OVERLAY (DISPLAYED INSIDE WORKSPACE WHEN NAT IS ACTIVE) */}
+          {isExternalDomain && (
+            <div className="absolute left-[45%] top-[82%] transform -translate-x-1/2 -translate-y-1/2 z-20 bg-slate-950/95 p-3 rounded-2xl border border-amber-500/40 shadow-xl font-mono text-[10px] space-y-1 text-left min-w-[320px]">
+              <div className="flex items-center justify-between text-amber-400 font-bold border-b border-slate-800 pb-1">
+                <span className="flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" /> ROUTER NAT TRANSLATION TABLE (PAT)
+                </span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-700">ACTIVE</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-slate-300 pt-0.5">
+                <div>
+                  <span className="text-slate-500 block">Inside Private IP:</span>
+                  <span className="text-cyan-300 font-bold">192.168.1.105:54321</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">Translated Public WAN IP:</span>
+                  <span className="text-amber-300 font-bold">203.0.113.45:41001</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* STEP INSPECTION BUTTONS & DETAILS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+          {(isExternalDomain ? [1, 2, 3, 4] : [1, 2, 3]).map((stepNum) => {
+            const meta = stepMeta[stepNum];
+            return (
+              <div key={stepNum} className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 flex flex-col justify-between">
+                <div className="space-y-1 font-mono text-xs">
+                  <span className="text-cyan-400 font-bold text-xs">{meta.title.split(':')[0]}</span>
+                  <p className="text-slate-300 text-[11px] leading-tight">{meta.subtitle}</p>
+                </div>
+
+                <button
+                  onClick={() => setModalPayloadStep(stepNum)}
+                  className="w-full py-1.5 px-2 rounded-xl text-xs font-extrabold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <FileCode className="w-3.5 h-3.5" />
+                  <span>Inspect Packet & NAT 🔍</span>
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
 
       <TerminalLog logs={logs} onClear={() => setLogs([])} />
-
-      {/* Technical Details Collapsible Drawer */}
-      <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
-        <button
-          onClick={() => setShowTechDetails(!showTechDetails)}
-          className="w-full p-4 bg-slate-900/90 hover:bg-slate-900 flex items-center justify-between text-xs font-bold text-slate-300 transition-colors cursor-pointer"
-        >
-          <span className="flex items-center gap-2">
-            <HelpCircle className="w-4 h-4 text-cyan-400" />
-            Technical DNS Zone Records & Header Details
-          </span>
-          {showTechDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
-
-        {showTechDetails && (
-          <div className="p-5 space-y-3 font-mono text-xs bg-slate-950 border-t border-slate-800">
-            <div className="p-3 bg-slate-900 rounded-xl border border-slate-800">
-              <span className="text-cyan-400 font-bold block mb-1">Authoritative Forward Zone: corp.local</span>
-              <p className="text-slate-300">A Record: dc01.corp.local → 192.168.1.10</p>
-              <p className="text-slate-300">SRV Record: _ldap._tcp.dc._msdcs.corp.local → Port 389 → dc01.corp.local</p>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
