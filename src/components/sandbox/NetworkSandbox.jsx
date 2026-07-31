@@ -76,7 +76,7 @@ export default function NetworkSandbox() {
   const [simType, setSimType] = useState('dhcp');
   const [speed, setSpeed] = useState(1);
   const [isSimulating, setIsSimulating] = useState(false);
-  const [simPacketPos, setSimPacketPos] = useState(null);
+  const [simPacketPos, setSimPacketPos] = useState(null); // { x, y, isReturn }
   const [livePacketData, setLivePacketData] = useState(null); // Real-time packet inspector details
   const [statusBanner, setStatusBanner] = useState({
     title: 'Network Topology Sandbox',
@@ -251,7 +251,7 @@ export default function NetworkSandbox() {
     }
   };
 
-  // Run Traffic Simulation with Graph Pathfinding & Real-Time Live Packet Inspector
+  // Run Traffic Simulation with Graph Pathfinding & FULL ROUND-TRIP (OUTBOUND + RETURN TRIP) ANIMATION
   const handleRunSimulation = () => {
     if (simSource === simTarget) return;
 
@@ -338,55 +338,79 @@ export default function NetworkSandbox() {
       }
     };
 
-    const pathNames = cablePath.map(id => nodes.find(n => n.id === id)?.name).join(' ➔ ');
+    const outboundPath = [...cablePath];
+    const returnPath = [...cablePath].reverse();
+    const numSegments = outboundPath.length - 1;
+
+    const pathNames = outboundPath.map(id => nodes.find(n => n.id === id)?.name).join(' ➔ ');
 
     setStatusBanner({
-      title: `⚡ ROUTING ${typeNames[simType]}...`,
-      subtitle: `Path Found: ${pathNames}`
+      title: `⚡ OUTBOUND REQUEST: ${typeNames[simType]}...`,
+      subtitle: `Outbound Path: ${pathNames}`
     });
 
     setLogs(prev => [
       ...prev,
-      { time: new Date().toLocaleTimeString(), tag: simType.toUpperCase(), message: `Routing ${typeNames[simType]} along path: ${pathNames}` }
+      { time: new Date().toLocaleTimeString(), tag: simType.toUpperCase(), message: `OUTBOUND REQUEST: Transmitting ${typeNames[simType]} from ${srcNode?.name} ➔ ${dstNode?.name} along ${pathNames}` }
     ]);
 
-    const numSegments = cablePath.length - 1;
+    let isReturnPhase = false;
     let progress = 0;
 
     const interval = setInterval(() => {
-      progress += (0.04 * speed) / numSegments;
+      progress += (0.045 * speed) / numSegments;
+
       if (progress <= 1) {
+        const activePath = isReturnPhase ? returnPath : outboundPath;
         const totalScaled = progress * numSegments;
         const segIndex = Math.min(Math.floor(totalScaled), numSegments - 1);
         const segProgress = totalScaled - segIndex;
 
-        const nodeA = nodes.find(n => n.id === cablePath[segIndex]);
-        const nodeB = nodes.find(n => n.id === cablePath[segIndex + 1]);
+        const nodeA = nodes.find(n => n.id === activePath[segIndex]);
+        const nodeB = nodes.find(n => n.id === activePath[segIndex + 1]);
 
         if (nodeA && nodeB) {
           const curX = nodeA.x + (nodeB.x - nodeA.x) * segProgress;
           const curY = nodeA.y + (nodeB.y - nodeA.y) * segProgress;
-          setSimPacketPos({ x: curX, y: curY });
+          setSimPacketPos({ x: curX, y: curY, isReturn: isReturnPhase });
 
-          // Update Live Packet Inspector
           const baseTemplate = packetPayloadTemplates[simType] || packetPayloadTemplates.ping;
+          const phaseLabel = isReturnPhase ? 'RESPONSE RETURN TRIP ↩️' : 'REQUEST OUTBOUND ⚡';
           setLivePacketData({
             ...baseTemplate,
-            protocolName: typeNames[simType],
-            currentHop: `Hop ${segIndex + 1} of ${numSegments}: ${nodeA.name} ➔ ${nodeB.name}`
+            protocolName: `${typeNames[simType]} (${phaseLabel})`,
+            currentHop: `${phaseLabel}: Hop ${segIndex + 1} of ${numSegments} (${nodeA.name} ➔ ${nodeB.name})`
           });
         }
+      } else if (!isReturnPhase) {
+        // Outbound Phase complete! Target receives request, now send Response ALL THE WAY BACK to Source!
+        isReturnPhase = true;
+        progress = 0;
+        const returnPathNames = returnPath.map(id => nodes.find(n => n.id === id)?.name).join(' ➔ ');
+
+        setLogs(prev => [
+          ...prev,
+          { time: new Date().toLocaleTimeString(), tag: simType.toUpperCase(), message: `Target ${dstNode?.name} received request! Transmitting RESPONSE BACK along reverse path: ${returnPathNames}` }
+        ]);
+
+        setStatusBanner({
+          title: `↩️ RETURN TRIP: ${typeNames[simType]} RESPONSE...`,
+          subtitle: `Response Packet traveling back to ${srcNode?.name}: ${returnPathNames}`
+        });
       } else {
+        // Return Trip complete! Packet has returned back to Source!
         clearInterval(interval);
         setSimPacketPos(null);
         setIsSimulating(false);
+        
         setStatusBanner({
-          title: `✅ ${typeNames[simType]} DELIVERED!`,
-          subtitle: `Packet traversed cable path (${pathNames}) successfully!`
+          title: `✅ ${typeNames[simType]} COMPLETED & RETURNED!`,
+          subtitle: `Response successfully delivered back to ${srcNode?.name} (${srcNode?.ip})!`
         });
+
         setLogs(prev => [
           ...prev,
-          { time: new Date().toLocaleTimeString(), tag: simType.toUpperCase(), message: `SUCCESS: Delivered to ${dstNode?.name} across ${numSegments} cable hop(s)!` }
+          { time: new Date().toLocaleTimeString(), tag: simType.toUpperCase(), message: `SUCCESS: Response packet arrived safely back at ${srcNode?.name}!` }
         ]);
       }
     }, 40);
@@ -834,13 +858,15 @@ export default function NetworkSandbox() {
             })}
           </svg>
 
-          {/* ANIMATED PACKET OVERLAY */}
+          {/* ANIMATED PACKET OVERLAY (OUTBOUND REQUEST OR RETURN RESPONSE) */}
           {simPacketPos && (
             <div
               style={{ left: `${simPacketPos.x + 60}px`, top: `${simPacketPos.y + 45}px` }}
-              className="absolute w-8 h-8 rounded-full bg-cyan-400 border-2 border-white shadow-2xl shadow-cyan-400 animate-pulse pointer-events-none z-30 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center text-xs font-bold text-slate-950"
+              className={`absolute w-8 h-8 rounded-full border-2 border-white shadow-2xl animate-pulse pointer-events-none z-30 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center text-xs font-bold text-slate-950 ${
+                simPacketPos.isReturn ? 'bg-emerald-400 shadow-emerald-400' : 'bg-cyan-400 shadow-cyan-400'
+              }`}
             >
-              ⚡
+              {simPacketPos.isReturn ? '↩️' : '⚡'}
             </div>
           )}
 
