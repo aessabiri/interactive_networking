@@ -183,7 +183,7 @@ export default function NetworkSandbox() {
       printer: 'NET-PRINTER',
       wifi: 'WIFI-AP',
       storage: 'SAN-STORAGE',
-      cloud: 'INTERNET-POP'
+      cloud: 'INTERNET-ISP'
     };
 
     const defaultOs = {
@@ -473,7 +473,7 @@ export default function NetworkSandbox() {
     }, 40);
   };
 
-  // Node Icon Helper
+  // Node Icon Helper (With Glowing Green Internet ISP Icon)
   const getNodeIcon = (type, roles = []) => {
     if (roles.includes('esxi')) return <Cpu className="w-10 h-10 text-emerald-400" />;
     switch(type) {
@@ -486,7 +486,7 @@ export default function NetworkSandbox() {
       case 'printer': return <Printer className="w-10 h-10 text-slate-300" />;
       case 'wifi': return <Wifi className="w-10 h-10 text-teal-400" />;
       case 'storage': return <Database className="w-10 h-10 text-amber-300" />;
-      case 'cloud': return <Globe className="w-10 h-10 text-cyan-300" />;
+      case 'cloud': return <Globe className="w-10 h-10 text-emerald-400 animate-pulse drop-shadow-[0_0_12px_rgba(16,185,129,0.9)]" />;
       default: return <Server className="w-10 h-10 text-slate-400" />;
     }
   };
@@ -896,10 +896,10 @@ export default function NetworkSandbox() {
 
                   <button
                     onClick={() => { handleAddNode('cloud'); setIsAddDeviceMenuOpen(false); }}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-slate-800 text-slate-300 border border-slate-800 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                    className="w-full px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold flex items-center gap-2 transition-all cursor-pointer"
                   >
-                    <Globe className="w-4 h-4 text-cyan-300" />
-                    <span>+ Internet Cloud</span>
+                    <Globe className="w-4 h-4 text-emerald-400 animate-pulse" />
+                    <span>+ Internet ISP 🌐</span>
                   </button>
                 </div>
               )}
@@ -981,6 +981,7 @@ export default function NetworkSandbox() {
           {nodes.map(node => {
             const isSelected = selectedNodeId === node.id;
             const isServer = node.type === 'server';
+            const isCloudISP = node.type === 'cloud';
             const rolesText = (node.roles || []).join(', ').toUpperCase();
 
             return (
@@ -989,7 +990,9 @@ export default function NetworkSandbox() {
                 onMouseDown={(e) => handleMouseDown(e, node.id)}
                 style={{ left: `${node.x}px`, top: `${node.y}px` }}
                 className={`absolute p-4 rounded-3xl border-4 transition-all cursor-grab active:cursor-grabbing z-20 flex flex-col items-center gap-1.5 font-mono text-xs ${
-                  isSelected
+                  isCloudISP
+                    ? 'bg-emerald-950/90 border-emerald-400 shadow-2xl shadow-emerald-500/50 scale-105 animate-pulse'
+                    : isSelected
                     ? 'bg-cyan-950 border-cyan-400 shadow-2xl shadow-cyan-500/30 scale-105'
                     : 'bg-slate-900/95 border-slate-700 hover:border-slate-500 shadow-lg'
                 }`}
@@ -1007,13 +1010,22 @@ export default function NetworkSandbox() {
 
                 {getNodeIcon(node.type, node.roles)}
 
-                <span className="font-extrabold text-slate-100 text-xs truncate max-w-[130px]">{node.name}</span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-cyan-300 border border-slate-700">{node.ip}</span>
+                <span className={`font-extrabold text-xs truncate max-w-[130px] ${isCloudISP ? 'text-emerald-300' : 'text-slate-100'}`}>
+                  {node.name}
+                </span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${isCloudISP ? 'bg-emerald-900/80 text-emerald-200 border-emerald-500' : 'bg-slate-800 text-cyan-300 border-slate-700'}`}>
+                  {node.ip}
+                </span>
 
                 {/* Role / Type Badge */}
                 {isServer && (
                   <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-800 font-bold max-w-[120px] truncate">
                     {rolesText || 'UNCONFIGURED'}
+                  </span>
+                )}
+                {isCloudISP && (
+                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700 font-extrabold">
+                    GLOBAL WAN ISP 🌐
                   </span>
                 )}
               </div>
