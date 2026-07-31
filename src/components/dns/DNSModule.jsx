@@ -27,8 +27,8 @@ export default function DNSModule() {
       type: 'NONE'
     },
     1: {
-      title: '📢 STEP 1: RECURSIVE LAN QUERY',
-      subtitle: `PC-01 (192.168.1.105) queries Local DNS Server DC01 (192.168.1.10): "What is the IP for ${targetDomain}?"`,
+      title: '📢 STEP 1: RECURSIVE LAN QUERY (PC ➔ LOCAL DNS)',
+      subtitle: `PC-01 (192.168.1.105) sends packet to Local DNS Server DC01 (192.168.1.10): "What is the IP for ${targetDomain}?"`,
       badge: 'LAN QUERY (UDP 53)',
       badgeColor: 'bg-cyan-950 text-cyan-400 border-cyan-500 animate-pulse',
       sender: 'PC',
@@ -59,8 +59,8 @@ export default function DNSModule() {
       }
     },
     3: {
-      title: '✅ STEP 3: AUTHORITATIVE ANSWER RETURNED',
-      subtitle: `DC01 replies to PC-01: "${targetDomain} is located at Private IP 192.168.1.10!"`,
+      title: '✅ STEP 3: AUTHORITATIVE ANSWER RETURNED (LOCAL DNS ➔ PC)',
+      subtitle: `DC01 returns answer packet back to PC-01: "${targetDomain} is located at Private IP 192.168.1.10!"`,
       badge: 'RESOLVED (LOCAL)',
       badgeColor: 'bg-emerald-950 text-emerald-400 border-emerald-500',
       sender: 'DC01',
@@ -79,14 +79,14 @@ export default function DNSModule() {
   const stepMetaExternal = {
     0: {
       title: 'Ready for Internet DNS Lookup + NAT',
-      subtitle: `Target "${targetDomain}" is a public domain. Query will traverse the ISP Router & NAT into the Internet Cloud ☁️!`,
+      subtitle: `Target "${targetDomain}" is a public domain. Watch the packet travel out to DNS and back to PC-01!`,
       badge: 'IDLE',
       badgeColor: 'bg-slate-800 text-slate-400 border-slate-700',
       type: 'NONE'
     },
     1: {
-      title: '📢 STEP 1: PC QUERIES LOCAL DNS / GATEWAY',
-      subtitle: `PC-01 (192.168.1.105) sends DNS query for "${targetDomain}" to ISP Gateway Router (192.168.1.1).`,
+      title: '📢 STEP 1: PC QUERIES ISP ROUTER GATEWAY (PC ➔ ROUTER)',
+      subtitle: `PC-01 (192.168.1.105) sends DNS query for "${targetDomain}" across LAN cable to Gateway Router (192.168.1.1).`,
       badge: 'LAN QUERY (UDP 53)',
       badgeColor: 'bg-cyan-950 text-cyan-400 border-cyan-500 animate-pulse',
       sender: 'PC',
@@ -101,9 +101,9 @@ export default function DNSModule() {
       }
     },
     2: {
-      title: '🔀 STEP 2: ISP ROUTER NAT OPERATION (SNAT / PAT)',
-      subtitle: 'ISP Router rewrites Private IP 192.168.1.105:54321 → Public IP 203.0.113.45:41001 in NAT Table!',
-      badge: 'NAT TRANSLATION ACTIVE',
+      title: '🔀 STEP 2: ISP ROUTER NAT & CLOUD FORWARDING (ROUTER ➔ CLOUD)',
+      subtitle: 'ISP Router rewrites Private IP 192.168.1.105:54321 → Public IP 203.0.113.45:41001 and sends packet into Cloud!',
+      badge: 'NAT TRANSLATION & WAN TRAVERSAL',
       badgeColor: 'bg-amber-950 text-amber-400 border-amber-500 animate-pulse',
       sender: 'ROUTER',
       target: 'CLOUD',
@@ -117,8 +117,8 @@ export default function DNSModule() {
       }
     },
     3: {
-      title: '☁️ STEP 3: INTERNET CLOUD & PUBLIC DNS LOOKUP',
-      subtitle: 'Packet travels through Internet Cloud to Public DNS Server (8.8.8.8). Root & TLD servers resolve IP!',
+      title: '☁️ STEP 3: INTERNET CLOUD ➔ PUBLIC DNS (8.8.8.8)',
+      subtitle: 'Packet travels through Internet Cloud backbone to Google Public DNS (8.8.8.8) which resolves IP!',
       badge: 'INTERNET CLOUD RESOLUTION',
       badgeColor: 'bg-blue-950 text-blue-400 border-blue-500 animate-pulse',
       sender: 'CLOUD',
@@ -133,11 +133,11 @@ export default function DNSModule() {
       }
     },
     4: {
-      title: '✅ STEP 4: REVERSE NAT & ANSWER RETURNED TO PC',
-      subtitle: 'ISP Router matches NAT Table (203.0.113.45:41001 ➔ 192.168.1.105:54321) and delivers resolved IP to PC-01!',
-      badge: 'RESOLVED VIA NAT (142.250.180.206)',
+      title: '✅ STEP 4: DNS ANSWER RETURN TRIP (PUBLIC DNS ➔ ROUTER ➔ PC)',
+      subtitle: 'Resolved IP answer packet returns back through NAT and delivers IP 142.250.180.206 to PC-01!',
+      badge: 'RESOLVED & RETURNED TO PC (142.250.180.206)',
       badgeColor: 'bg-emerald-950 text-emerald-400 border-emerald-500',
-      sender: 'ROUTER',
+      sender: 'PUBLIC_DNS',
       target: 'PC',
       payload: {
         stepName: '4. Reverse NAT & Delivery',
@@ -222,6 +222,85 @@ export default function DNSModule() {
   const currentMeta = stepMeta[activeStep] || stepMeta[0];
   const isFinalStepComplete = activeStep === totalSteps;
   const activeModalData = modalPayloadStep ? stepMeta[modalPayloadStep]?.payload : null;
+
+  // DYNAMIC PACKET ANIMATION TRAJECTORY CALCULATIONS FOR TO AND BACK TRAVERSAL:
+  // Node coordinates:
+  // PC-01: (15%, 55%)
+  // DC01: (28%, 18%)
+  // ISP Router: (45%, 55%)
+  // Internet Cloud: (72%, 25%)
+  // Public DNS: (88%, 55%)
+
+  const getPacketPos = () => {
+    if (!isPlaying && activeStep === 0) return null;
+    const p = packetProgress / 100; // 0 to 1
+
+    if (isExternalDomain) {
+      if (activeStep === 1) {
+        // Step 1: PC (15%, 55%) -> ISP Router (45%, 55%)
+        return {
+          left: `${15 + p * 30}%`,
+          top: '55%',
+          label: 'DNS Query (UDP 53)',
+          bgColor: 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-cyan-500/50'
+        };
+      } else if (activeStep === 2) {
+        // Step 2: ISP Router (45%, 55%) -> Internet Cloud (72%, 25%)
+        return {
+          left: `${45 + p * 27}%`,
+          top: `${55 - p * 30}%`,
+          label: 'NAT Packet (203.0.113.45)',
+          bgColor: 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-amber-500/50'
+        };
+      } else if (activeStep === 3) {
+        // Step 3: Internet Cloud (72%, 25%) -> Public DNS (88%, 55%)
+        return {
+          left: `${72 + p * 16}%`,
+          top: `${25 + p * 30}%`,
+          label: `Query A ${targetDomain}`,
+          bgColor: 'bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 shadow-blue-500/50'
+        };
+      } else if (activeStep === 4) {
+        // Step 4: Public DNS (88%, 55%) -> RETURN ALL THE WAY BACK TO PC (15%, 55%)!
+        return {
+          left: `${88 - p * 73}%`,
+          top: '55%',
+          label: 'DNS Answer (142.250.180.206)',
+          bgColor: 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 shadow-emerald-500/50 animate-bounce'
+        };
+      }
+    } else {
+      // LOCAL QUERY TRAJECTORIES:
+      if (activeStep === 1) {
+        // Step 1: PC (15%, 55%) -> DC01 (28%, 18%)
+        return {
+          left: `${15 + p * 13}%`,
+          top: `${55 - p * 37}%`,
+          label: 'Local Query (UDP 53)',
+          bgColor: 'bg-gradient-to-r from-cyan-400 to-purple-500 text-slate-950 shadow-cyan-500/50'
+        };
+      } else if (activeStep === 2) {
+        // Step 2: Inspection at DC01 (28%, 18%)
+        return {
+          left: '28%',
+          top: '18%',
+          label: 'AD Zone Lookup...',
+          bgColor: 'bg-purple-500 text-white shadow-purple-500/50'
+        };
+      } else if (activeStep === 3) {
+        // Step 3: DC01 (28%, 18%) -> RETURN BACK TO PC (15%, 55%)!
+        return {
+          left: `${28 - p * 13}%`,
+          top: `${18 + p * 37}%`,
+          label: 'DNS Answer (192.168.1.10)',
+          bgColor: 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 shadow-emerald-500/50 animate-bounce'
+        };
+      }
+    }
+    return null;
+  };
+
+  const animPos = getPacketPos();
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative">
@@ -432,7 +511,7 @@ export default function DNSModule() {
               Private IP: 192.168.1.105
             </span>
             <div className={`p-5 rounded-3xl border-4 transition-all duration-300 ${
-              activeStep === 4
+              activeStep === 4 || (!isExternalDomain && activeStep === 3)
                 ? 'bg-emerald-950 border-emerald-400 shadow-2xl scale-110'
                 : 'bg-slate-900 border-slate-700'
             }`}>
@@ -513,6 +592,17 @@ export default function DNSModule() {
               <p className="text-[10px] text-slate-400">Authoritative Resolver</p>
             </div>
           </div>
+
+          {/* DYNAMIC ANIMATED PACKET OVERLAY (TRAVELING TO DNS AND RETURN TRIP TO PC) */}
+          {animPos && (
+            <div
+              style={{ left: animPos.left, top: animPos.top }}
+              className={`absolute transform -translate-x-1/2 -translate-y-1/2 z-30 px-3 py-1.5 rounded-full font-mono font-black text-xs shadow-2xl flex items-center gap-1.5 border-2 border-white transition-all duration-100 ${animPos.bgColor}`}
+            >
+              <Mail className="w-4 h-4 fill-current" />
+              <span>{animPos.label}</span>
+            </div>
+          )}
 
           {/* NAT TRANSLATION LIVE TABLE OVERLAY (DISPLAYED INSIDE WORKSPACE WHEN NAT IS ACTIVE) */}
           {isExternalDomain && (
