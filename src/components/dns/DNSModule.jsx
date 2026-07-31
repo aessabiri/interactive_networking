@@ -21,14 +21,14 @@ export default function DNSModule() {
   const stepMetaLocal = {
     0: {
       title: 'Ready for Local DNS Resolution',
-      subtitle: 'Target is in local domain (.local). Query stays inside private LAN (192.168.1.0/24). NAT is not required.',
+      subtitle: 'Target is in local domain (.local). Query stays inside private LAN (192.168.1.0/24) through Central L2 Switch. NAT is not required.',
       badge: 'IDLE',
       badgeColor: 'bg-slate-800 text-slate-400 border-slate-700',
       type: 'NONE'
     },
     1: {
-      title: '📢 STEP 1: RECURSIVE LAN QUERY (PC ➔ LOCAL DNS)',
-      subtitle: `PC-01 (192.168.1.105) sends packet to Local DNS Server DC01 (192.168.1.10): "What is the IP for ${targetDomain}?"`,
+      title: '📢 STEP 1: RECURSIVE LAN QUERY (PC ➔ L2 SWITCH ➔ LOCAL DNS)',
+      subtitle: `PC-01 (192.168.1.105) sends packet through L2 Switch to Local DNS Server DC01 (192.168.1.10): "What is the IP for ${targetDomain}?"`,
       badge: 'LAN QUERY (UDP 53)',
       badgeColor: 'bg-cyan-950 text-cyan-400 border-cyan-500 animate-pulse',
       sender: 'PC',
@@ -59,8 +59,8 @@ export default function DNSModule() {
       }
     },
     3: {
-      title: '✅ STEP 3: AUTHORITATIVE ANSWER RETURNED (LOCAL DNS ➔ PC)',
-      subtitle: `DC01 returns answer packet back across LAN wire to PC-01: "${targetDomain} is located at Private IP 192.168.1.10!"`,
+      title: '✅ STEP 3: AUTHORITATIVE ANSWER RETURNED (LOCAL DNS ➔ L2 SWITCH ➔ PC)',
+      subtitle: `DC01 returns answer packet through L2 Switch back to PC-01: "${targetDomain} is located at Private IP 192.168.1.10!"`,
       badge: 'RESOLVED (LOCAL)',
       badgeColor: 'bg-emerald-950 text-emerald-400 border-emerald-500',
       sender: 'DC01',
@@ -79,14 +79,14 @@ export default function DNSModule() {
   const stepMetaExternal = {
     0: {
       title: 'Ready for Internet DNS Lookup + ISP Wire Traversal',
-      subtitle: `Target "${targetDomain}" is a public domain. Watch the packet travel out to ISP & Public DNS, then return along the wires to Router & PC!`,
+      subtitle: `Target "${targetDomain}" is a public domain. Watch packet travel from PC ➔ Switch ➔ Router Gateway (NAT) ➔ ISP ➔ Public DNS, then return back!`,
       badge: 'IDLE',
       badgeColor: 'bg-slate-800 text-slate-400 border-slate-700',
       type: 'NONE'
     },
     1: {
-      title: '📢 STEP 1: PC ➔ ROUTER GATEWAY (LAN WIRE)',
-      subtitle: `PC-01 (192.168.1.105) sends DNS query for "${targetDomain}" along LAN wire to Router Gateway (192.168.1.1).`,
+      title: '📢 STEP 1: PC ➔ L2 SWITCH ➔ ROUTER GATEWAY (LAN WIRE)',
+      subtitle: `PC-01 (192.168.1.105) sends DNS query for "${targetDomain}" across L2 Switch to Router Gateway (192.168.1.1).`,
       badge: 'LAN WIRE QUERY (UDP 53)',
       badgeColor: 'bg-cyan-950 text-cyan-400 border-cyan-500 animate-pulse',
       sender: 'PC',
@@ -133,15 +133,15 @@ export default function DNSModule() {
       }
     },
     4: {
-      title: '✅ STEP 4: RETURN TRIP ALONG WIRES (PUBLIC DNS ➔ ISP ➔ ROUTER ➔ PC)',
-      subtitle: 'Resolved IP answer packet travels BACK along the wires: Public DNS ➔ ISP ➔ Router (Reverse NAT) ➔ PC-01!',
+      title: '✅ STEP 4: RETURN TRIP ALONG WIRES (PUBLIC DNS ➔ ISP ➔ ROUTER ➔ L2 SWITCH ➔ PC)',
+      subtitle: 'Resolved IP answer packet travels BACK: Public DNS ➔ ISP ➔ Router (Reverse NAT) ➔ L2 Switch ➔ PC-01!',
       badge: 'ANSWER RETURNED ALONG WIRES (142.250.180.206)',
       badgeColor: 'bg-emerald-950 text-emerald-400 border-emerald-500',
       sender: 'PUBLIC_DNS',
       target: 'PC',
       payload: {
         stepName: '4. Full Reverse Wire Return',
-        l2Header: 'Public DNS ➔ ISP Fiber Wire ➔ Router WAN ➔ LAN Cable ➔ PC-01',
+        l2Header: 'Public DNS ➔ ISP Fiber Wire ➔ Router WAN ➔ L2 Switch ➔ PC-01',
         l3Header: 'Src IP: 8.8.8.8 → Dst IP: 192.168.1.105 (Restored Private IP)',
         l4Header: 'UDP Src Port: 53 → Dst Port: 54321',
         natStatus: 'REVERSE NAT SUCCESS: Restored Private IP 192.168.1.105',
@@ -224,12 +224,13 @@ export default function DNSModule() {
   const activeModalData = modalPayloadStep ? stepMeta[modalPayloadStep]?.payload : null;
   const currentPayload = currentMeta.payload;
 
-  // DYNAMIC PACKET ANIMATION TRAJECTORY CALCULATIONS FOR EXPLICIT WIRE TRAVERSAL:
+  // DYNAMIC PACKET ANIMATION TRAJECTORY CALCULATIONS WITH CENTRAL L2 SWITCH:
   // Node coordinates:
-  // PC-01: (12%, 55%)
-  // DC01: (28%, 18%)
-  // ISP Router: (45%, 55%)
-  // ISP: (72%, 20%)
+  // PC-01: (10%, 55%)
+  // L2 Switch: (28%, 55%)
+  // DC01 Local AD DNS: (28%, 18%)
+  // ISP Router: (46%, 55%)
+  // ISP POP: (72%, 20%)
   // Public DNS: (88%, 55%)
 
   const getPacketPos = () => {
@@ -238,23 +239,34 @@ export default function DNSModule() {
 
     if (isExternalDomain) {
       if (activeStep === 1) {
-        // Step 1: PC (12%, 55%) -> ISP Router (45%, 55%) along Cable 1
-        return {
-          left: `${12 + p * 33}%`,
-          top: '55%',
-          label: 'DNS Query (UDP 53)',
-          bgColor: 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-cyan-500/50'
-        };
+        // Step 1: PC (10%, 55%) -> L2 Switch (28%, 55%) -> ISP Router (46%, 55%)
+        if (packetProgress <= 50) {
+          const t = packetProgress / 50;
+          return {
+            left: `${10 + t * 18}%`,
+            top: '55%',
+            label: 'Query ➔ L2 Switch',
+            bgColor: 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-cyan-500/50'
+          };
+        } else {
+          const t = (packetProgress - 50) / 50;
+          return {
+            left: `${28 + t * 18}%`,
+            top: '55%',
+            label: 'L2 Switch ➔ Router Gateway',
+            bgColor: 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-cyan-500/50'
+          };
+        }
       } else if (activeStep === 2) {
-        // Step 2: ISP Router (45%, 55%) -> ISP (72%, 20%) along Cable 2
+        // Step 2: ISP Router (46%, 55%) -> ISP POP (72%, 20%)
         return {
-          left: `${45 + p * 27}%`,
+          left: `${46 + p * 26}%`,
           top: `${55 - p * 35}%`,
           label: 'NAT Packet (203.0.113.45)',
           bgColor: 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-amber-500/50'
         };
       } else if (activeStep === 3) {
-        // Step 3: ISP (72%, 20%) -> Public DNS (88%, 55%) along Cable 3
+        // Step 3: ISP POP (72%, 20%) -> Public DNS (88%, 55%)
         return {
           left: `${72 + p * 16}%`,
           top: `${20 + p * 35}%`,
@@ -274,7 +286,7 @@ export default function DNSModule() {
         } else if (packetProgress <= 66) {
           const t = (packetProgress - 33) / 33;
           return {
-            left: `${72 - t * 27}%`,
+            left: `${72 - t * 26}%`,
             top: `${20 + t * 35}%`,
             label: '2. Returning: ISP ➔ Router (Reverse NAT)',
             bgColor: 'bg-gradient-to-r from-amber-400 to-emerald-400 text-slate-950 shadow-emerald-500/50'
@@ -282,23 +294,33 @@ export default function DNSModule() {
         } else {
           const t = (packetProgress - 66) / 34;
           return {
-            left: `${45 - t * 33}%`,
+            left: `${46 - t * 36}%`,
             top: '55%',
-            label: '3. Delivered to PC-01 (142.250.180.206)',
+            label: '3. Delivered via Switch ➔ PC-01 (142.250.180.206)',
             bgColor: 'bg-gradient-to-r from-emerald-400 to-teal-300 text-slate-950 shadow-emerald-500/50 animate-bounce'
           };
         }
       }
     } else {
-      // LOCAL QUERY TRAJECTORIES:
+      // LOCAL QUERY TRAJECTORIES (PC 10%, 55% -> Switch 28%, 55% -> DC01 28%, 18%):
       if (activeStep === 1) {
-        // Step 1: PC (12%, 55%) -> DC01 (28%, 18%)
-        return {
-          left: `${12 + p * 16}%`,
-          top: `${55 - p * 37}%`,
-          label: 'Local Query (UDP 53)',
-          bgColor: 'bg-gradient-to-r from-cyan-400 to-purple-500 text-slate-950 shadow-cyan-500/50'
-        };
+        if (packetProgress <= 50) {
+          const t = packetProgress / 50;
+          return {
+            left: `${10 + t * 18}%`,
+            top: '55%',
+            label: 'Local Query ➔ L2 Switch',
+            bgColor: 'bg-gradient-to-r from-cyan-400 to-purple-500 text-slate-950 shadow-cyan-500/50'
+          };
+        } else {
+          const t = (packetProgress - 50) / 50;
+          return {
+            left: '28%',
+            top: `${55 - t * 37}%`,
+            label: 'L2 Switch ➔ DC01 DNS',
+            bgColor: 'bg-gradient-to-r from-cyan-400 to-purple-500 text-slate-950 shadow-cyan-500/50'
+          };
+        }
       } else if (activeStep === 2) {
         // Step 2: Inspection at DC01 (28%, 18%)
         return {
@@ -308,13 +330,24 @@ export default function DNSModule() {
           bgColor: 'bg-purple-500 text-white shadow-purple-500/50'
         };
       } else if (activeStep === 3) {
-        // Step 3: DC01 (28%, 18%) -> RETURN BACK ALONG WIRE TO PC (12%, 55%)!
-        return {
-          left: `${28 - p * 16}%`,
-          top: `${18 + p * 37}%`,
-          label: 'DNS Answer (192.168.1.10)',
-          bgColor: 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 shadow-emerald-500/50 animate-bounce'
-        };
+        // Step 3: DC01 (28%, 18%) -> Switch (28%, 55%) -> PC-01 (10%, 55%)
+        if (packetProgress <= 50) {
+          const t = packetProgress / 50;
+          return {
+            left: '28%',
+            top: `${18 + t * 37}%`,
+            label: 'DNS Answer ➔ L2 Switch',
+            bgColor: 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 shadow-emerald-500/50'
+          };
+        } else {
+          const t = (packetProgress - 50) / 50;
+          return {
+            left: `${28 - t * 18}%`,
+            top: '55%',
+            label: 'Delivered to PC-01 (192.168.1.10)',
+            bgColor: 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 shadow-emerald-500/50 animate-bounce'
+          };
+        }
       }
     }
     return null;
@@ -493,40 +526,43 @@ export default function DNSModule() {
           <p className="text-xs text-slate-200 font-medium text-center sm:text-right max-w-md">{currentMeta.subtitle}</p>
         </div>
 
-        {/* ENLARGED TOPOLOGY STAGE (PRIVATE LAN ➔ ISP ROUTER WITH NAT ➔ ISP ➔ PUBLIC DNS) */}
+        {/* ENLARGED TOPOLOGY STAGE (PRIVATE LAN ➔ L2 SWITCH ➔ ISP ROUTER WITH NAT ➔ ISP ➔ PUBLIC DNS) */}
         <div className="py-6 px-4 relative min-h-[520px] bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden">
           
           {/* VISIBLE NETWORK CONNECTION LINES (WIRES) */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
-            {/* Cable 1: PC-01 (12%, 55%) -> ISP Router (45%, 55%) */}
-            <line x1="12%" y1="55%" x2="45%" y2="55%" stroke="#06b6d4" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.7" />
+            {/* Cable 1: PC-01 (10%, 55%) -> Central L2 Switch (28%, 55%) */}
+            <line x1="10%" y1="55%" x2="28%" y2="55%" stroke="#06b6d4" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.8" />
+
+            {/* Cable 2: Central L2 Switch (28%, 55%) -> Local DC01 DNS (28%, 18%) */}
+            <line x1="28%" y1="55%" x2="28%" y2="18%" stroke="#a855f7" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.8" />
+
+            {/* Cable 3: Central L2 Switch (28%, 55%) -> ISP Router (46%, 55%) */}
+            <line x1="28%" y1="55%" x2="46%" y2="55%" stroke="#06b6d4" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.8" />
             
-            {/* Cable 2: ISP Router (45%, 55%) -> ISP Node (72%, 20%) */}
-            <line x1="45%" y1="55%" x2="72%" y2="20%" stroke="#f59e0b" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.7" />
+            {/* Cable 4: ISP Router (46%, 55%) -> ISP Node (72%, 20%) */}
+            <line x1="46%" y1="55%" x2="72%" y2="20%" stroke="#f59e0b" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.8" />
 
-            {/* Cable 3: ISP Node (72%, 20%) -> Public DNS (88%, 55%) */}
-            <line x1="72%" y1="20%" x2="88%" y2="55%" stroke="#3b82f6" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.7" />
-
-            {/* Cable 4: PC-01 (12%, 55%) -> Local DC01 DNS (28%, 18%) */}
-            <line x1="12%" y1="55%" x2="28%" y2="18%" stroke="#a855f7" strokeWidth="3" strokeDasharray="6 4" strokeOpacity="0.5" />
+            {/* Cable 5: ISP Node (72%, 20%) -> Public DNS (88%, 55%) */}
+            <line x1="72%" y1="20%" x2="88%" y2="55%" stroke="#3b82f6" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.8" />
           </svg>
 
           {/* PRIVATE LAN BOUNDARY CONTAINER */}
-          <div className="absolute left-[2%] top-[5%] w-[46%] h-[90%] border-2 border-dashed border-cyan-800/40 rounded-3xl pointer-events-none p-3">
+          <div className="absolute left-[2%] top-[5%] w-[48%] h-[90%] border-2 border-dashed border-cyan-800/40 rounded-3xl pointer-events-none p-3">
             <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/80 text-cyan-400 border border-cyan-800">
               PRIVATE SUBNET (192.168.1.0/24)
             </span>
           </div>
 
           {/* PUBLIC ISP / WAN BOUNDARY CONTAINER */}
-          <div className="absolute right-[2%] top-[5%] w-[50%] h-[90%] border-2 border-dashed border-amber-800/40 rounded-3xl pointer-events-none p-3 text-right">
+          <div className="absolute right-[2%] top-[5%] w-[48%] h-[90%] border-2 border-dashed border-amber-800/40 rounded-3xl pointer-events-none p-3 text-right">
             <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/80 text-amber-400 border border-amber-800">
               PUBLIC WAN & ISP INFRASTRUCTURE (203.0.113.0/24)
             </span>
           </div>
 
-          {/* 1. PC-01 CLIENT (LEFT: 12%, 55%) */}
-          <div className="absolute left-[12%] top-[55%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
+          {/* 1. PC-01 CLIENT (LEFT: 10%, 55%) */}
+          <div className="absolute left-[10%] top-[55%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-cyan-950 text-cyan-300 border border-cyan-700 shadow">
               Private IP: 192.168.1.105
             </span>
@@ -543,7 +579,23 @@ export default function DNSModule() {
             </div>
           </div>
 
-          {/* 2. LOCAL DC01 DNS SERVER (TOP-LEFT: 28%, 18%) */}
+          {/* 2. CENTRAL L2 SWITCH (28%, 55%) */}
+          <div className="absolute left-[28%] top-[55%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
+            <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-blue-950 text-blue-300 border border-blue-600 shadow-lg">
+              CENTRAL L2 SWITCH
+            </span>
+            <div className={`p-5 rounded-3xl border-4 transition-all duration-300 ${
+              isPlaying ? 'bg-blue-900/90 border-blue-400 shadow-2xl shadow-blue-500/40 scale-110' : 'bg-blue-950/90 border-blue-500 text-blue-300'
+            }`}>
+              <Layers className="w-12 h-12 text-blue-300" />
+            </div>
+            <div className="text-center font-mono">
+              <p className="text-xs font-extrabold text-blue-300">SWITCH</p>
+              <p className="text-[10px] text-slate-400">Forwards LAN Frames</p>
+            </div>
+          </div>
+
+          {/* 3. LOCAL DC01 DNS SERVER (TOP-LEFT: 28%, 18%) */}
           <div className="absolute left-[28%] top-[18%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 text-center z-10">
             <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-purple-950 text-purple-300 border border-purple-700 shadow">
               192.168.1.10 (UDP Port 53)
@@ -559,8 +611,8 @@ export default function DNSModule() {
             </div>
           </div>
 
-          {/* 3. ISP ROUTER WITH NAT OPERATION (CENTER-LEFT: 45%, 55%) */}
-          <div className="absolute left-[45%] top-[55%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
+          {/* 4. ISP ROUTER WITH NAT OPERATION (CENTER-LEFT: 46%, 55%) */}
+          <div className="absolute left-[46%] top-[55%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
             <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-amber-950 text-amber-300 border border-amber-600 shadow-lg flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-amber-400" /> ISP ROUTER (NAT GATEWAY)
             </span>
@@ -577,7 +629,7 @@ export default function DNSModule() {
             </div>
           </div>
 
-          {/* 4. ISP (INTERNET SERVICE PROVIDER) NODE (REPLACING CLOUD: TOP-RIGHT 72%, 20%) */}
+          {/* 5. ISP (INTERNET SERVICE PROVIDER) NODE (TOP-RIGHT 72%, 20%) */}
           <div className="absolute left-[72%] top-[20%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 text-center z-10">
             <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono bg-amber-950 text-amber-300 border border-amber-700 shadow flex items-center gap-1">
               <Building2 className="w-3.5 h-3.5 text-amber-400" /> ISP BACKBONE POP
@@ -595,7 +647,7 @@ export default function DNSModule() {
             </div>
           </div>
 
-          {/* 5. PUBLIC DNS SERVER (RIGHT: 88%, 55%) */}
+          {/* 6. PUBLIC DNS SERVER (RIGHT: 88%, 55%) */}
           <div className="absolute left-[88%] top-[55%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
             <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-blue-950 text-blue-300 border border-blue-700 shadow">
               Public IP: 8.8.8.8
@@ -613,7 +665,7 @@ export default function DNSModule() {
             </div>
           </div>
 
-          {/* DYNAMIC ANIMATED PACKET OVERLAY (EXPLICIT STEP-BY-STEP WIRE TRAVERSAL TO ISP/DNS AND RETURN TRIP TO PC) */}
+          {/* DYNAMIC ANIMATED PACKET OVERLAY */}
           {animPos && (
             <div
               style={{ left: animPos.left, top: animPos.top }}
@@ -624,9 +676,9 @@ export default function DNSModule() {
             </div>
           )}
 
-          {/* NAT TRANSLATION LIVE TABLE OVERLAY (DISPLAYED INSIDE WORKSPACE WHEN NAT IS ACTIVE) */}
+          {/* NAT TRANSLATION LIVE TABLE OVERLAY */}
           {isExternalDomain && (
-            <div className="absolute left-[45%] top-[82%] transform -translate-x-1/2 -translate-y-1/2 z-20 bg-slate-950/95 p-3 rounded-2xl border border-amber-500/40 shadow-xl font-mono text-[10px] space-y-1 text-left min-w-[320px]">
+            <div className="absolute left-[46%] top-[82%] transform -translate-x-1/2 -translate-y-1/2 z-20 bg-slate-950/95 p-3 rounded-2xl border border-amber-500/40 shadow-xl font-mono text-[10px] space-y-1 text-left min-w-[320px]">
               <div className="flex items-center justify-between text-amber-400 font-bold border-b border-slate-800 pb-1">
                 <span className="flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5" /> ROUTER NAT TRANSLATION TABLE (PAT)
