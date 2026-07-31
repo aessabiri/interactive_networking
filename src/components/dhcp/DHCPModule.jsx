@@ -13,6 +13,10 @@ export default function DHCPModule({ appMode = 'clean' }) {
   const [packetProgress, setPacketProgress] = useState(0); // 0 to 100%
   const [modalPayloadStep, setModalPayloadStep] = useState(null); // 1, 2, 3, 4 or null for floating modal
 
+  const [logs, setLogs] = useState([
+    { time: new Date().toLocaleTimeString(), tag: 'DHCP', message: 'DHCP Daemon initialized. Listening on UDP Port 67 (Server) / Port 68 (Client).' }
+  ]);
+
   // Enhanced DORA Steps Metadata & Packet Payloads
   const stepMeta = {
     0: {
@@ -196,6 +200,22 @@ export default function DHCPModule({ appMode = 'clean' }) {
       clearTimeout(timer);
     };
   }, [isPlaying, activeStep, speed, isSingleStep]);
+
+  useEffect(() => {
+    if (activeStep > 0) {
+      const stepInfo = stepMeta[activeStep];
+      if (stepInfo) {
+        setLogs(prev => [
+          ...prev,
+          {
+            time: new Date().toLocaleTimeString(),
+            tag: `DORA_${activeStep}`,
+            message: `${stepInfo.title} — ${stepInfo.explanation}`
+          }
+        ]);
+      }
+    }
+  }, [activeStep]);
 
   const handlePlayFull = () => {
     if (activeStep === 4) setActiveStep(1);
