@@ -36,10 +36,16 @@ export function CleanInfoBanner({ ip, protocol, port, status, actionTitle, actio
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
         
         {/* Step Badge */}
-        {stepNumber !== undefined && (
+        {stepNumber !== undefined && stepNumber > 0 && (
           <span className="px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 border border-emerald-300 animate-pulse">
             <Sparkles className="w-4 h-4 fill-current" />
             <span>Stage {stepNumber} of {totalSteps}</span>
+          </span>
+        )}
+        {stepNumber === 0 && (
+          <span className="px-4 py-2 rounded-2xl bg-slate-800 text-emerald-300 font-bold text-sm shadow flex items-center gap-1.5 border border-slate-700">
+            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <span>Ready to Start</span>
           </span>
         )}
 
