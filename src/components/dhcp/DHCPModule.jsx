@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, RotateCcw, Server, Laptop, Router, CheckCircle2, Zap, Gauge, Mail, HelpCircle, Radio, Database, Terminal, SkipForward, Globe, XCircle, Info, FileCode, X, Layers, Cpu, Hash } from 'lucide-react';
+import { Play, Pause, RotateCcw, Server, Laptop, Router, CheckCircle2, Zap, Gauge, Mail, HelpCircle, Radio, Database, Terminal, SkipForward, Globe, XCircle, Info, FileCode, X, Layers, Cpu, Hash, Activity } from 'lucide-react';
 
 export default function DHCPModule() {
   const [activeStep, setActiveStep] = useState(0); // 0: Idle, 1: Discover, 2: Offer, 3: Request, 4: Ack
@@ -300,6 +300,7 @@ export default function DHCPModule() {
   const packetPos = getPacketPosition();
   const floodedPos = getFloodedPacketPositions();
   const activeModalData = modalPayloadStep ? stepMeta[modalPayloadStep]?.payload : null;
+  const currentPayload = currentMeta.payload;
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative">
@@ -692,19 +693,60 @@ export default function DHCPModule() {
           )}
         </div>
 
-        {/* Step Walkthrough & Broadcast Explanation Box */}
-        <div className="p-4 bg-slate-950/90 rounded-2xl border border-slate-800 space-y-2 font-mono text-xs text-slate-300">
-          <div className="flex items-center justify-between text-amber-400 font-bold border-b border-slate-800/80 pb-1.5">
-            <span className="flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-amber-400" />
-              Step Walkthrough & Path Status
-            </span>
-            <span className="text-slate-400 text-[10px]">
+        {/* LIVE PACKET VIEWER (REAL-TIME PROTOCOL HEADERS & PAYLOAD INSPECTOR) */}
+        <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+            <div className="flex items-center gap-2 text-amber-400 font-extrabold text-xs">
+              <Activity className="w-4 h-4 text-amber-400 animate-pulse" />
+              <span>LIVE PACKET VIEWER (REAL-TIME HEADERS & PAYLOAD)</span>
+            </div>
+            <span className="text-slate-400 text-[10px] font-bold">
               {packetPos.currentPort || `Src: ${currentMeta.srcIp} → Dst: ${currentMeta.dstIp}`}
             </span>
           </div>
-          <p className="text-slate-200 leading-relaxed">{currentMeta.explanation}</p>
-          <p className="text-cyan-300 font-semibold bg-cyan-950/40 p-2 rounded-xl border border-cyan-900/40">{currentMeta.whyBroadcast}</p>
+
+          {currentPayload ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Column 1: Network Headers */}
+              <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
+                <div className="flex items-center justify-between text-cyan-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                  <span>Protocol Stack Headers:</span>
+                  <span className="text-amber-400">{currentPayload.stepName}</span>
+                </div>
+                <p className="text-slate-300 text-[11px]">
+                  <span className="text-slate-500 font-bold">Ethernet (L2):</span> {currentPayload.l2Header}
+                </p>
+                <p className="text-slate-300 text-[11px]">
+                  <span className="text-slate-500 font-bold">IPv4 (L3):</span> <span className="text-cyan-300 font-bold">{currentPayload.l3Header}</span>
+                </p>
+                <p className="text-slate-300 text-[11px]">
+                  <span className="text-slate-500 font-bold">UDP (L4):</span> <span className="text-emerald-300 font-bold">{currentPayload.l4Header}</span>
+                </p>
+              </div>
+
+              {/* Column 2: BOOTP/DHCP Payload Data */}
+              <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
+                <div className="flex items-center justify-between text-amber-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                  <span>DHCP Payload & Parameters:</span>
+                  <span className="text-slate-400 text-[10px]">xid: {currentPayload.xid}</span>
+                </div>
+                <p className="text-slate-300 text-[11px]">
+                  <span className="text-slate-500 font-bold">Client MAC (chaddr):</span> <span className="text-cyan-300 font-bold">{currentPayload.clientMac}</span>
+                </p>
+                <p className="text-slate-300 text-[11px]">
+                  <span className="text-slate-500 font-bold">Offered IP (yiaddr):</span> <span className="text-amber-300 font-bold">{currentPayload.yiaddr}</span>
+                </p>
+                <p className="text-slate-300 text-[11px]">
+                  <span className="text-slate-500 font-bold">Key DHCP Option:</span> <span className="text-emerald-300 font-bold">{currentPayload.options[0]}</span>
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
+              <p className="font-bold">No active DHCP packet in flight.</p>
+              <p className="text-[10px]">Click "Next DORA Step" or "Play Full DORA" to observe real-time packet headers.</p>
+            </div>
+          )}
         </div>
       </div>
 
