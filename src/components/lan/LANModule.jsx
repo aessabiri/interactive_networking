@@ -509,7 +509,7 @@ export default function LANModule() {
               <Laptop className="w-10 h-10 text-slate-500" />
             </div>
             <div className="font-mono text-[10px]">
-              <p className="font-bold text-slate-400">WORKSTATION-PC-C</p>
+              <p className="font-bold text-slate-400">LAPTOP-PC-C</p>
               <p className="text-slate-500">192.168.1.70</p>
               {activeStep === 1 && isPlaying && packetProgress > 80 && (
                 <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-950 text-rose-400 border border-rose-800 flex items-center gap-0.5 justify-center mt-1 font-bold">
@@ -564,7 +564,7 @@ export default function LANModule() {
               <Network className={`w-14 h-14 ${activeStep === 4 ? 'text-emerald-400' : 'text-blue-400'}`} />
             </div>
             <div className="text-center font-mono space-y-1">
-              <p className="text-sm font-extrabold text-slate-100">WORKSTATION-PC-A</p>
+              <p className="text-sm font-extrabold text-slate-100">LAPTOP-PC-A</p>
               <p className="text-xs text-slate-400">IP: 192.168.1.50</p>
               <p className="text-[10px] text-slate-500">MAC: 00:11:22:33:44:55</p>
             </div>
@@ -583,7 +583,7 @@ export default function LANModule() {
               <Network className="w-14 h-14 text-cyan-400" />
             </div>
             <div className="text-center font-mono space-y-1">
-              <p className="text-sm font-extrabold text-cyan-300">WORKSTATION-PC-B</p>
+              <p className="text-sm font-extrabold text-cyan-300">LAPTOP-PC-B</p>
               <p className="text-xs text-slate-400">IP: 192.168.1.60</p>
               <p className="text-[10px] text-slate-500">MAC: 00:66:77:88:99:AA</p>
             </div>

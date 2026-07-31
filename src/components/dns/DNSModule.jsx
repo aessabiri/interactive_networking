@@ -538,7 +538,7 @@ export default function DNSModule() {
               <Laptop className="w-12 h-12 text-cyan-400" />
             </div>
             <div className="text-center font-mono space-y-0.5">
-              <p className="text-xs font-extrabold text-slate-100">WORKSTATION-01</p>
+              <p className="text-xs font-extrabold text-slate-100">LAPTOP-01</p>
               <p className="text-[10px] text-slate-400">DNS Client</p>
             </div>
           </div>

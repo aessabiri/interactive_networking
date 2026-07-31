@@ -553,7 +553,7 @@ export default function DHCPModule() {
               <Laptop className="w-10 h-10 text-slate-400" />
             </div>
             <div className="font-mono text-[10px]">
-              <p className="font-bold text-slate-300">WORKSTATION-02 (DUMMY)</p>
+              <p className="font-bold text-slate-300">LAPTOP-02 (DUMMY)</p>
               <p className="text-slate-500">IP: 192.168.1.106</p>
               {isPlaying && currentMeta.transmissionType === 'BROADCAST' && packetProgress > 80 && (
                 <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-950 text-rose-400 border border-rose-800 flex items-center gap-0.5 justify-center mt-1 font-bold">
@@ -617,7 +617,7 @@ export default function DHCPModule() {
               <Laptop className={`w-14 h-14 ${activeStep === 4 ? 'text-emerald-400' : 'text-cyan-400'}`} />
             </div>
             <div className="text-center font-mono space-y-1">
-              <p className="text-sm font-extrabold text-slate-100">WORKSTATION-01</p>
+              <p className="text-sm font-extrabold text-slate-100">LAPTOP-01</p>
               <p className="text-xs text-slate-400">MAC: 00:50:56:A1:B2:C3</p>
               <div className={`px-3 py-1 rounded-full text-xs font-extrabold border transition-all ${
                 activeStep === 4 ? 'bg-emerald-950 text-emerald-300 border-emerald-600 shadow' : 'bg-slate-800 text-slate-400 border-slate-700'

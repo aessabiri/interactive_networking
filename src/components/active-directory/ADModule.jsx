@@ -599,7 +599,7 @@ export default function ADModule() {
               <UserCheck className={`w-14 h-14 ${activeStep === 4 ? 'text-emerald-400' : 'text-purple-400'}`} />
             </div>
             <div className="text-center font-mono space-y-1">
-              <p className="text-sm font-extrabold text-slate-100">WORKSTATION-01</p>
+              <p className="text-sm font-extrabold text-slate-100">LAPTOP-01</p>
               <p className="text-xs text-slate-400">192.168.1.105</p>
               <div className={`px-3 py-1 rounded-full text-xs font-extrabold border transition-all ${
                 activeStep >= 2 ? 'bg-purple-950 text-purple-300 border-purple-600 shadow' : 'bg-slate-800 text-slate-400 border-slate-700'
