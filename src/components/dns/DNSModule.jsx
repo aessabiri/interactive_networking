@@ -17,6 +17,42 @@ export default function DNSModule() {
 
   const isExternalDomain = !targetDomain.endsWith('.local');
 
+  // Domain Metadata Lookup Table
+  const domainInfo = {
+    'google.com': {
+      dnsName: 'GOOGLE PUBLIC DNS',
+      dnsIp: '8.8.8.8',
+      resolvedIp: '142.250.180.206',
+      owner: 'Google LLC WAN'
+    },
+    'microsoft.com': {
+      dnsName: 'MICROSOFT AZURE DNS',
+      dnsIp: '4.222.0.1',
+      resolvedIp: '20.112.52.29',
+      owner: 'Microsoft Corp WAN'
+    },
+    'github.com': {
+      dnsName: 'CLOUDFLARE / GITHUB DNS',
+      dnsIp: '1.1.1.1',
+      resolvedIp: '140.82.121.4',
+      owner: 'GitHub / Cloudflare WAN'
+    },
+    'dc01.corp.local': {
+      dnsName: 'DC01 (LOCAL AD DNS)',
+      dnsIp: '192.168.1.10',
+      resolvedIp: '192.168.1.10',
+      owner: 'Local Active Directory'
+    },
+    '_ldap._tcp.dc._msdcs.corp.local': {
+      dnsName: 'DC01 (LOCAL AD SRV)',
+      dnsIp: '192.168.1.10',
+      resolvedIp: '192.168.1.10 (Port 389 LDAP)',
+      owner: 'Local Active Directory SRV'
+    }
+  };
+
+  const currDomain = domainInfo[targetDomain] || domainInfo['google.com'];
+
   // Step Metadata for Local vs External Queries
   const stepMetaLocal = {
     0: {
@@ -79,7 +115,7 @@ export default function DNSModule() {
   const stepMetaExternal = {
     0: {
       title: 'Ready for Internet DNS Lookup + ISP Wire Traversal',
-      subtitle: `Target "${targetDomain}" is a public domain. Watch packet travel from PC ➔ Switch ➔ Router Gateway (NAT) ➔ ISP ➔ Public DNS, then return back!`,
+      subtitle: `Target "${targetDomain}" is a public domain. Watch packet travel from PC ➔ Switch ➔ Router Gateway (NAT) ➔ ISP ➔ ${currDomain.dnsName}, then return back!`,
       badge: 'IDLE',
       badgeColor: 'bg-slate-800 text-slate-400 border-slate-700',
       type: 'NONE'
@@ -94,7 +130,7 @@ export default function DNSModule() {
       payload: {
         stepName: '1. LAN DNS Query to Gateway',
         l2Header: 'Src MAC: 00:50:56:A1:B2:C3 → Dst MAC: 00:11:22:33:44:55 (Router)',
-        l3Header: 'Src IP: 192.168.1.105 (Private) → Dst IP: 8.8.8.8 (Public DNS)',
+        l3Header: `Src IP: 192.168.1.105 (Private) → Dst IP: ${currDomain.dnsIp} (${currDomain.dnsName})`,
         l4Header: 'UDP Src Port: 54321 → Dst Port: 53',
         natStatus: 'PRE-NAT (Private IP inside LAN)',
         queryDetail: `Standard Query A ${targetDomain}`,
@@ -110,42 +146,42 @@ export default function DNSModule() {
       payload: {
         stepName: '2. Router NAT Translation (PAT)',
         l2Header: 'Src MAC: 00:11:22:33:44:55 → Gateway ISP MAC: 00:AA:BB:CC:DD:EE',
-        l3Header: 'Src IP: 203.0.113.45 (PUBLIC WAN) → Dst IP: 8.8.8.8 (Public DNS)',
+        l3Header: `Src IP: 203.0.113.45 (PUBLIC WAN) → Dst IP: ${currDomain.dnsIp} (${currDomain.dnsName})`,
         l4Header: 'UDP Src Port: 41001 (Translated Port) → Dst Port: 53',
         natStatus: 'NAT TRANSLATED: 192.168.1.105:54321 ➔ 203.0.113.45:41001',
         queryDetail: `SNAT Applied. Packet forwarded over WAN wire to ISP`,
       }
     },
     3: {
-      title: '🏢 STEP 3: ISP ➔ PUBLIC DNS SERVER (8.8.8.8)',
-      subtitle: 'ISP routes query along backbone wire to Google Public DNS (8.8.8.8) which resolves IP address!',
-      badge: 'ISP BACKBONE ➔ PUBLIC DNS',
+      title: `🏢 STEP 3: ISP ➔ ${currDomain.dnsName} (${currDomain.dnsIp})`,
+      subtitle: `ISP routes query along backbone wire to ${currDomain.dnsName} (${currDomain.dnsIp}) which resolves IP address!`,
+      badge: `ISP BACKBONE ➔ ${currDomain.dnsName}`,
       badgeColor: 'bg-blue-950 text-blue-400 border-blue-500 animate-pulse',
       sender: 'ISP',
       target: 'PUBLIC_DNS',
       payload: {
-        stepName: '3. ISP Backbone Query to 8.8.8.8',
+        stepName: `3. ISP Backbone Query to ${currDomain.dnsIp}`,
         l2Header: 'ISP Core Backbone Fiber Optic Wire Routing',
-        l3Header: 'Src IP: 203.0.113.45 → Dst IP: 8.8.8.8 (Google Public DNS)',
+        l3Header: `Src IP: 203.0.113.45 → Dst IP: ${currDomain.dnsIp} (${currDomain.dnsName})`,
         l4Header: 'UDP Src Port: 41001 → Dst Port: 53',
         natStatus: 'TRANSITING ISP BACKBONE WIRING',
-        queryDetail: `8.8.8.8 returns: ${targetDomain} A 142.250.180.206`,
+        queryDetail: `${currDomain.dnsIp} returns: ${targetDomain} A ${currDomain.resolvedIp}`,
       }
     },
     4: {
-      title: '✅ STEP 4: RETURN TRIP ALONG WIRES (PUBLIC DNS ➔ ISP ➔ ROUTER ➔ L2 SWITCH ➔ PC)',
-      subtitle: 'Resolved IP answer packet travels BACK: Public DNS ➔ ISP ➔ Router (Reverse NAT) ➔ L2 Switch ➔ PC-01!',
-      badge: 'ANSWER RETURNED ALONG WIRES (142.250.180.206)',
+      title: `✅ STEP 4: RETURN TRIP ALONG WIRES (${currDomain.dnsName} ➔ ISP ➔ ROUTER ➔ L2 SWITCH ➔ PC)`,
+      subtitle: `Resolved IP answer packet (${currDomain.resolvedIp}) travels BACK: ${currDomain.dnsName} ➔ ISP ➔ Router (Reverse NAT) ➔ L2 Switch ➔ PC-01!`,
+      badge: `ANSWER RETURNED (${currDomain.resolvedIp})`,
       badgeColor: 'bg-emerald-950 text-emerald-400 border-emerald-500',
       sender: 'PUBLIC_DNS',
       target: 'PC',
       payload: {
         stepName: '4. Full Reverse Wire Return',
-        l2Header: 'Public DNS ➔ ISP Fiber Wire ➔ Router WAN ➔ L2 Switch ➔ PC-01',
-        l3Header: 'Src IP: 8.8.8.8 → Dst IP: 192.168.1.105 (Restored Private IP)',
+        l2Header: `${currDomain.dnsName} ➔ ISP Fiber Wire ➔ Router WAN ➔ L2 Switch ➔ PC-01`,
+        l3Header: `Src IP: ${currDomain.dnsIp} → Dst IP: 192.168.1.105 (Restored Private IP)`,
         l4Header: 'UDP Src Port: 53 → Dst Port: 54321',
         natStatus: 'REVERSE NAT SUCCESS: Restored Private IP 192.168.1.105',
-        queryDetail: `Client PC-01 receives IP: ${targetDomain} = 142.250.180.206`,
+        queryDetail: `Client PC-01 receives IP: ${targetDomain} = ${currDomain.resolvedIp}`,
       }
     }
   };
@@ -189,7 +225,7 @@ export default function DNSModule() {
       clearInterval(animInterval);
       clearTimeout(timer);
     };
-  }, [isPlaying, activeStep, speed, isSingleStep, isExternalDomain]);
+  }, [isPlaying, activeStep, speed, isSingleStep, isExternalDomain, targetDomain]);
 
   const handleStartPlay = () => {
     if (activeStep >= totalSteps) setActiveStep(1);
@@ -216,7 +252,7 @@ export default function DNSModule() {
     setIsSingleStep(false);
     setActiveStep(0);
     setPacketProgress(0);
-    setLogs([{ time: new Date().toLocaleTimeString(), tag: 'DNS', message: 'DNS cache & NAT state cleared.' }]);
+    setLogs([{ time: new Date().toLocaleTimeString(), tag: 'DNS', message: `DNS cache & NAT state cleared. Target set to ${targetDomain}.` }]);
   };
 
   const currentMeta = stepMeta[activeStep] || stepMeta[0];
@@ -280,7 +316,7 @@ export default function DNSModule() {
           return {
             left: `${88 - t * 16}%`,
             top: `${55 - t * 35}%`,
-            label: '1. Returning: DNS ➔ ISP',
+            label: `1. Returning: DNS ➔ ISP`,
             bgColor: 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 shadow-emerald-500/50'
           };
         } else if (packetProgress <= 66) {
@@ -296,7 +332,7 @@ export default function DNSModule() {
           return {
             left: `${46 - t * 36}%`,
             top: '55%',
-            label: '3. Delivered via Switch ➔ PC-01 (142.250.180.206)',
+            label: `3. Delivered to PC-01 (${currDomain.resolvedIp})`,
             bgColor: 'bg-gradient-to-r from-emerald-400 to-teal-300 text-slate-950 shadow-emerald-500/50 animate-bounce'
           };
         }
@@ -356,7 +392,7 @@ export default function DNSModule() {
   const animPos = getPacketPos();
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto relative">
+    <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
       {/* FLOATING MODAL POPUP FOR PACKET & NAT PAYLOAD INSPECTOR (BIG FONTS) */}
       {modalPayloadStep && activeModalData && (
@@ -433,9 +469,9 @@ export default function DNSModule() {
                 className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-cyan-300 focus:outline-none focus:border-cyan-500 cursor-pointer"
               >
                 <optgroup label="🌐 Public Internet Domains (Triggers Router NAT & ISP Wire Traversal)">
-                  <option value="google.com">google.com (Public Web - NAT Needed)</option>
-                  <option value="microsoft.com">microsoft.com (Public Cloud - NAT Needed)</option>
-                  <option value="github.com">github.com (Public Code - NAT Needed)</option>
+                  <option value="google.com">google.com (Public Web - 8.8.8.8)</option>
+                  <option value="microsoft.com">microsoft.com (Public Cloud - 4.222.0.1)</option>
+                  <option value="github.com">github.com (Public Code - 1.1.1.1 Cloudflare)</option>
                 </optgroup>
                 <optgroup label="🏢 Internal Active Directory Domains (LAN Resolution)">
                   <option value="dc01.corp.local">dc01.corp.local (Local AD Domain Controller)</option>
@@ -445,20 +481,20 @@ export default function DNSModule() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold border shadow ${
+          <div className="flex items-center gap-2 font-mono">
+            <span className={`px-3 py-1.5 rounded-xl text-xs font-bold border shadow ${
               isExternalDomain ? 'bg-amber-950 text-amber-300 border-amber-700' : 'bg-purple-950 text-purple-300 border-purple-700'
             }`}>
-              {isExternalDomain ? '🌐 PUBLIC QUERY (NAT & ISP WIRE TRAVERSAL)' : '🏢 LOCAL AD LAN QUERY (NO NAT)'}
+              {isExternalDomain ? `🌐 PUBLIC QUERY ➔ ${currDomain.dnsName} (${currDomain.dnsIp})` : '🏢 LOCAL AD LAN QUERY (NO NAT)'}
             </span>
           </div>
         </div>
 
         {/* WORKSPACE CONTROL TOOLBAR */}
-        <div className="glass-panel p-2.5 rounded-2xl border border-slate-800/90 bg-slate-900/95 flex flex-wrap items-center justify-between gap-3 shadow-xl">
+        <div className="glass-panel p-2.5 rounded-2xl border border-slate-800/90 bg-slate-900/95 flex flex-wrap items-center justify-between gap-3 shadow-xl font-mono text-xs">
           <div className="flex items-center gap-3">
             {/* Speed Selector */}
-            <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-mono text-slate-300">
+            <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-slate-300">
               <Gauge className="w-4 h-4 text-cyan-400" />
               <span className="font-bold">Animation Speed:</span>
               {[0.25, 0.5, 1].map((s) => (
@@ -647,10 +683,10 @@ export default function DNSModule() {
             </div>
           </div>
 
-          {/* 6. PUBLIC DNS SERVER (RIGHT: 88%, 55%) */}
+          {/* 6. DYNAMIC PUBLIC DNS SERVER (RIGHT: 88%, 55%) */}
           <div className="absolute left-[88%] top-[55%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
             <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-blue-950 text-blue-300 border border-blue-700 shadow">
-              Public IP: 8.8.8.8
+              Public IP: {currDomain.dnsIp}
             </span>
             <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
               isExternalDomain && activeStep === 3
@@ -660,8 +696,8 @@ export default function DNSModule() {
               <Server className="w-14 h-14 text-blue-400" />
             </div>
             <div className="text-center font-mono space-y-0.5">
-              <p className="text-xs font-extrabold text-blue-300">GOOGLE PUBLIC DNS</p>
-              <p className="text-[10px] text-slate-400">Authoritative Resolver</p>
+              <p className="text-xs font-extrabold text-blue-300">{currDomain.dnsName}</p>
+              <p className="text-[10px] text-slate-400">Resolves: {currDomain.resolvedIp}</p>
             </div>
           </div>
 
@@ -724,7 +760,7 @@ export default function DNSModule() {
       </div>
 
       {/* SIDE-BY-SIDE REAL-TIME PACKET INSPECTOR (LEFT) & NETWORK EVENT LOGS (RIGHT) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
         
         {/* LEFT COLUMN: LIVE REAL-TIME PACKET CONTENT INSPECTOR */}
         <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
@@ -766,8 +802,8 @@ export default function DNSModule() {
                   </div>
                   <p className="text-[11px] font-extrabold text-amber-100 leading-relaxed">
                     {activeStep === 2
-                      ? '⚡ INBOUND SNAT: Router modified Source Private IP 192.168.1.105:54321 ➔ Public WAN IP 203.0.113.45:41001'
-                      : '⚡ REVERSE NAT: Router restored Destination Public WAN IP 203.0.113.45:41001 ➔ Private IP 192.168.1.105:54321'}
+                      ? `⚡ INBOUND SNAT: Router modified Source Private IP 192.168.1.105:54321 ➔ Public WAN IP 203.0.113.45:41001 (Targeting ${currDomain.dnsIp})`
+                      : `⚡ REVERSE NAT: Router restored Destination Public WAN IP 203.0.113.45:41001 ➔ Private IP 192.168.1.105:54321 (Resolved ${currDomain.resolvedIp})`}
                   </p>
                 </div>
               )}
