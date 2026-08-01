@@ -219,22 +219,49 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
     setInspectionDetail(null);
   };
 
+  // Unified Simulation Control Handlers for all 4 Sub-Modules (SPI, PAT, IPsec VPN, TLS 1.3)
+  const handlePlayActiveTab = () => {
+    if (isPlaying) {
+      setIsPlaying(false);
+      return;
+    }
+    if (activeSubTab === 'stateful') {
+      handleTestFirewallPacket();
+    } else {
+      const maxSteps = activeSubTab === 'vpn' ? 4 : activeSubTab === 'tls' ? 4 : 2;
+      if (activeStep >= maxSteps) setActiveStep(1);
+      else if (activeStep === 0) setActiveStep(1);
+      setIsPlaying(true);
+    }
+  };
+
+  const handleStepActiveTab = () => {
+    const maxSteps = activeSubTab === 'vpn' ? 4 : activeSubTab === 'tls' ? 4 : 2;
+    if (activeStep >= maxSteps) return;
+    const nextStep = activeStep + 1;
+    setActiveStep(nextStep);
+    setIsPlaying(true);
+    const metaTitle = activeSubTab === 'vpn' ? vpnSteps[nextStep]?.title : activeSubTab === 'tls' ? tlsSteps[nextStep]?.title : `NAT PAT Overload Step ${nextStep}`;
+    setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: activeSubTab.toUpperCase(), message: metaTitle }]);
+  };
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
       {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
       <CleanWidget
-        title="Firewall, NAT & VPN Security Made Simple"
-        subtitle="Understand how Firewalls block dangerous traffic and how VPN Tunnels encrypt data over the Internet"
+        title="Stateful Firewall, NAT & VPN Security Lab"
+        subtitle="L4-L7 Deep Packet Inspection — Simulate Stateful Packet Inspection (SPI), Port Address Translation (PAT), IPsec ESP Tunnels, and TLS 1.3 Handshake."
         icon={ShieldCheck}
-        ip="192.168.1.105 (LAN) → 8.8.8.8 (Internet)"
-        protocol={selectedService.toUpperCase()}
-        port={selectedService === 'https' ? 443 : selectedService === 'ssh' ? 22 : selectedService === 'rdp' ? 3389 : selectedService === 'telnet' ? 23 : 'ICMP'}
-        status={firewallAction === 'ALLOW' ? '🟢 ALLOWED' : firewallAction === 'DROP' ? '🔴 DROPPED' : 'Ready'}
-        actionTitle={firewallAction ? `Traffic Verdict: ${firewallAction}` : 'Ready to Send Test Traffic'}
-        actionDesc={firewallAction === 'ALLOW' ? '🟢 PERMITTED: Firewall verified this service is secure and allowed it through!' : firewallAction === 'DROP' ? '🔴 BLOCKED: Firewall detected insecure traffic and dropped the packet!' : 'Select a service (HTTPS, SSH, RDP) above and click "Transmit Packet Through Firewall".'}
+        ip={activeSubTab === 'stateful' ? '192.168.1.105 (LAN) → 8.8.8.8' : activeSubTab === 'nat' ? '192.168.1.10 ➔ 203.0.113.1 (PAT)' : activeSubTab === 'vpn' ? '192.168.10.1 ➔ 172.16.0.1 (IPsec)' : '192.168.1.105 ➔ 93.184.216.34'}
+        protocol={activeSubTab === 'stateful' ? selectedService.toUpperCase() : activeSubTab === 'nat' ? 'PAT Overload' : activeSubTab === 'vpn' ? 'IPsec ESP (AES-256)' : 'TLS 1.3 (ECDHE)'}
+        port={activeSubTab === 'stateful' ? (selectedService === 'https' ? 443 : selectedService === 'ssh' ? 22 : selectedService === 'rdp' ? 3389 : selectedService === 'telnet' ? 23 : 'ICMP') : activeSubTab === 'nat' ? 'Ephemeral 40001' : activeSubTab === 'vpn' ? 'UDP 500 / ESP 50' : 'Port 443'}
+        status={activeSubTab === 'stateful' ? (firewallAction === 'ALLOW' ? '🟢 ALLOWED' : firewallAction === 'DROP' ? '🔴 DROPPED' : 'Ready') : activeSubTab === 'nat' ? 'Stateful PAT Table Active' : activeSubTab === 'vpn' ? `VPN Phase ${activeStep + 1}/5` : `TLS Handshake ${activeStep + 1}/5`}
+        actionTitle={activeSubTab === 'stateful' ? (firewallAction ? `Traffic Verdict: ${firewallAction}` : 'Ready to Send Test Traffic') : activeSubTab === 'nat' ? 'Port Address Translation (PAT)' : activeSubTab === 'vpn' ? vpnSteps[activeStep].title : tlsSteps[activeStep].title}
+        actionDesc={activeSubTab === 'stateful' ? (firewallAction === 'ALLOW' ? '🟢 PERMITTED: Firewall verified service is secure and allowed it through!' : firewallAction === 'DROP' ? '🔴 BLOCKED: Firewall detected insecure traffic and dropped the packet!' : 'Select a service above and click Play in top right.') : activeSubTab === 'nat' ? 'Rewriting private source socket to public WAN IP and ephemeral port' : activeSubTab === 'vpn' ? vpnSteps[activeStep].subtitle : tlsSteps[activeStep].subtitle}
         isPlaying={isPlaying}
-        onPlay={handleTestFirewallPacket}
+        onPlay={handlePlayActiveTab}
+        onStep={handleStepActiveTab}
         onReset={handleReset}
         speed={speed}
         setSpeed={setSpeed}
