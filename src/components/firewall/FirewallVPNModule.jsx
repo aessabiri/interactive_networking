@@ -241,7 +241,7 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
     const nextStep = activeStep + 1;
     setActiveStep(nextStep);
     setIsPlaying(true);
-    const metaTitle = activeSubTab === 'vpn' ? vpnSteps[nextStep]?.title : activeSubTab === 'tls' ? tlsSteps[nextStep]?.title : `NAT PAT Overload Step ${nextStep}`;
+  const metaTitle = activeSubTab === 'vpn' ? vpnSteps[nextStep]?.title : activeSubTab === 'tls' ? tlsSteps[nextStep]?.title : `NAT PAT Overload Step ${nextStep}`;
     setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: activeSubTab.toUpperCase(), message: metaTitle }]);
   };
 
@@ -251,14 +251,14 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
       {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
       <CleanWidget
         title="Stateful Firewall, NAT & VPN Security Lab"
-        subtitle="L4-L7 Deep Packet Inspection — Simulate Stateful Packet Inspection (SPI), Port Address Translation (PAT), IPsec ESP Tunnels, and TLS 1.3 Handshake."
+        subtitle="L4-L7 Deep Packet Inspection"
         icon={ShieldCheck}
         ip={activeSubTab === 'stateful' ? '192.168.1.105 (LAN) → 8.8.8.8' : activeSubTab === 'nat' ? '192.168.1.10 ➔ 203.0.113.1 (PAT)' : activeSubTab === 'vpn' ? '192.168.10.1 ➔ 172.16.0.1 (IPsec)' : '192.168.1.105 ➔ 93.184.216.34'}
         protocol={activeSubTab === 'stateful' ? selectedService.toUpperCase() : activeSubTab === 'nat' ? 'PAT Overload' : activeSubTab === 'vpn' ? 'IPsec ESP (AES-256)' : 'TLS 1.3 (ECDHE)'}
         port={activeSubTab === 'stateful' ? (selectedService === 'https' ? 443 : selectedService === 'ssh' ? 22 : selectedService === 'rdp' ? 3389 : selectedService === 'telnet' ? 23 : 'ICMP') : activeSubTab === 'nat' ? 'Ephemeral 40001' : activeSubTab === 'vpn' ? 'UDP 500 / ESP 50' : 'Port 443'}
-        status={activeSubTab === 'stateful' ? (firewallAction === 'ALLOW' ? '🟢 ALLOWED' : firewallAction === 'DROP' ? '🔴 DROPPED' : 'Ready') : activeSubTab === 'nat' ? 'Stateful PAT Table Active' : activeSubTab === 'vpn' ? `VPN Phase ${activeStep + 1}/5` : `TLS Handshake ${activeStep + 1}/5`}
-        actionTitle={activeSubTab === 'stateful' ? (firewallAction ? `Traffic Verdict: ${firewallAction}` : 'Ready to Send Test Traffic') : activeSubTab === 'nat' ? 'Port Address Translation (PAT)' : activeSubTab === 'vpn' ? vpnSteps[activeStep].title : tlsSteps[activeStep].title}
-        actionDesc={activeSubTab === 'stateful' ? (firewallAction === 'ALLOW' ? '🟢 PERMITTED: Firewall verified service is secure and allowed it through!' : firewallAction === 'DROP' ? '🔴 BLOCKED: Firewall detected insecure traffic and dropped the packet!' : 'Select a service above and click Play in top right.') : activeSubTab === 'nat' ? 'Rewriting private source socket to public WAN IP and ephemeral port' : activeSubTab === 'vpn' ? vpnSteps[activeStep].subtitle : tlsSteps[activeStep].subtitle}
+        status={activeSubTab === 'stateful' ? (firewallAction === 'ALLOW' ? '🟢 ALLOWED' : firewallAction === 'DROP' ? '🔴 DROPPED' : 'Ready') : activeSubTab === 'nat' ? 'Stateful PAT Table Active' : activeSubTab === 'vpn' ? `VPN Phase ${activeStep}/4` : `TLS Step ${activeStep}/4`}
+        actionTitle={activeSubTab === 'stateful' ? (firewallAction ? `Verdict: ${firewallAction}` : 'Ready to Send Packet') : activeSubTab === 'nat' ? 'Port Address Translation' : activeSubTab === 'vpn' ? vpnSteps[activeStep].title : tlsSteps[activeStep].title}
+        actionDesc={activeSubTab === 'stateful' ? (firewallAction === 'ALLOW' ? '🟢 PERMITTED: Traffic passed firewall rule inspection!' : firewallAction === 'DROP' ? '🔴 BLOCKED: Traffic dropped by firewall rule!' : 'Select traffic service and click Play in top right.') : activeSubTab === 'nat' ? 'Rewriting private IP to public WAN IP' : activeSubTab === 'vpn' ? vpnSteps[activeStep].subtitle : tlsSteps[activeStep].subtitle}
         isPlaying={isPlaying}
         onPlay={handlePlayActiveTab}
         onStep={handleStepActiveTab}
@@ -269,27 +269,13 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
         setShowAnimation={setShowAnimation}
       />
 
-      {/* MODULE HEADER BAR */}
-      <div className="glass-panel p-6 rounded-3xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-2xl bg-gradient-to-br from-rose-500 via-red-600 to-amber-600 text-white shadow-xl shadow-rose-500/20 animate-pulse">
-            <ShieldCheck className="w-8 h-8" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-2xl font-black tracking-tight text-slate-100">Stateful Firewall, NAT & VPN Security Lab</h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-950 text-rose-300 border border-rose-700">
-                L4-L7 Deep Packet Inspection
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 font-mono mt-0.5">
-              Simulate Stateful Packet Inspection (SPI), Port Address Translation (PAT), IPsec ESP Tunnels, and TLS 1.3 Handshake.
-            </p>
-          </div>
+      {/* COMPACT MODE SELECTOR SUB-TABS BAR */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 px-4 py-2 rounded-2xl border border-slate-800 font-mono text-xs shadow-lg">
+        <div className="flex items-center gap-2">
+          <Shield className="w-4 h-4 text-rose-400" />
+          <span className="text-slate-300 font-extrabold">Lab Security Mode:</span>
         </div>
-
-        {/* MODE SUB-TABS */}
-        <div className="flex flex-wrap items-center gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 font-mono text-xs">
+        <div className="flex flex-wrap items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
           {[
             { id: 'stateful', label: 'Stateful Firewall (SPI)', icon: ShieldCheck },
             { id: 'nat', label: 'NAT / PAT Engine', icon: Router },
@@ -302,13 +288,13 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
               <button
                 key={tab.id}
                 onClick={() => { setActiveSubTab(tab.id); handleReset(); }}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl font-extrabold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-extrabold transition-all cursor-pointer text-xs ${
                   isActive
-                    ? 'bg-gradient-to-r from-rose-600 to-amber-600 text-white shadow-lg shadow-rose-500/20'
+                    ? 'bg-gradient-to-r from-rose-600 to-amber-600 text-white shadow-md shadow-rose-500/20'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3.5 h-3.5" />
                 <span>{tab.label}</span>
               </button>
             );
