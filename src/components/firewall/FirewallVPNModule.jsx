@@ -432,8 +432,9 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
             )}
           </div>
 
-          {/* INSPECTION RESULTS & USER-CONFIGURABLE RULES MATRIX */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
+          {/* INSPECTION RESULTS & USER-CONFIGURABLE RULES MATRIX (DETAILED MODE ONLY) */}
+          {(appMode === 'detailed' || appMode === 'expert') && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
             
             {/* LIVE INSPECTOR VERDICT */}
             <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 shadow-xl">
@@ -544,8 +545,9 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+    )}
 
       {/* SUB-TAB 2: NAT / PAT TRANSLATION ENGINE */}
       {activeSubTab === 'nat' && (
@@ -597,39 +599,41 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
             </div>
           </div>
 
-          {/* PAT ROUTER TRANSLATION TABLE */}
-          <div className="space-y-2">
-            <h4 className="font-extrabold text-amber-400 uppercase tracking-wider text-xs">Live NAT / PAT Translation Table (PAT Table)</h4>
-            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-800 text-slate-500 uppercase">
-                    <th className="py-2">Protocol</th>
-                    <th className="py-2">Inside Private Socket</th>
-                    <th className="py-2">Outside Translated Public Socket</th>
-                    <th className="py-2">Destination Server</th>
-                    <th className="py-2">State</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800 text-slate-200">
-                  <tr>
-                    <td className="py-2.5 font-bold text-purple-400">TCP</td>
-                    <td className="py-2.5 text-cyan-300 font-bold">192.168.1.10:5001</td>
-                    <td className="py-2.5 text-amber-300 font-bold">203.0.113.1:40001</td>
-                    <td className="py-2.5 text-emerald-300 font-bold">93.184.216.34:443</td>
-                    <td className="py-2.5"><span className="px-2 py-0.5 bg-emerald-950 text-emerald-300 rounded border border-emerald-700 font-bold">ESTABLISHED</span></td>
-                  </tr>
-                  <tr>
-                    <td className="py-2.5 font-bold text-purple-400">TCP</td>
-                    <td className="py-2.5 text-blue-300 font-bold">192.168.1.20:5001</td>
-                    <td className="py-2.5 text-amber-300 font-bold">203.0.113.1:40002</td>
-                    <td className="py-2.5 text-emerald-300 font-bold">93.184.216.34:443</td>
-                    <td className="py-2.5"><span className="px-2 py-0.5 bg-emerald-950 text-emerald-300 rounded border border-emerald-700 font-bold">ESTABLISHED</span></td>
-                  </tr>
-                </tbody>
-              </table>
+          {/* PAT ROUTER TRANSLATION TABLE (DETAILED MODE ONLY) */}
+          {(appMode === 'detailed' || appMode === 'expert') && (
+            <div className="space-y-2">
+              <h4 className="font-extrabold text-amber-400 uppercase tracking-wider text-xs">Live NAT / PAT Translation Table (PAT Table)</h4>
+              <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-800 text-slate-500 uppercase">
+                      <th className="py-2">Protocol</th>
+                      <th className="py-2">Inside Private Socket</th>
+                      <th className="py-2">Outside Translated Public Socket</th>
+                      <th className="py-2">Destination Server</th>
+                      <th className="py-2">State</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800 text-slate-200">
+                    <tr>
+                      <td className="py-2.5 font-bold text-purple-400">TCP</td>
+                      <td className="py-2.5 text-cyan-300 font-bold">192.168.1.10:5001</td>
+                      <td className="py-2.5 text-amber-300 font-bold">203.0.113.1:40001</td>
+                      <td className="py-2.5 text-emerald-300 font-bold">93.184.216.34:443</td>
+                      <td className="py-2.5"><span className="px-2 py-0.5 bg-emerald-950 text-emerald-300 rounded border border-emerald-700 font-bold">ESTABLISHED</span></td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 font-bold text-purple-400">TCP</td>
+                      <td className="py-2.5 text-blue-300 font-bold">192.168.1.20:5001</td>
+                      <td className="py-2.5 text-amber-300 font-bold">203.0.113.1:40002</td>
+                      <td className="py-2.5 text-emerald-300 font-bold">93.184.216.34:443</td>
+                      <td className="py-2.5"><span className="px-2 py-0.5 bg-emerald-950 text-emerald-300 rounded border border-emerald-700 font-bold">ESTABLISHED</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
