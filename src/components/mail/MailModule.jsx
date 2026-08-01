@@ -284,6 +284,10 @@ export default function MailModule({ appMode = 'clean' }) {
   }, [isPlaying, activeStep, speed, isSingleStep, mailProtocol, serverStack, domainMode]);
 
   const handlePlayFull = () => {
+    if (isPlaying) {
+      setIsPlaying(false);
+      return;
+    }
     if (activeStep === totalSteps) setActiveStep(1);
     else if (activeStep === 0) setActiveStep(1);
     setIsSingleStep(false);
@@ -503,30 +507,28 @@ export default function MailModule({ appMode = 'clean' }) {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
-      {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
-      {appMode !== 'detailed' && appMode !== 'expert' && (
-        <CleanWidget
-          title="Mail Server Routing Made Simple"
-          subtitle={`Sending email from ${senderEmail} to ${recipientEmail}`}
-          icon={Mail}
-          ip={recipientDomain}
-          protocol="SMTP / IMAP / POP3"
-          port="Port 587 / 25 / 993"
-          status={domainMode === 'cross' ? 'Cross-Domain MX Routing' : 'Intra-Domain Direct Delivery'}
-          actionTitle={currentMeta.title}
-          actionDesc={currentMeta.subtitle}
-          stepNumber={activeStep}
-          totalSteps={totalSteps}
-          isPlaying={isPlaying}
-          onPlay={handlePlayFull}
-          onStep={handleStepForward}
-          onReset={handleReset}
-          speed={speed}
-          setSpeed={setSpeed}
-          showAnimation={showAnimation}
-          setShowAnimation={setShowAnimation}
-        />
-      )}
+      {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
+      <CleanWidget
+        title="Mail Server Routing Made Simple"
+        subtitle={`Sending email from ${senderEmail} to ${recipientEmail}`}
+        icon={Mail}
+        ip={recipientDomain}
+        protocol="SMTP / IMAP / POP3"
+        port="Port 587 / 25 / 993"
+        status={domainMode === 'cross' ? 'Cross-Domain MX Routing' : 'Intra-Domain Direct Delivery'}
+        actionTitle={currentMeta.title}
+        actionDesc={currentMeta.subtitle}
+        stepNumber={activeStep}
+        totalSteps={totalSteps}
+        isPlaying={isPlaying}
+        onPlay={handlePlayFull}
+        onStep={handleStepForward}
+        onReset={handleReset}
+        speed={speed}
+        setSpeed={setSpeed}
+        showAnimation={showAnimation}
+        setShowAnimation={setShowAnimation}
+      />
 
       {/* FLOATING MODAL POPUP FOR MAIL PAYLOAD INSPECTOR (DETAILED MODE ONLY) */}
       {(appMode === 'detailed' || appMode === 'expert') && modalPayloadStep && activeModalData && (

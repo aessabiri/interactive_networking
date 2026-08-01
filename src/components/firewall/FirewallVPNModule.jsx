@@ -108,6 +108,10 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
 
   // Send Custom Packet Through Stateful Firewall
   const handleTestFirewallPacket = () => {
+    if (isPlaying) {
+      setIsPlaying(false);
+      return;
+    }
     setIsPlaying(true);
     setPacketProgress(0);
     setActiveStep(1);
@@ -161,25 +165,25 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
-      {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
-      {appMode !== 'detailed' && appMode !== 'expert' && (
-        <CleanWidget
-          title="Firewall, NAT & VPN Security Made Simple"
-          subtitle="Understand how Firewalls block dangerous traffic and how VPN Tunnels encrypt data over the Internet"
-          icon={ShieldCheck}
-          ip="192.168.1.105 (LAN) → 8.8.8.8 (Internet)"
-          protocol={selectedService.toUpperCase()}
-          port={selectedService === 'https' ? 443 : selectedService === 'ssh' ? 22 : selectedService === 'rdp' ? 3389 : selectedService === 'telnet' ? 23 : 'ICMP'}
-          status={firewallAction === 'ALLOW' ? '🟢 ALLOWED' : firewallAction === 'DROP' ? '🔴 DROPPED' : 'Ready'}
-          actionTitle={firewallAction ? `Traffic Verdict: ${firewallAction}` : 'Ready to Send Test Traffic'}
-          actionDesc={firewallAction === 'ALLOW' ? '🟢 PERMITTED: Firewall verified this service is secure and allowed it through!' : firewallAction === 'DROP' ? '🔴 BLOCKED: Firewall detected insecure traffic and dropped the packet!' : 'Select a service (HTTPS, SSH, RDP) above and click "Transmit Packet Through Firewall".'}
-          isPlaying={isPlaying}
-          onPlay={handleTestFirewallPacket}
-          onReset={handleReset}
-          showAnimation={showAnimation}
-          setShowAnimation={setShowAnimation}
-        />
-      )}
+      {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
+      <CleanWidget
+        title="Firewall, NAT & VPN Security Made Simple"
+        subtitle="Understand how Firewalls block dangerous traffic and how VPN Tunnels encrypt data over the Internet"
+        icon={ShieldCheck}
+        ip="192.168.1.105 (LAN) → 8.8.8.8 (Internet)"
+        protocol={selectedService.toUpperCase()}
+        port={selectedService === 'https' ? 443 : selectedService === 'ssh' ? 22 : selectedService === 'rdp' ? 3389 : selectedService === 'telnet' ? 23 : 'ICMP'}
+        status={firewallAction === 'ALLOW' ? '🟢 ALLOWED' : firewallAction === 'DROP' ? '🔴 DROPPED' : 'Ready'}
+        actionTitle={firewallAction ? `Traffic Verdict: ${firewallAction}` : 'Ready to Send Test Traffic'}
+        actionDesc={firewallAction === 'ALLOW' ? '🟢 PERMITTED: Firewall verified this service is secure and allowed it through!' : firewallAction === 'DROP' ? '🔴 BLOCKED: Firewall detected insecure traffic and dropped the packet!' : 'Select a service (HTTPS, SSH, RDP) above and click "Transmit Packet Through Firewall".'}
+        isPlaying={isPlaying}
+        onPlay={handleTestFirewallPacket}
+        onReset={handleReset}
+        speed={speed}
+        setSpeed={setSpeed}
+        showAnimation={showAnimation}
+        setShowAnimation={setShowAnimation}
+      />
 
       {/* MODULE HEADER BAR */}
       <div className="glass-panel p-6 rounded-3xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900">

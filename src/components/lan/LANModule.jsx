@@ -175,6 +175,10 @@ export default function LANModule({ appMode = 'clean' }) {
   }, [isPlaying, activeStep, speed, isSingleStep]);
 
   const handlePlayFull = () => {
+    if (isPlaying) {
+      setIsPlaying(false);
+      return;
+    }
     if (activeStep === 4) setActiveStep(1);
     else if (activeStep === 0) setActiveStep(1);
     setIsSingleStep(false);
@@ -293,30 +297,28 @@ export default function LANModule({ appMode = 'clean' }) {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
 
-      {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
-      {appMode !== 'detailed' && appMode !== 'expert' && (
-        <CleanWidget
-          title="Local Network (LAN) & ARP Routing Made Simple"
-          subtitle="Learn how network switches connect computers inside an office using MAC addresses and ARP resolution"
-          icon={Layers}
-          ip="192.168.1.105 → 192.168.1.200"
-          protocol="ARP / ICMP Ping"
-          port="Ethernet Layer 2"
-          status={activeStep >= 3 ? "MAC Address Resolved" : "Unresolved ARP"}
-          actionTitle={currentMeta.title}
-          actionDesc={currentMeta.subtitle}
-          stepNumber={activeStep}
-          totalSteps={4}
-          isPlaying={isPlaying}
-          onPlay={handlePlayFull}
-          onStep={handleStepForward}
-          onReset={handleReset}
-          speed={speed}
-          setSpeed={setSpeed}
-          showAnimation={showAnimation}
-          setShowAnimation={setShowAnimation}
-        />
-      )}
+      {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
+      <CleanWidget
+        title="Local Network (LAN) & ARP Routing Made Simple"
+        subtitle="Learn how network switches connect computers inside an office using MAC addresses and ARP resolution"
+        icon={Layers}
+        ip="192.168.1.105 → 192.168.1.200"
+        protocol="ARP / ICMP Ping"
+        port="Ethernet Layer 2"
+        status={activeStep >= 3 ? "MAC Address Resolved" : "Unresolved ARP"}
+        actionTitle={currentMeta.title}
+        actionDesc={currentMeta.subtitle}
+        stepNumber={activeStep}
+        totalSteps={4}
+        isPlaying={isPlaying}
+        onPlay={handlePlayFull}
+        onStep={handleStepForward}
+        onReset={handleReset}
+        speed={speed}
+        setSpeed={setSpeed}
+        showAnimation={showAnimation}
+        setShowAnimation={setShowAnimation}
+      />
 
       {/* FLOATING MODAL POPUP FOR ETHERNET FRAME & ARP INSPECTOR (DETAILED MODE ONLY) */}
       {(appMode === 'detailed' || appMode === 'expert') && modalPayloadStep && activeModalData && (

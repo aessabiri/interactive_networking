@@ -230,6 +230,10 @@ export default function DNSModule({ appMode = 'clean' }) {
   }, [isPlaying, activeStep, speed, isSingleStep, isExternalDomain, targetDomain]);
 
   const handleStartPlay = () => {
+    if (isPlaying) {
+      setIsPlaying(false);
+      return;
+    }
     if (activeStep >= totalSteps) setActiveStep(1);
     else if (activeStep === 0) setActiveStep(1);
     setIsSingleStep(false);
@@ -396,30 +400,28 @@ export default function DNSModule({ appMode = 'clean' }) {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
-      {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
-      {appMode !== 'detailed' && appMode !== 'expert' && (
-        <CleanWidget
-          title="DNS Hostname Lookup Made Simple"
-          subtitle={`Translating website "${targetDomain}" into numerical IP address (${currDomain.resolvedIp})`}
-          icon={Globe}
-          ip={currDomain.resolvedIp}
-          protocol="DNS (UDP)"
-          port={53}
-          status={isExternalDomain ? "Public Internet Query" : "Local AD Subnet"}
-          actionTitle={currentMeta.title}
-          actionDesc={currentMeta.subtitle}
-          stepNumber={activeStep}
-          totalSteps={totalSteps}
-          isPlaying={isPlaying}
-          onPlay={handleStartPlay}
-          onStep={handleStepForward}
-          onReset={handleReset}
-          speed={speed}
-          setSpeed={setSpeed}
-          showAnimation={showAnimation}
-          setShowAnimation={setShowAnimation}
-        />
-      )}
+      {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
+      <CleanWidget
+        title="DNS Hostname Lookup Made Simple"
+        subtitle={`Translating website "${targetDomain}" into numerical IP address (${currDomain.resolvedIp})`}
+        icon={Globe}
+        ip={currDomain.resolvedIp}
+        protocol="DNS (UDP)"
+        port={53}
+        status={isExternalDomain ? "Public Internet Query" : "Local AD Subnet"}
+        actionTitle={currentMeta.title}
+        actionDesc={currentMeta.subtitle}
+        stepNumber={activeStep}
+        totalSteps={totalSteps}
+        isPlaying={isPlaying}
+        onPlay={handleStartPlay}
+        onStep={handleStepForward}
+        onReset={handleReset}
+        speed={speed}
+        setSpeed={setSpeed}
+        showAnimation={showAnimation}
+        setShowAnimation={setShowAnimation}
+      />
 
       {/* FLOATING MODAL POPUP FOR PACKET & NAT PAYLOAD INSPECTOR (DETAILED MODE ONLY) */}
       {(appMode === 'detailed' || appMode === 'expert') && modalPayloadStep && activeModalData && (

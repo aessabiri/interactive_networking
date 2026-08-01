@@ -219,6 +219,10 @@ export default function DHCPModule({ appMode = 'clean' }) {
   }, [activeStep]);
 
   const handlePlayFull = () => {
+    if (isPlaying) {
+      setIsPlaying(false);
+      return;
+    }
     if (activeStep === 4) setActiveStep(1);
     else if (activeStep === 0) setActiveStep(1);
     setIsSingleStep(false);
@@ -328,30 +332,28 @@ export default function DHCPModule({ appMode = 'clean' }) {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
 
-      {/* CLEAN MODE UNIFIED WIDGET (ZERO SCROLL, SINGLE CARD) */}
-      {appMode !== 'detailed' && appMode !== 'expert' && (
-        <CleanWidget
-          title="DHCP Automatic IP Assignment Made Simple"
-          subtitle="Watch how your computer gets an IP address automatically from the Router/DHCP Server"
-          icon={Zap}
-          ip="192.168.1.105 (Leased)"
-          protocol="DHCP (UDP)"
-          port="UDP 67 / 68"
-          status={isRelayMode ? "DHCP Relay Active" : "Local LAN Broadcast"}
-          actionTitle={currentMeta.title}
-          actionDesc={currentMeta.subtitle}
-          stepNumber={activeStep}
-          totalSteps={4}
-          isPlaying={isPlaying}
-          onPlay={handlePlayFull}
-          onStep={handleStepForward}
-          onReset={handleReset}
-          speed={speed}
-          setSpeed={setSpeed}
-          showAnimation={showAnimation}
-          setShowAnimation={setShowAnimation}
-        />
-      )}
+      {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
+      <CleanWidget
+        title="DHCP Automatic IP Assignment Made Simple"
+        subtitle="Watch how your computer gets an IP address automatically from the Router/DHCP Server"
+        icon={Zap}
+        ip="192.168.1.105 (Leased)"
+        protocol="DHCP (UDP)"
+        port="UDP 67 / 68"
+        status={isRelayMode ? "DHCP Relay Active" : "Local LAN Broadcast"}
+        actionTitle={currentMeta.title}
+        actionDesc={currentMeta.subtitle}
+        stepNumber={activeStep}
+        totalSteps={4}
+        isPlaying={isPlaying}
+        onPlay={handlePlayFull}
+        onStep={handleStepForward}
+        onReset={handleReset}
+        speed={speed}
+        setSpeed={setSpeed}
+        showAnimation={showAnimation}
+        setShowAnimation={setShowAnimation}
+      />
 
       {/* FLOATING MODAL POPUP FOR PACKET PAYLOAD INSPECTOR (DETAILED MODE ONLY) */}
       {(appMode === 'detailed' || appMode === 'expert') && modalPayloadStep && activeModalData && (
