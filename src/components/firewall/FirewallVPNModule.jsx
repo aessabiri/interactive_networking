@@ -173,6 +173,9 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
           status={firewallAction === 'ALLOW' ? '🟢 ALLOWED' : firewallAction === 'DROP' ? '🔴 DROPPED' : 'Ready'}
           actionTitle={firewallAction ? `Traffic Verdict: ${firewallAction}` : 'Ready to Send Test Traffic'}
           actionDesc={firewallAction === 'ALLOW' ? '🟢 PERMITTED: Firewall verified this service is secure and allowed it through!' : firewallAction === 'DROP' ? '🔴 BLOCKED: Firewall detected insecure traffic and dropped the packet!' : 'Select a service (HTTPS, SSH, RDP) above and click "Transmit Packet Through Firewall".'}
+          isPlaying={isPlaying}
+          onPlay={handleTestFirewallPacket}
+          onReset={handleReset}
           showAnimation={showAnimation}
           setShowAnimation={setShowAnimation}
         />

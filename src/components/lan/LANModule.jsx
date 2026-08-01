@@ -307,6 +307,10 @@ export default function LANModule({ appMode = 'clean' }) {
           actionDesc={currentMeta.subtitle}
           stepNumber={activeStep}
           totalSteps={4}
+          isPlaying={isPlaying}
+          onPlay={handlePlayFull}
+          onStep={handleStepForward}
+          onReset={handleReset}
           showAnimation={showAnimation}
           setShowAnimation={setShowAnimation}
         />

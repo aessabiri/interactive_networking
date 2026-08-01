@@ -410,6 +410,10 @@ export default function DNSModule({ appMode = 'clean' }) {
           actionDesc={currentMeta.subtitle}
           stepNumber={activeStep}
           totalSteps={totalSteps}
+          isPlaying={isPlaying}
+          onPlay={handleStartPlay}
+          onStep={handleStepForward}
+          onReset={handleReset}
           showAnimation={showAnimation}
           setShowAnimation={setShowAnimation}
         />

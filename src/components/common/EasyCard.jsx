@@ -65,6 +65,10 @@ export function CleanWidget({
   actionDesc, 
   stepNumber, 
   totalSteps,
+  isPlaying = false,
+  onPlay,
+  onStep,
+  onReset,
   showAnimation = true,
   setShowAnimation
 }) {
@@ -74,7 +78,7 @@ export function CleanWidget({
       {/* BACKGROUND DECORATIVE GLOW */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
-      {/* TOP ROW: TITLE & COLORFUL BADGES */}
+      {/* TOP ROW: TITLE & TOP-RIGHT CIRCULAR ICON-ONLY ACTION TOOLBAR */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
         
         {/* Module Title & Clean Mode Tag */}
@@ -93,7 +97,62 @@ export function CleanWidget({
           </div>
         </div>
 
-        {/* COLORFUL HIGH-CONTRAST BASIC INFO BUTTONS WITH 2-WORD SUMMARY */}
+        {/* TOP-RIGHT CIRCULAR ICON-ONLY CONTROL BUTTONS (NO TEXT, JUST SLEEK CIRCULAR LOGOS) */}
+        <div className="flex items-center gap-2 font-mono">
+          {/* PLAY / PAUSE BUTTON */}
+          {onPlay && (
+            <button
+              onClick={onPlay}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg border hover:scale-110 active:scale-95 ${
+                isPlaying
+                  ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-amber-500/30'
+                  : 'bg-gradient-to-tr from-cyan-500 to-blue-600 text-slate-950 border-cyan-300 shadow-cyan-500/30'
+              }`}
+              title={isPlaying ? 'Pause Simulation' : 'Start / Play Full Simulation'}
+            >
+              {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
+            </button>
+          )}
+
+          {/* NEXT STEP BUTTON */}
+          {onStep && (
+            <button
+              onClick={onStep}
+              disabled={isPlaying}
+              className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-slate-700 hover:scale-110 active:scale-95 transition-all shadow cursor-pointer flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Next Step Forward"
+            >
+              <SkipForward className="w-4 h-4 fill-current" />
+            </button>
+          )}
+
+          {/* RESET BUTTON */}
+          {onReset && (
+            <button
+              onClick={onReset}
+              className="w-9 h-9 rounded-full bg-slate-800 hover:bg-rose-950/80 text-rose-400 hover:text-rose-200 border border-slate-700 hover:border-rose-700 hover:scale-110 active:scale-95 transition-all shadow cursor-pointer flex items-center justify-center"
+              title="Reset Simulation"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* CANVAS ANIMATION HIDE/SHOW TOGGLE BUTTON */}
+          {setShowAnimation && (
+            <button
+              onClick={() => setShowAnimation(!showAnimation)}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer shadow border hover:scale-110 active:scale-95 ${
+                showAnimation
+                  ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
+                  : 'bg-slate-800 text-slate-400 border-slate-700'
+              }`}
+              title={showAnimation ? 'Hide Canvas Animation' : 'Show Canvas Animation'}
+            >
+              <MonitorPlay className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
         <div className="flex flex-wrap items-center gap-2 font-mono">
           {ip && (
             <div className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-cyan-950 to-slate-900 text-cyan-300 border border-cyan-500/60 shadow-lg flex items-center gap-2 hover:border-cyan-400 transition-all cursor-default">
@@ -143,19 +202,7 @@ export function CleanWidget({
             </div>
           )}
 
-          {/* ANIMATION TOGGLE BUTTON AS A ROUNDED ICON BUTTON */}
-          {setShowAnimation && (
-            <CleanControlButton
-              icon={MonitorPlay}
-              label={showAnimation ? 'Hide Canvas 🎬' : 'Show Canvas 🎬'}
-              description={showAnimation ? 'Hide Topology Animation' : 'Show Topology Animation'}
-              onClick={() => setShowAnimation(!showAnimation)}
-              active={showAnimation}
-              color="emerald"
-            />
-          )}
         </div>
-      </div>
 
       {/* BOTTOM ROW: STAGE PILL & ACTION DESCRIPTION */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-2xl bg-slate-950/90 border border-slate-800/90 shadow-inner">

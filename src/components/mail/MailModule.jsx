@@ -517,6 +517,10 @@ export default function MailModule({ appMode = 'clean' }) {
           actionDesc={currentMeta.subtitle}
           stepNumber={activeStep}
           totalSteps={totalSteps}
+          isPlaying={isPlaying}
+          onPlay={handlePlayFull}
+          onStep={handleStepForward}
+          onReset={handleReset}
           showAnimation={showAnimation}
           setShowAnimation={setShowAnimation}
         />
