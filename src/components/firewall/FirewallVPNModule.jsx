@@ -27,7 +27,12 @@ import {
   Sliders,
   Shield,
   Eye,
-  Send
+  Send,
+  Plus,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
+  X
 } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
@@ -106,6 +111,46 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
     };
   }, [isPlaying, activeStep, speed, activeSubTab]);
 
+  // Custom Rule Creation Modal State
+  const [showAddRuleModal, setShowAddRuleModal] = useState(false);
+  const [newRule, setNewRule] = useState({
+    src: '192.168.1.0/24',
+    dst: 'ANY',
+    port: '8080 (CUSTOM)',
+    protocol: 'TCP',
+    state: 'NEW, ESTABLISHED',
+    action: 'ACCEPT',
+    desc: 'Custom App Rule'
+  });
+
+  const handleToggleRuleAction = (id) => {
+    setFwRules(prev => prev.map(r => r.id === id ? { ...r, action: r.action === 'ACCEPT' ? 'DROP' : 'ACCEPT' } : r));
+    setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'ACL_EDIT', message: `Toggled Rule #${id} action.` }]);
+  };
+
+  const handleDeleteRule = (id) => {
+    setFwRules(prev => prev.filter(r => r.id !== id));
+    setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'ACL_DELETE', message: `Deleted Rule #${id} from ACL table.` }]);
+  };
+
+  const handleMoveRule = (index, direction) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= fwRules.length) return;
+    const updated = [...fwRules];
+    const temp = updated[index];
+    updated[index] = updated[targetIndex];
+    updated[targetIndex] = temp;
+    setFwRules(updated);
+  };
+
+  const handleAddRule = () => {
+    const nextId = fwRules.length > 0 ? Math.max(...fwRules.map(r => r.id)) + 1 : 101;
+    const created = { id: nextId, ...newRule };
+    setFwRules([created, ...fwRules]);
+    setShowAddRuleModal(false);
+    setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'ACL_ADD', message: `Added Rule #${nextId}: ${created.desc}` }]);
+  };
+
   // Send Custom Packet Through Stateful Firewall
   const handleTestFirewallPacket = () => {
     if (isPlaying) {
@@ -117,20 +162,32 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
     setActiveStep(1);
 
     const servicePortMap = {
-      https: { port: 443, name: 'HTTPS (Port 443)', proto: 'TCP', dst: '93.184.216.34' },
-      ssh: { port: 22, name: 'SSH (Port 22)', proto: 'TCP', dst: '203.0.113.10' },
+      http: { port: 80, name: 'HTTP Web Unencrypted (Port 80)', proto: 'TCP', dst: '93.184.216.34' },
+      https: { port: 443, name: 'HTTPS Secure Web (Port 443)', proto: 'TCP', dst: '93.184.216.34' },
+      ssh: { port: 22, name: 'SSH Secure Shell (Port 22)', proto: 'TCP', dst: '203.0.113.10' },
       rdp: { port: 3389, name: 'RDP Remote Desktop (Port 3389)', proto: 'TCP', dst: '203.0.113.50' },
-      icmp: { port: 0, name: 'ICMP Echo Ping', proto: 'ICMP', dst: '8.8.8.8' },
-      telnet: { port: 23, name: 'Telnet Unencrypted (Port 23)', proto: 'TCP', dst: '203.0.113.99' }
+      telnet: { port: 23, name: 'Telnet Plaintext Admin (Port 23)', proto: 'TCP', dst: '203.0.113.99' },
+      ftp: { port: 21, name: 'FTP File Transfer (Port 21)', proto: 'TCP', dst: '198.51.100.22' },
+      mysql: { port: 3306, name: 'MySQL Database Query (Port 3306)', proto: 'TCP', dst: '10.0.0.50' },
+      smb: { port: 445, name: 'SMB Windows Share (Port 445)', proto: 'TCP', dst: '192.168.1.200' },
+      dns: { port: 53, name: 'DNS Hostname Query (Port 53)', proto: 'UDP', dst: '8.8.8.8' },
+      smtp: { port: 25, name: 'SMTP Mail Server (Port 25)', proto: 'TCP', dst: '172.16.0.25' },
+      icmp: { port: 0, name: 'ICMP Echo Ping Diagnostic', proto: 'ICMP', dst: '8.8.8.8' }
     };
 
-    const target = servicePortMap[selectedService];
+    const target = servicePortMap[selectedService] || servicePortMap.https;
     
-    // Evaluate against firewall rules
-    const matchedRule = fwRules.find(r => {
-      if (target.proto === 'ICMP' && r.protocol === 'ICMP') return true;
-      return r.port.includes(target.port.toString());
-    });
+    // Evaluate against user-configured firewall rules top-to-bottom
+    let matchedRule = null;
+    for (const r of fwRules) {
+      const protoMatch = r.protocol === 'ANY' || r.protocol === target.proto;
+      const portStr = target.port.toString();
+      const portMatch = r.port.includes('ANY') || r.port.includes(portStr) || (target.proto === 'ICMP' && r.protocol === 'ICMP');
+      if (protoMatch && portMatch) {
+        matchedRule = r;
+        break; // First matching rule wins (Top-to-Bottom ACL)
+      }
+    }
 
     const isAllowed = matchedRule ? matchedRule.action === 'ACCEPT' : false;
     setFirewallAction(isAllowed ? 'ALLOW' : 'DROP');
@@ -139,7 +196,7 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
       srcIp: '192.168.1.105:52310',
       dstIp: `${target.dst}:${target.port || 'ICMP'}`,
       service: target.name,
-      matchedRuleId: matchedRule ? matchedRule.id : 'DEFAULT DROP RULE',
+      matchedRuleId: matchedRule ? `Rule #${matchedRule.id} (${matchedRule.desc})` : 'DEFAULT DROP RULE',
       state: 'NEW (TCP SYN)',
       verdict: isAllowed ? 'PASSED (ACCEPT)' : 'BLOCKED (DROP)'
     });
@@ -247,11 +304,25 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
                   onChange={(e) => { setSelectedService(e.target.value); handleReset(); }}
                   className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-mono font-bold text-cyan-300 focus:outline-none focus:border-cyan-500 cursor-pointer"
                 >
-                  <option value="https">HTTPS Web (Port 443) - Allow Rule #101</option>
-                  <option value="ssh">SSH Remote Admin (Port 22) - Allow Rule #102</option>
-                  <option value="rdp">RDP Desktop (Port 3389) - DROP Rule #104</option>
-                  <option value="telnet">Telnet Plaintext (Port 23) - DROP Rule #105</option>
-                  <option value="icmp">ICMP Ping (8.8.8.8) - Allow Rule #106</option>
+                  <optgroup label="🌐 Web Services">
+                    <option value="https">HTTPS Secure Web (Port 443)</option>
+                    <option value="http">HTTP Web Unencrypted (Port 80)</option>
+                  </optgroup>
+                  <optgroup label="🔑 Administration & Remote Access">
+                    <option value="ssh">SSH Secure Shell (Port 22)</option>
+                    <option value="rdp">RDP Remote Desktop (Port 3389)</option>
+                    <option value="telnet">Telnet Plaintext Admin (Port 23)</option>
+                  </optgroup>
+                  <optgroup label="💾 Data & File Services">
+                    <option value="ftp">FTP File Transfer (Port 21)</option>
+                    <option value="mysql">MySQL Database Query (Port 3306)</option>
+                    <option value="smb">SMB Windows File Share (Port 445)</option>
+                  </optgroup>
+                  <optgroup label="🛠️ Core Infrastructure">
+                    <option value="dns">DNS Hostname Query (Port 53)</option>
+                    <option value="smtp">SMTP Mail Server (Port 25)</option>
+                    <option value="icmp">ICMP Echo Ping Diagnostic</option>
+                  </optgroup>
                 </select>
               </div>
             </div>
@@ -278,45 +349,41 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
               />
             </svg>
 
-            {/* 1. Client PC (15%, 50%) */}
-            <div className="absolute left-[15%] top-[50%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 font-mono z-10">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-700">
-                192.168.1.105
-              </span>
-              <div className="p-5 rounded-3xl border-4 bg-slate-900 border-slate-700">
-                <Laptop className="w-12 h-12 text-cyan-400" />
+            {/* Stage Nodes */}
+            <div className="relative z-10 flex items-center justify-between h-[300px] px-8">
+              
+              {/* Source LAN Client */}
+              <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-900/90 border border-cyan-500/40 shadow-lg text-center w-44">
+                <Laptop className="w-10 h-10 text-cyan-400" />
+                <span className="font-bold text-slate-100">Workstation PC-01</span>
+                <span className="text-[10px] text-cyan-300 font-mono bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800">192.168.1.105</span>
               </div>
-              <p className="text-xs font-bold text-slate-200">INTERNAL PC</p>
-            </div>
 
-            {/* 2. Enterprise Hardware Firewall (50%, 50%) */}
-            <div className="absolute left-[50%] top-[50%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 font-mono z-10">
-              <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-700 flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5" /> FORTIGATE HARDWARE FIREWALL
-              </span>
-              <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
-                firewallAction === 'DROP'
-                  ? 'bg-rose-950 border-rose-500 shadow-2xl shadow-rose-500/60 scale-110 animate-bounce'
-                  : firewallAction === 'ALLOW'
-                  ? 'bg-emerald-950 border-emerald-400 shadow-2xl shadow-emerald-500/50 scale-110'
-                  : 'bg-slate-900 border-slate-700'
+              {/* Stateful Inspection Firewall Engine */}
+              <div className={`flex flex-col items-center gap-2 p-5 rounded-3xl border shadow-2xl text-center w-52 transition-all duration-300 ${
+                firewallAction === 'ALLOW'
+                  ? 'bg-emerald-950/90 border-emerald-500 text-emerald-300 shadow-emerald-500/20'
+                  : firewallAction === 'DROP'
+                  ? 'bg-rose-950/90 border-rose-500 text-rose-300 shadow-rose-500/20'
+                  : 'bg-slate-900/95 border-rose-500/40 text-slate-100'
               }`}>
-                <ShieldAlert className={`w-14 h-14 ${firewallAction === 'DROP' ? 'text-rose-400' : firewallAction === 'ALLOW' ? 'text-emerald-400' : 'text-rose-400'}`} />
+                {firewallAction === 'ALLOW' ? (
+                  <ShieldCheck className="w-12 h-12 text-emerald-400 animate-bounce" />
+                ) : firewallAction === 'DROP' ? (
+                  <ShieldAlert className="w-12 h-12 text-rose-400 animate-pulse" />
+                ) : (
+                  <Shield className="w-12 h-12 text-rose-400" />
+                )}
+                <span className="font-extrabold text-sm">FortiGate Firewall</span>
+                <span className="text-[10px] font-mono opacity-80 uppercase">Stateful Inspection Engine</span>
               </div>
-              <p className="text-xs font-bold text-slate-200">SPI RULES ENGINE</p>
-            </div>
 
-            {/* 3. Destination Public Server (85%, 50%) */}
-            <div className="absolute left-[85%] top-[50%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 font-mono z-10">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-950 text-blue-300 border border-blue-700">
-                PUBLIC SERVER
-              </span>
-              <div className={`p-5 rounded-3xl border-4 transition-all ${
-                firewallAction === 'ALLOW' && packetProgress > 80 ? 'bg-emerald-950 border-emerald-400 scale-110 shadow-xl' : 'bg-slate-900 border-slate-700'
-              }`}>
-                <Server className="w-12 h-12 text-blue-400" />
+              {/* Target Internet Server */}
+              <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-900/90 border border-emerald-500/40 shadow-lg text-center w-44">
+                <Server className="w-10 h-10 text-emerald-400" />
+                <span className="font-bold text-slate-100">Target Server</span>
+                <span className="text-[10px] text-emerald-300 font-mono bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">203.0.113.99 / WAN</span>
               </div>
-              <p className="text-xs font-bold text-slate-200">TARGET SERVER</p>
             </div>
 
             {/* ANIMATED PACKET OVERLAY */}
@@ -351,7 +418,7 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
             )}
           </div>
 
-          {/* INSPECTION RESULTS & RULES MATRIX */}
+          {/* INSPECTION RESULTS & USER-CONFIGURABLE RULES MATRIX */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
             
             {/* LIVE INSPECTOR VERDICT */}
@@ -381,39 +448,80 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
               )}
             </div>
 
-            {/* FIREWALL RULES MATRIX TABLE */}
+            {/* USER-CONFIGURABLE FIREWALL RULES MATRIX TABLE */}
             <div className="md:col-span-2 glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 shadow-xl">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                <span className="text-cyan-400 font-extrabold text-sm">Active Stateful Firewall Access Control Matrix (ACL)</span>
-                <span className="text-slate-500 text-[10px]">FortiGate Policy Table</span>
+                <div>
+                  <span className="text-cyan-400 font-extrabold text-sm">User-Configurable Access Control Table (ACL)</span>
+                  <p className="text-[10px] text-slate-400 font-normal">Rules evaluate top-to-bottom. Click Action badge to toggle ACCEPT / DROP!</p>
+                </div>
+                <button
+                  onClick={() => setShowAddRuleModal(true)}
+                  className="px-3 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-lg transition-all flex items-center gap-1 cursor-pointer"
+                  title="Add Custom Firewall Rule"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Rule</span>
+                </button>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-[11px]">
                   <thead>
                     <tr className="border-b border-slate-800 text-slate-400 uppercase">
+                      <th className="py-2 px-2">Priority</th>
                       <th className="py-2 px-2">ID</th>
-                      <th className="py-2 px-2">Src Subnet</th>
-                      <th className="py-2 px-2">Dst IP</th>
                       <th className="py-2 px-2">Service Port</th>
-                      <th className="py-2 px-2">State</th>
-                      <th className="py-2 px-2">Action</th>
+                      <th className="py-2 px-2">Proto</th>
+                      <th className="py-2 px-2">Action (Click to Toggle)</th>
+                      <th className="py-2 px-2 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60 text-slate-300">
-                    {fwRules.map(rule => (
+                    {fwRules.map((rule, idx) => (
                       <tr key={rule.id} className="hover:bg-slate-900/60 transition-colors">
-                        <td className="py-2 px-2 text-slate-500 font-bold">#{rule.id}</td>
-                        <td className="py-2 px-2 text-cyan-300 font-bold">{rule.src}</td>
-                        <td className="py-2 px-2 text-slate-300">{rule.dst}</td>
+                        <td className="py-2 px-2 font-mono text-slate-500">
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleMoveRule(idx, -1)}
+                              disabled={idx === 0}
+                              className="p-1 text-slate-400 hover:text-cyan-300 disabled:opacity-30 cursor-pointer"
+                              title="Move Up Priority"
+                            >
+                              <ArrowUp className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={() => handleMoveRule(idx, 1)}
+                              disabled={idx === fwRules.length - 1}
+                              className="p-1 text-slate-400 hover:text-cyan-300 disabled:opacity-30 cursor-pointer"
+                              title="Move Down Priority"
+                            >
+                              <ArrowDown className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </td>
+                        <td className="py-2 px-2 text-slate-400 font-bold">#{rule.id}</td>
                         <td className="py-2 px-2 text-amber-300 font-bold">{rule.port}</td>
-                        <td className="py-2 px-2 text-purple-300">{rule.state}</td>
+                        <td className="py-2 px-2 text-purple-300 font-mono">{rule.protocol}</td>
                         <td className="py-2 px-2">
-                          <span className={`px-2 py-0.5 rounded font-black text-[10px] ${
-                            rule.action === 'ACCEPT' ? 'bg-emerald-950 text-emerald-300 border border-emerald-700' : 'bg-rose-950 text-rose-300 border border-rose-700'
-                          }`}>
-                            {rule.action}
-                          </span>
+                          <button
+                            onClick={() => handleToggleRuleAction(rule.id)}
+                            className={`px-2.5 py-1 rounded-full font-black text-[10px] cursor-pointer transition-all border shadow ${
+                              rule.action === 'ACCEPT' ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-600' : 'bg-rose-950 hover:bg-rose-900 text-rose-300 border-rose-600'
+                            }`}
+                            title="Click to toggle between ACCEPT and DROP"
+                          >
+                            {rule.action === 'ACCEPT' ? '🟢 ACCEPT' : '🔴 DROP'}
+                          </button>
+                        </td>
+                        <td className="py-2 px-2 text-right">
+                          <button
+                            onClick={() => handleDeleteRule(rule.id)}
+                            className="p-1 rounded bg-rose-950/60 hover:bg-rose-900 text-rose-400 border border-rose-800 transition-colors cursor-pointer"
+                            title="Delete Firewall Rule"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -620,6 +728,118 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
             <span className="text-[10px] text-cyan-400 font-bold uppercase block">TLS Step {activeStep + 1}:</span>
             <h4 className="text-base font-black text-cyan-200">{tlsSteps[activeStep].title}</h4>
             <p className="text-xs text-slate-300">{tlsSteps[activeStep].subtitle}</p>
+          </div>
+        </div>
+      )}
+
+      {/* FLOATING MODAL POPUP FOR ADDING CUSTOM FIREWALL RULE */}
+      {showAddRuleModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn font-sans">
+          <div className="glass-panel max-w-lg w-full p-6 rounded-3xl border border-slate-700 shadow-2xl space-y-5 bg-slate-900/95 relative text-slate-100">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-100">Create Custom Firewall Rule</h3>
+                  <p className="text-xs text-slate-400">Rules evaluate top-to-bottom in ACL order</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAddRuleModal(false)}
+                className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <div className="space-y-4 font-mono text-xs">
+              <div>
+                <label className="text-[10px] text-slate-400 font-bold block mb-1">RULE DESCRIPTION:</label>
+                <input
+                  type="text"
+                  value={newRule.desc}
+                  onChange={(e) => setNewRule({ ...newRule, desc: e.target.value })}
+                  placeholder="e.g. Allow Custom App Port 8080"
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] text-slate-400 font-bold block mb-1">PROTOCOL:</label>
+                  <select
+                    value={newRule.protocol}
+                    onChange={(e) => setNewRule({ ...newRule, protocol: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-purple-300 font-bold focus:outline-none cursor-pointer"
+                  >
+                    <option value="TCP">TCP</option>
+                    <option value="UDP">UDP</option>
+                    <option value="ICMP">ICMP</option>
+                    <option value="ANY">ANY (All Protocols)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-slate-400 font-bold block mb-1">SERVICE PORT / NUMBER:</label>
+                  <input
+                    type="text"
+                    value={newRule.port}
+                    onChange={(e) => setNewRule({ ...newRule, port: e.target.value })}
+                    placeholder="e.g. 8080 (ALT-HTTP)"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-amber-300 font-bold focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] text-slate-400 font-bold block mb-1">ACTION PERMISSION:</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setNewRule({ ...newRule, action: 'ACCEPT' })}
+                    className={`py-2 rounded-xl font-black transition-all cursor-pointer border ${
+                      newRule.action === 'ACCEPT'
+                        ? 'bg-emerald-500 text-slate-950 border-emerald-300 shadow-md'
+                        : 'bg-slate-950 text-slate-400 border-slate-800'
+                    }`}
+                  >
+                    🟢 ACCEPT (Allow)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewRule({ ...newRule, action: 'DROP' })}
+                    className={`py-2 rounded-xl font-black transition-all cursor-pointer border ${
+                      newRule.action === 'DROP'
+                        ? 'bg-rose-500 text-white border-rose-300 shadow-md'
+                        : 'bg-slate-950 text-slate-400 border-slate-800'
+                    }`}
+                  >
+                    🔴 DROP (Block)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <button
+                onClick={() => setShowAddRuleModal(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddRule}
+                className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-lg cursor-pointer transition-all"
+              >
+                Save & Apply Rule
+              </button>
+            </div>
           </div>
         </div>
       )}
