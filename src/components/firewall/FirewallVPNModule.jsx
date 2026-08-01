@@ -32,7 +32,8 @@ import {
   Trash2,
   ArrowUp,
   ArrowDown,
-  X
+  X,
+  Cloud
 } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
@@ -657,54 +658,124 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
             })}
           </div>
 
-          {/* VPN PHASE STATUS BANNER */}
-          <div className="p-4 bg-emerald-950/80 rounded-2xl border border-emerald-600/80 space-y-1">
-            <span className="text-[10px] text-emerald-400 font-bold uppercase block">Phase Step {activeStep}:</span>
-            <h4 className="text-base font-black text-emerald-200">{vpnSteps[activeStep].title}</h4>
-            <p className="text-xs text-slate-300">{vpnSteps[activeStep].subtitle}</p>
+          {/* VPN EXPLANATION BANNER */}
+          <div className="p-4 bg-emerald-950/80 rounded-2xl border border-emerald-600/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <span className="text-[10px] text-emerald-400 font-bold uppercase block">Phase Step {activeStep}:</span>
+              <h4 className="text-base font-black text-emerald-200">{vpnSteps[activeStep].title}</h4>
+              <p className="text-xs text-slate-300">{vpnSteps[activeStep].subtitle}</p>
+            </div>
+            <div className="px-3 py-1.5 rounded-xl bg-slate-900 border border-emerald-500/50 text-[11px] font-bold text-emerald-300 flex items-center gap-1.5 whitespace-nowrap">
+              <Lock className="w-4 h-4 text-emerald-400" />
+              <span>Virtual Network: 192.168.10.0/24</span>
+            </div>
           </div>
 
-          {/* VISUAL TUNNEL DIAGRAM */}
-          <div className="relative min-h-[260px] bg-slate-950 p-6 rounded-2xl border border-slate-800 flex items-center justify-between overflow-hidden">
+          {/* MULTI-HOP VISUAL TOPOLOGY STAGE */}
+          <div className="relative min-h-[340px] bg-slate-950 p-6 rounded-3xl border border-slate-800 shadow-inner overflow-hidden">
             
-            {/* Branch Gateway */}
-            <div className="flex flex-col items-center gap-2 z-10">
-              <span className="px-2 py-0.5 bg-cyan-950 text-cyan-300 rounded border border-cyan-700 font-bold text-[10px]">
-                192.168.10.1
-              </span>
-              <div className="p-4 bg-slate-900 border-2 border-cyan-500 rounded-2xl shadow-xl">
-                <Router className="w-10 h-10 text-cyan-400" />
+            {/* GLOWING ENCRYPTED TUNNEL OVERLAY PIPE (PHYSICALLY APART, LOGICALLY CONNECTED) */}
+            <div className="absolute top-[28%] left-[8%] right-[8%] h-24 border-2 border-emerald-400/80 rounded-3xl bg-emerald-950/20 backdrop-blur-xs shadow-[0_0_30px_rgba(16,185,129,0.25)] pointer-events-none flex items-center justify-center z-20">
+              <div className="px-4 py-1.5 rounded-full bg-emerald-950 border border-emerald-400 text-emerald-300 text-[10px] font-black tracking-wider flex items-center gap-2 shadow-2xl animate-pulse">
+                <Lock className="w-4 h-4 text-emerald-400" />
+                <span>🔒 ENCRYPTED IPSEC TUNNEL CABLE — LOGICALLY ON SAME VIRTUAL PRIVATE NETWORK</span>
               </div>
-              <p className="font-bold text-slate-200 text-xs">BRANCH GATEWAY</p>
-            </div>
 
-            {/* ENCRYPTED IPSEC TUNNEL CABLE PIPE */}
-            <div className="flex-1 mx-8 relative flex items-center justify-center h-16 border-2 border-dashed border-emerald-500/60 rounded-full bg-emerald-950/30">
-              <span className="px-3 py-1 bg-emerald-950 text-emerald-300 rounded-full border border-emerald-500 text-[10px] font-black tracking-wider flex items-center gap-1.5 shadow-lg z-10">
-                <Lock className="w-3.5 h-3.5" /> ENCRYPTED IPSEC ESP TUNNEL (AES-256-GCM + SHA-256)
-              </span>
-
-              {/* Animated ESP Packet */}
-              {activeStep > 0 && (
+              {/* Animated ESP Encrypted Packet moving inside glowing tunnel */}
+              {isPlaying && activeStep > 0 && (
                 <div
-                  style={{ left: `${(packetProgress / 100) * 80 + 10}%` }}
-                  className="absolute p-2.5 bg-emerald-400 text-slate-950 rounded-full shadow-2xl animate-pulse font-bold text-xs border-2 border-white z-20 flex items-center gap-1"
+                  style={{ left: `${(packetProgress / 100) * 85 + 5}%` }}
+                  className="absolute p-2 bg-emerald-400 text-slate-950 rounded-full shadow-[0_0_20px_#10b981] font-black text-xs border-2 border-white flex items-center gap-1 z-30 transition-all duration-75"
                 >
                   <Lock className="w-4 h-4" />
-                  <span className="text-[9px] font-mono font-black">ESP Payload</span>
+                  <span className="text-[9px] font-mono">ESP Packet</span>
                 </div>
               )}
             </div>
 
-            {/* HQ Gateway */}
-            <div className="flex flex-col items-center gap-2 z-10">
-              <span className="px-2 py-0.5 bg-purple-950 text-purple-300 rounded border border-purple-700 font-bold text-[10px]">
-                172.16.0.1
-              </span>
-              <div className="p-4 bg-slate-900 border-2 border-purple-500 rounded-2xl shadow-xl">
-                <Router className="w-10 h-10 text-purple-400" />
+            {/* PHYSICAL CONNECTIONS WIRE */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none">
+              <line x1="12%" y1="75%" x2="28%" y2="75%" stroke="#06b6d4" strokeWidth="3" strokeDasharray="6 4" />
+              <line x1="28%" y1="75%" x2="44%" y2="75%" stroke="#06b6d4" strokeWidth="3" strokeDasharray="6 4" />
+              <line x1="44%" y1="75%" x2="56%" y2="75%" stroke="#f59e0b" strokeWidth="3" strokeDasharray="6 4" />
+              <line x1="56%" y1="75%" x2="72%" y2="75%" stroke="#a855f7" strokeWidth="3" strokeDasharray="6 4" />
+              <line x1="72%" y1="75%" x2="88%" y2="75%" stroke="#a855f7" strokeWidth="3" strokeDasharray="6 4" />
+            </svg>
+
+            {/* TOPOLOGY NODES GRID */}
+            <div className="relative z-10 grid grid-cols-6 gap-2 items-end h-[290px]">
+              
+              {/* NODE 1: BRANCH PC-01 */}
+              <div className="flex flex-col items-center gap-1.5 text-center">
+                <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
+                  192.168.10.105
+                </span>
+                <div className="p-3 bg-slate-900 border-2 border-cyan-500 rounded-2xl shadow-lg">
+                  <Laptop className="w-8 h-8 text-cyan-400" />
+                </div>
+                <p className="font-extrabold text-[11px] text-slate-100">Branch PC-01</p>
+                <p className="text-[9px] text-slate-400">London Office</p>
               </div>
-              <p className="font-bold text-slate-200 text-xs">HQ GATEWAY</p>
+
+              {/* NODE 2: BRANCH SWITCH */}
+              <div className="flex flex-col items-center gap-1.5 text-center">
+                <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-slate-900 text-slate-400 border border-slate-800">
+                  VLAN 10 Switch
+                </span>
+                <div className="p-3 bg-slate-900 border-2 border-slate-700 rounded-2xl shadow-lg">
+                  <Layers className="w-8 h-8 text-slate-300" />
+                </div>
+                <p className="font-extrabold text-[11px] text-slate-100">Branch Switch</p>
+                <p className="text-[9px] text-slate-400">Layer 2 LAN</p>
+              </div>
+
+              {/* NODE 3: BRANCH VPN GATEWAY */}
+              <div className="flex flex-col items-center gap-1.5 text-center">
+                <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-700">
+                  203.0.113.5
+                </span>
+                <div className="p-3 bg-slate-900 border-2 border-emerald-500 rounded-2xl shadow-lg">
+                  <Router className="w-8 h-8 text-emerald-400 animate-pulse" />
+                </div>
+                <p className="font-extrabold text-[11px] text-emerald-300">Branch Gateway</p>
+                <p className="text-[9px] text-slate-400">VPN Router</p>
+              </div>
+
+              {/* NODE 4: PUBLIC ISP CLOUD */}
+              <div className="flex flex-col items-center gap-1.5 text-center">
+                <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-amber-950 text-amber-300 border border-amber-800">
+                  Public WAN
+                </span>
+                <div className="p-3 bg-amber-950/40 border-2 border-amber-600 rounded-2xl shadow-lg">
+                  <Cloud className="w-8 h-8 text-amber-400" />
+                </div>
+                <p className="font-extrabold text-[11px] text-amber-300">ISP WAN Cloud</p>
+                <p className="text-[9px] text-slate-400">Untrusted Internet</p>
+              </div>
+
+              {/* NODE 5: HQ VPN GATEWAY */}
+              <div className="flex flex-col items-center gap-1.5 text-center">
+                <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800">
+                  198.51.100.1
+                </span>
+                <div className="p-3 bg-slate-900 border-2 border-purple-500 rounded-2xl shadow-lg">
+                  <Router className="w-8 h-8 text-purple-400 animate-pulse" />
+                </div>
+                <p className="font-extrabold text-[11px] text-purple-300">HQ Gateway</p>
+                <p className="text-[9px] text-slate-400">VPN Router</p>
+              </div>
+
+              {/* NODE 6: HQ HOST PC-02 */}
+              <div className="flex flex-col items-center gap-1.5 text-center">
+                <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800">
+                  172.16.0.50
+                </span>
+                <div className="p-3 bg-slate-900 border-2 border-purple-500 rounded-2xl shadow-lg">
+                  <Laptop className="w-8 h-8 text-purple-400" />
+                </div>
+                <p className="font-extrabold text-[11px] text-slate-100">HQ Host PC-02</p>
+                <p className="text-[9px] text-slate-400">Tokyo HQ LAN</p>
+              </div>
             </div>
           </div>
         </div>
