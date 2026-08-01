@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Network, Laptop, Server, Router, ShieldCheck, Globe, Play, Trash2, Plus, Zap, Gauge, CheckCircle2, Settings, Cpu, FileCode, Terminal, X, Radio, HardDrive, Mail, Layers, Activity, Printer, Wifi, Database, Download, Upload, FileJson, Sparkles } from 'lucide-react';
+import { Network, Laptop, Server, Router, ShieldCheck, Globe, Play, Square, Trash2, Plus, Zap, Gauge, CheckCircle2, Settings, Cpu, FileCode, Terminal, X, Radio, HardDrive, Mail, Layers, Activity, Printer, Wifi, Database, Download, Upload, FileJson, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
 
@@ -102,6 +102,21 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
   ]);
 
   const canvasRef = useRef(null);
+  const simTimerRef = useRef(null);
+
+  const handleStopSimulation = () => {
+    if (simTimerRef.current) {
+      clearInterval(simTimerRef.current);
+      simTimerRef.current = null;
+    }
+    setIsSimulating(false);
+    setSimPacketPos(null);
+    setLivePacketData(null);
+    setLogs(prev => [
+      ...prev,
+      { time: new Date().toLocaleTimeString(), tag: 'SANDBOX', message: 'Traffic simulation stopped by user.' }
+    ]);
+  };
 
   // Helper to test if a node is an ISP / Internet Cloud
   const isISPNode = (node) => {
@@ -534,7 +549,9 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
     let isReturnPhase = false;
     let progress = 0;
 
-    const interval = setInterval(() => {
+    if (simTimerRef.current) clearInterval(simTimerRef.current);
+
+    simTimerRef.current = setInterval(() => {
       progress += (0.045 * speed) / numSegments;
 
       if (progress <= 1) {
@@ -578,7 +595,8 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
         });
       } else {
         // Return Trip complete! Packet has returned back to Source!
-        clearInterval(interval);
+        if (simTimerRef.current) clearInterval(simTimerRef.current);
+        simTimerRef.current = null;
         setSimPacketPos(null);
         setIsSimulating(false);
         
@@ -1001,15 +1019,25 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
           />
         </div>
 
-        {/* Right Group: Play Action Button */}
-        <CleanControlButton
-          icon={Play}
-          label="Run Traffic Simulation"
-          description="Send Packet Across Canvas"
-          onClick={handleRunSimulation}
-          disabled={isSimulating}
-          color="cyan"
-        />
+        {/* Right Group: Play / Stop Action Button */}
+        {isSimulating ? (
+          <CleanControlButton
+            icon={Square}
+            label="Stop Simulation"
+            description="Cancel packet flight"
+            onClick={handleStopSimulation}
+            active={true}
+            color="rose"
+          />
+        ) : (
+          <CleanControlButton
+            icon={Play}
+            label="Run Traffic Simulation"
+            description="Send Packet Across Canvas"
+            onClick={handleRunSimulation}
+            color="cyan"
+          />
+        )}
       </div>
 
       {/* TOPOLOGY CANVAS STAGE */}

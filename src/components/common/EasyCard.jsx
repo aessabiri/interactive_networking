@@ -93,45 +93,53 @@ export function CleanWidget({
           </div>
         </div>
 
-        {/* COLORFUL HIGH-CONTRAST BASIC INFO BADGES */}
+        {/* COLORFUL HIGH-CONTRAST BASIC INFO BUTTONS WITH 2-WORD SUMMARY */}
         <div className="flex flex-wrap items-center gap-2 font-mono">
           {ip && (
-            <div className="px-3 py-1 rounded-full bg-cyan-950/90 text-cyan-300 border border-cyan-600/80 shadow flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center">
+            <div className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-cyan-950 to-slate-900 text-cyan-300 border border-cyan-500/60 shadow-lg flex items-center gap-2 hover:border-cyan-400 transition-all cursor-default">
+              <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-400/40 shrink-0">
                 <Globe className="w-3 h-3 text-cyan-400" />
               </div>
-              <span className="text-[10px] text-slate-400 font-bold uppercase">IP:</span>
-              <span className="text-xs font-black text-cyan-200">{ip}</span>
+              <div className="flex flex-col text-left leading-none">
+                <span className="text-[9px] text-slate-400 font-extrabold uppercase">IP Address</span>
+                <span className="text-xs font-black text-cyan-200 mt-0.5">{ip}</span>
+              </div>
             </div>
           )}
 
           {protocol && (
-            <div className="px-3 py-1 rounded-full bg-purple-950/90 text-purple-300 border border-purple-600/80 shadow flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center">
+            <div className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-purple-950 to-slate-900 text-purple-300 border border-purple-500/60 shadow-lg flex items-center gap-2 hover:border-purple-400 transition-all cursor-default">
+              <div className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-400/40 shrink-0">
                 <Zap className="w-3 h-3 text-purple-400" />
               </div>
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Proto:</span>
-              <span className="text-xs font-black text-purple-200">{protocol}</span>
+              <div className="flex flex-col text-left leading-none">
+                <span className="text-[9px] text-slate-400 font-extrabold uppercase">Protocol</span>
+                <span className="text-xs font-black text-purple-200 mt-0.5">{protocol}</span>
+              </div>
             </div>
           )}
 
           {port !== undefined && port !== null && (
-            <div className="px-3 py-1 rounded-full bg-amber-950/90 text-amber-300 border border-amber-600/80 shadow flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center">
+            <div className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-950 to-slate-900 text-amber-300 border border-amber-500/60 shadow-lg flex items-center gap-2 hover:border-amber-400 transition-all cursor-default">
+              <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-400/40 shrink-0">
                 <Server className="w-3 h-3 text-amber-400" />
               </div>
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Port:</span>
-              <span className="text-xs font-black text-amber-200">{port}</span>
+              <div className="flex flex-col text-left leading-none">
+                <span className="text-[9px] text-slate-400 font-extrabold uppercase">Port</span>
+                <span className="text-xs font-black text-amber-200 mt-0.5">{port}</span>
+              </div>
             </div>
           )}
 
           {status && (
-            <div className="px-3 py-1 rounded-full bg-emerald-950/90 text-emerald-300 border border-emerald-600/80 shadow flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+            <div className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-emerald-950 to-slate-900 text-emerald-300 border border-emerald-500/60 shadow-lg flex items-center gap-2 hover:border-emerald-400 transition-all cursor-default">
+              <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-400/40 shrink-0">
                 <Shield className="w-3 h-3 text-emerald-400" />
               </div>
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Status:</span>
-              <span className="text-xs font-black text-emerald-200">{status}</span>
+              <div className="flex flex-col text-left leading-none">
+                <span className="text-[9px] text-slate-400 font-extrabold uppercase">State Info</span>
+                <span className="text-xs font-black text-emerald-200 mt-0.5">{status}</span>
+              </div>
             </div>
           )}
 
