@@ -1006,37 +1006,36 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
             </select>
           </div>
 
-          {/* Speed Selector */}
-          <CleanControlButton
-            icon={Gauge}
-            label="Animation Speed"
-            description={`${speed}x Speed`}
+          {/* Speed Selector Circle Icon Button */}
+          <button
             onClick={() => {
               const nextSpeed = speed === 0.5 ? 1 : speed === 1 ? 2 : 0.5;
               setSpeed(nextSpeed);
             }}
-            color="amber"
-          />
+            className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 hover:scale-110 active:scale-95 transition-all shadow cursor-pointer flex items-center justify-center font-mono text-[10px] font-black"
+            title={`Animation Speed: ${speed}x (Click to cycle speed 0.5x ➔ 1x ➔ 2x)`}
+          >
+            <Gauge className="w-4 h-4 text-amber-400" />
+          </button>
         </div>
 
-        {/* Right Group: Play / Stop Action Button */}
+        {/* Right Group: Play / Stop Action Circle Button */}
         {isSimulating ? (
-          <CleanControlButton
-            icon={Square}
-            label="Stop Simulation"
-            description="Cancel packet flight"
+          <button
             onClick={handleStopSimulation}
-            active={true}
-            color="rose"
-          />
+            className="w-9 h-9 rounded-full bg-rose-500 text-white border border-rose-400 hover:scale-110 active:scale-95 transition-all shadow-lg cursor-pointer flex items-center justify-center"
+            title="Stop Traffic Simulation"
+          >
+            <Square className="w-4 h-4 fill-current" />
+          </button>
         ) : (
-          <CleanControlButton
-            icon={Play}
-            label="Run Traffic Simulation"
-            description="Send Packet Across Canvas"
+          <button
             onClick={handleRunSimulation}
-            color="cyan"
-          />
+            className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 text-slate-950 border border-cyan-300 hover:scale-110 active:scale-95 transition-all shadow-lg cursor-pointer flex items-center justify-center"
+            title="Run Traffic Simulation Across Canvas"
+          >
+            <Play className="w-4 h-4 fill-current ml-0.5" />
+          </button>
         )}
       </div>
 

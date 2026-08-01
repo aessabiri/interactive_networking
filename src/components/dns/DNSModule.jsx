@@ -414,6 +414,8 @@ export default function DNSModule({ appMode = 'clean' }) {
           onPlay={handleStartPlay}
           onStep={handleStepForward}
           onReset={handleReset}
+          speed={speed}
+          setSpeed={setSpeed}
           showAnimation={showAnimation}
           setShowAnimation={setShowAnimation}
         />
@@ -512,60 +514,6 @@ export default function DNSModule({ appMode = 'clean' }) {
             }`}>
               {isExternalDomain ? `🌐 PUBLIC ➔ ${currDomain.dnsName} (${currDomain.dnsIp})` : '🏢 LOCAL LAN QUERY'}
             </span>
-          </div>
-
-          {/* Right Group: Animation Speed & Action Controls */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Speed Selector */}
-            <CleanControlButton
-              icon={Gauge}
-              label="Animation Speed"
-              description={`${speed}x Speed`}
-              onClick={() => {
-                const nextSpeed = speed === 0.25 ? 0.5 : speed === 0.5 ? 1 : 0.25;
-                setSpeed(nextSpeed);
-              }}
-              color="amber"
-            />
-
-            {/* Action Buttons */}
-            {isFinalStepComplete ? (
-              <CleanControlButton
-                icon={RotateCcw}
-                label="Reset & Restart Query"
-                description="Start over from Step 0"
-                onClick={handleReset}
-                color="emerald"
-              />
-            ) : (
-              <>
-                <CleanControlButton
-                  icon={SkipForward}
-                  label="Next Step"
-                  description={`Step ${activeStep + 1} of ${totalSteps}`}
-                  onClick={handleStepForward}
-                  disabled={isPlaying}
-                  color="cyan"
-                />
-
-                <CleanControlButton
-                  icon={isPlaying ? Pause : Play}
-                  label={isPlaying ? 'Pause Lookup' : 'Start DNS Lookup'}
-                  description={isPlaying ? 'Click to Pause' : 'Auto-run DNS lookup'}
-                  onClick={handleStartPlay}
-                  active={isPlaying}
-                  color="cyan"
-                />
-
-                <CleanControlButton
-                  icon={RotateCcw}
-                  label="Reset"
-                  description="Reset Query"
-                  onClick={handleReset}
-                  color="rose"
-                />
-              </>
-            )}
           </div>
         </div>
 

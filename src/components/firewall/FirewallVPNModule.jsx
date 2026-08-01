@@ -251,25 +251,6 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
                 </select>
               </div>
             </div>
-
-            <div className="flex flex-wrap items-center gap-2.5">
-              <CleanControlButton
-                icon={Play}
-                label="Transmit Packet Through Firewall"
-                description="Test Stateful Inspection Rule"
-                onClick={handleTestFirewallPacket}
-                disabled={isPlaying}
-                color="rose"
-              />
-
-              <CleanControlButton
-                icon={RotateCcw}
-                label="Reset"
-                description="Reset Firewall State"
-                onClick={handleReset}
-                color="rose"
-              />
-            </div>
           </div>
 
           {/* VISUAL FIREWALL TOPOLOGY STAGE */}

@@ -521,6 +521,8 @@ export default function MailModule({ appMode = 'clean' }) {
           onPlay={handlePlayFull}
           onStep={handleStepForward}
           onReset={handleReset}
+          speed={speed}
+          setSpeed={setSpeed}
           showAnimation={showAnimation}
           setShowAnimation={setShowAnimation}
         />
@@ -717,62 +719,7 @@ export default function MailModule({ appMode = 'clean' }) {
         </div>
       </div>
 
-      {/* WORKSPACE CONTROL TOOLBAR */}
-      <div className="glass-panel p-3 rounded-3xl border border-slate-800/90 bg-slate-900/95 flex flex-wrap items-center justify-between gap-3 shadow-xl">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <CleanControlButton
-            icon={Gauge}
-            label="Animation Speed"
-            description={`${speed}x Speed`}
-            onClick={() => {
-              const nextSpeed = speed === 0.25 ? 0.5 : speed === 0.5 ? 1 : 0.25;
-              setSpeed(nextSpeed);
-            }}
-            color="amber"
-          />
-        </div>
 
-        {/* Action Control Buttons */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          {isFinalStepComplete ? (
-            <CleanControlButton
-              icon={RotateCcw}
-              label="Reset Mail Flow"
-              description="Start over from Step 0"
-              onClick={handleReset}
-              color="emerald"
-            />
-          ) : (
-            <>
-              <CleanControlButton
-                icon={SkipForward}
-                label="Next Step"
-                description={`Step ${activeStep + 1} of ${totalSteps}`}
-                onClick={handleStepForward}
-                disabled={isPlaying}
-                color="amber"
-              />
-
-              <CleanControlButton
-                icon={isPlaying ? Pause : Play}
-                label={isPlaying ? 'Pause Delivery' : 'Start Mail Delivery'}
-                description={isPlaying ? 'Click to Pause' : 'Auto-run mail routing'}
-                onClick={handlePlayFull}
-                active={isPlaying}
-                color="amber"
-              />
-
-              <CleanControlButton
-                icon={RotateCcw}
-                label="Reset"
-                description="Reset Mail Flow"
-                onClick={handleReset}
-                color="rose"
-              />
-            </>
-          )}
-        </div>
-      </div>
 
       {/* Dynamic Action Status Banner */}
       <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 font-mono ${currentMeta.badgeColor}`}>

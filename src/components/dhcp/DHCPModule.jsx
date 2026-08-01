@@ -346,6 +346,8 @@ export default function DHCPModule({ appMode = 'clean' }) {
           onPlay={handlePlayFull}
           onStep={handleStepForward}
           onReset={handleReset}
+          speed={speed}
+          setSpeed={setSpeed}
           showAnimation={showAnimation}
           setShowAnimation={setShowAnimation}
         />
@@ -487,73 +489,7 @@ export default function DHCPModule({ appMode = 'clean' }) {
           })}
         </div>
 
-        {/* WORKSPACE CONTROL TOOLBAR */}
-        <div className="glass-panel p-3 rounded-3xl border border-slate-800/90 bg-slate-900/95 flex flex-wrap items-center justify-between gap-3 shadow-xl">
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Relay Mode Toggle Button */}
-            <CleanControlButton
-              icon={isRelayMode ? Globe : Zap}
-              label={isRelayMode ? 'Relay Agent Mode' : 'Direct LAN Mode'}
-              description={isRelayMode ? 'Forward via IP Helper' : 'Local LAN Broadcast'}
-              onClick={() => setIsRelayMode(!isRelayMode)}
-              active={isRelayMode}
-              color="purple"
-            />
 
-            {/* Animation Speed Selector */}
-            <CleanControlButton
-              icon={Gauge}
-              label="Animation Speed"
-              description={`${speed}x Speed`}
-              onClick={() => {
-                const nextSpeed = speed === 0.25 ? 0.5 : speed === 0.5 ? 1 : 0.25;
-                setSpeed(nextSpeed);
-              }}
-              color="amber"
-            />
-          </div>
-
-          {/* Action Control Buttons */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            {isFinalStepComplete ? (
-              <CleanControlButton
-                icon={RotateCcw}
-                label="Reset & Restart DORA"
-                description="Start over from Step 0"
-                onClick={handleReset}
-                color="emerald"
-              />
-            ) : (
-              <>
-                <CleanControlButton
-                  icon={SkipForward}
-                  label="Next DORA Step"
-                  description={`Step ${activeStep + 1} of 4`}
-                  onClick={handleStepForward}
-                  disabled={isPlaying}
-                  color="cyan"
-                />
-
-                <CleanControlButton
-                  icon={isPlaying ? Pause : Play}
-                  label={isPlaying ? 'Pause Handshake' : 'Play Full DORA'}
-                  description={isPlaying ? 'Click to Pause' : 'Auto-run all 4 steps'}
-                  onClick={handlePlayFull}
-                  active={isPlaying}
-                  color="amber"
-                />
-
-                <CleanControlButton
-                  icon={RotateCcw}
-                  label="Reset"
-                  description="Reset Handshake"
-                  onClick={handleReset}
-                  color="rose"
-                />
-              </>
-            )}
-          </div>
-        </div>
 
         {/* Dynamic Action Banner (DETAILED MODE ONLY) */}
         {(appMode === 'detailed' || appMode === 'expert') && (

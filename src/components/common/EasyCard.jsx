@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, ArrowRight, CheckCircle2, Shield, Globe, Server, Laptop, Router, Zap, ChevronDown, ChevronUp, Sliders, Activity, MonitorPlay, Play, Pause, RotateCcw, SkipForward } from 'lucide-react';
+import { Sparkles, ArrowRight, CheckCircle2, Shield, Globe, Server, Laptop, Router, Zap, ChevronDown, ChevronUp, Sliders, Activity, MonitorPlay, Play, Pause, RotateCcw, SkipForward, Gauge } from 'lucide-react';
 
 // ROUNDED CIRCLE ICON CONTROL BUTTON FOR CLEAN MODE
 export function CleanControlButton({
@@ -69,6 +69,8 @@ export function CleanWidget({
   onPlay,
   onStep,
   onReset,
+  speed = 1,
+  setSpeed,
   showAnimation = true,
   setShowAnimation
 }) {
@@ -97,8 +99,23 @@ export function CleanWidget({
           </div>
         </div>
 
-        {/* TOP-RIGHT CIRCULAR ICON-ONLY CONTROL BUTTONS (NO TEXT, JUST SLEEK CIRCULAR LOGOS) */}
+        {/* TOP-RIGHT CIRCULAR ICON-ONLY CONTROL BUTTONS (NO TEXT, JUST SLEEK CIRCULAR LOGOS & HOVER TOOLTIPS) */}
         <div className="flex items-center gap-2 font-mono">
+          
+          {/* SPEED SELECTOR ICON BUTTON */}
+          {setSpeed && (
+            <button
+              onClick={() => {
+                const nextSpeed = speed === 0.25 ? 0.5 : speed === 0.5 ? 1 : 0.25;
+                setSpeed(nextSpeed);
+              }}
+              className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 hover:scale-110 active:scale-95 transition-all shadow cursor-pointer flex items-center justify-center relative font-mono text-[10px] font-black"
+              title={`Animation Speed: ${speed}x (Click to cycle speed 0.25x ➔ 0.5x ➔ 1x)`}
+            >
+              <Gauge className="w-4 h-4 text-amber-400" />
+            </button>
+          )}
+
           {/* PLAY / PAUSE BUTTON */}
           {onPlay && (
             <button
@@ -120,7 +137,7 @@ export function CleanWidget({
               onClick={onStep}
               disabled={isPlaying}
               className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-slate-700 hover:scale-110 active:scale-95 transition-all shadow cursor-pointer flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-              title="Next Step Forward"
+              title={stepNumber !== undefined && totalSteps ? `Next Step Forward (Step ${stepNumber + 1} of ${totalSteps})` : "Next Step Forward"}
             >
               <SkipForward className="w-4 h-4 fill-current" />
             </button>
@@ -131,7 +148,7 @@ export function CleanWidget({
             <button
               onClick={onReset}
               className="w-9 h-9 rounded-full bg-slate-800 hover:bg-rose-950/80 text-rose-400 hover:text-rose-200 border border-slate-700 hover:border-rose-700 hover:scale-110 active:scale-95 transition-all shadow cursor-pointer flex items-center justify-center"
-              title="Reset Simulation"
+              title="Reset Simulation & Clear Cache"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
