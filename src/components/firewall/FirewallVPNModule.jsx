@@ -650,48 +650,43 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
       {activeSubTab === 'vpn' && (
         <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-6 shadow-2xl font-mono text-xs">
           
-          {/* CONTROL BAR */}
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 p-3 rounded-2xl border border-slate-800">
-            <div className="flex items-center gap-2">
-              <Lock className="w-4 h-4 text-emerald-400" />
-              <span className="font-bold text-slate-200">IPsec Site-to-Site Tunnel Walkthrough:</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  if (activeStep >= 4) setActiveStep(1);
-                  else setActiveStep(prev => prev + 1);
-                  setIsPlaying(true);
-                }}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:scale-105 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow cursor-pointer transition-all"
-              >
-                <SkipForward className="w-4 h-4 fill-current" />
-                <span>Next VPN Phase ({activeStep + 1}/5)</span>
-              </button>
-
-              <button onClick={handleReset} className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer">
-                <RotateCcw className="w-4 h-4" />
-              </button>
-            </div>
+          {/* IPSEC STEP SELECTION CARDS */}
+          <div className="grid grid-cols-5 gap-2 border-b border-slate-800 pb-3">
+            {vpnSteps.map((step, idx) => {
+              const isActive = activeStep === idx;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => { setActiveStep(idx); setIsPlaying(true); }}
+                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black border-emerald-300 shadow-md scale-102'
+                      : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:text-slate-200'
+                  }`}
+                >
+                  <p className="text-[10px] opacity-80 uppercase font-mono">Phase {idx}</p>
+                  <p className="text-xs font-bold truncate">{step.title.split(':')[0]}</p>
+                </button>
+              );
+            })}
           </div>
 
           {/* VPN PHASE STATUS BANNER */}
           <div className="p-4 bg-emerald-950/80 rounded-2xl border border-emerald-600/80 space-y-1">
-            <span className="text-[10px] text-emerald-400 font-bold uppercase block">Phase Step {activeStep + 1}:</span>
+            <span className="text-[10px] text-emerald-400 font-bold uppercase block">Phase Step {activeStep}:</span>
             <h4 className="text-base font-black text-emerald-200">{vpnSteps[activeStep].title}</h4>
             <p className="text-xs text-slate-300">{vpnSteps[activeStep].subtitle}</p>
           </div>
 
           {/* VISUAL TUNNEL DIAGRAM */}
-          <div className="relative min-h-[260px] bg-slate-950 p-6 rounded-2xl border border-slate-800 flex items-center justify-between">
+          <div className="relative min-h-[260px] bg-slate-950 p-6 rounded-2xl border border-slate-800 flex items-center justify-between overflow-hidden">
             
             {/* Branch Gateway */}
             <div className="flex flex-col items-center gap-2 z-10">
               <span className="px-2 py-0.5 bg-cyan-950 text-cyan-300 rounded border border-cyan-700 font-bold text-[10px]">
                 192.168.10.1
               </span>
-              <div className="p-4 bg-slate-900 border-2 border-cyan-500 rounded-2xl">
+              <div className="p-4 bg-slate-900 border-2 border-cyan-500 rounded-2xl shadow-xl">
                 <Router className="w-10 h-10 text-cyan-400" />
               </div>
               <p className="font-bold text-slate-200 text-xs">BRANCH GATEWAY</p>
@@ -699,17 +694,18 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
 
             {/* ENCRYPTED IPSEC TUNNEL CABLE PIPE */}
             <div className="flex-1 mx-8 relative flex items-center justify-center h-16 border-2 border-dashed border-emerald-500/60 rounded-full bg-emerald-950/30">
-              <span className="px-3 py-1 bg-emerald-950 text-emerald-300 rounded-full border border-emerald-500 text-[10px] font-black tracking-wider flex items-center gap-1.5 shadow-lg">
-                <Lock className="w-3.5 h-3.5" /> ENCRYPTED IPSEC ESP TUNNEL (AES-256 + SHA-256)
+              <span className="px-3 py-1 bg-emerald-950 text-emerald-300 rounded-full border border-emerald-500 text-[10px] font-black tracking-wider flex items-center gap-1.5 shadow-lg z-10">
+                <Lock className="w-3.5 h-3.5" /> ENCRYPTED IPSEC ESP TUNNEL (AES-256-GCM + SHA-256)
               </span>
 
               {/* Animated ESP Packet */}
               {activeStep > 0 && (
                 <div
                   style={{ left: `${(packetProgress / 100) * 80 + 10}%` }}
-                  className="absolute p-2 bg-emerald-400 text-slate-950 rounded-full shadow-2xl animate-pulse font-bold text-xs border border-white"
+                  className="absolute p-2.5 bg-emerald-400 text-slate-950 rounded-full shadow-2xl animate-pulse font-bold text-xs border-2 border-white z-20 flex items-center gap-1"
                 >
                   <Lock className="w-4 h-4" />
+                  <span className="text-[9px] font-mono font-black">ESP Payload</span>
                 </div>
               )}
             </div>
@@ -719,7 +715,7 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
               <span className="px-2 py-0.5 bg-purple-950 text-purple-300 rounded border border-purple-700 font-bold text-[10px]">
                 172.16.0.1
               </span>
-              <div className="p-4 bg-slate-900 border-2 border-purple-500 rounded-2xl">
+              <div className="p-4 bg-slate-900 border-2 border-purple-500 rounded-2xl shadow-xl">
                 <Router className="w-10 h-10 text-purple-400" />
               </div>
               <p className="font-bold text-slate-200 text-xs">HQ GATEWAY</p>
@@ -732,29 +728,76 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
       {activeSubTab === 'tls' && (
         <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-6 shadow-2xl font-mono text-xs">
           
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 p-3 rounded-2xl border border-slate-800">
-            <div className="flex items-center gap-2">
-              <Key className="w-4 h-4 text-cyan-400" />
-              <span className="font-bold text-slate-200">TLS 1.3 1-RTT Handshake Sequence:</span>
-            </div>
-
-            <button
-              onClick={() => {
-                if (activeStep >= 4) setActiveStep(1);
-                else setActiveStep(prev => prev + 1);
-                setIsPlaying(true);
-              }}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:scale-105 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow cursor-pointer transition-all"
-            >
-              <SkipForward className="w-4 h-4 fill-current" />
-              <span>Next Handshake Step ({activeStep + 1}/5)</span>
-            </button>
+          {/* TLS STEP SELECTION CARDS */}
+          <div className="grid grid-cols-5 gap-2 border-b border-slate-800 pb-3">
+            {tlsSteps.map((step, idx) => {
+              const isActive = activeStep === idx;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => { setActiveStep(idx); setIsPlaying(true); }}
+                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-black border-cyan-300 shadow-md scale-102'
+                      : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:text-slate-200'
+                  }`}
+                >
+                  <p className="text-[10px] opacity-80 uppercase font-mono">Step {idx}</p>
+                  <p className="text-xs font-bold truncate">{step.title.split(':')[0]}</p>
+                </button>
+              );
+            })}
           </div>
 
+          {/* TLS STEP STATUS BANNER */}
           <div className="p-4 bg-cyan-950/80 rounded-2xl border border-cyan-600/80 space-y-1">
-            <span className="text-[10px] text-cyan-400 font-bold uppercase block">TLS Step {activeStep + 1}:</span>
+            <span className="text-[10px] text-cyan-400 font-bold uppercase block">TLS 1.3 Handshake Step {activeStep}:</span>
             <h4 className="text-base font-black text-cyan-200">{tlsSteps[activeStep].title}</h4>
             <p className="text-xs text-slate-300">{tlsSteps[activeStep].subtitle}</p>
+          </div>
+
+          {/* VISUAL HANDSHAKE STAGE */}
+          <div className="relative min-h-[260px] bg-slate-950 p-6 rounded-2xl border border-slate-800 flex items-center justify-between overflow-hidden">
+            
+            {/* Client Browser */}
+            <div className="flex flex-col items-center gap-2 z-10">
+              <span className="px-2 py-0.5 bg-cyan-950 text-cyan-300 rounded border border-cyan-700 font-bold text-[10px]">
+                192.168.1.105
+              </span>
+              <div className="p-4 bg-slate-900 border-2 border-cyan-500 rounded-2xl shadow-xl">
+                <Laptop className="w-10 h-10 text-cyan-400" />
+              </div>
+              <p className="font-bold text-slate-200 text-xs">CLIENT BROWSER</p>
+            </div>
+
+            {/* HANDSHAKE CABLE & PACKET */}
+            <div className="flex-1 mx-8 relative flex items-center justify-center h-16 border-2 border-dashed border-cyan-500/60 rounded-full bg-cyan-950/30">
+              <span className="px-3 py-1 bg-cyan-950 text-cyan-300 rounded-full border border-cyan-500 text-[10px] font-black tracking-wider flex items-center gap-1.5 shadow-lg z-10">
+                <Key className="w-3.5 h-3.5" /> 1-RTT TLS 1.3 HANDSHAKE (ECDHE_RSA + AES_256_GCM)
+              </span>
+
+              {/* Animated TLS Handshake Packet */}
+              {activeStep > 0 && (
+                <div
+                  style={{ left: `${(packetProgress / 100) * 80 + 10}%` }}
+                  className="absolute p-2.5 bg-cyan-400 text-slate-950 rounded-full shadow-2xl animate-pulse font-bold text-xs border-2 border-white z-20 flex items-center gap-1"
+                >
+                  <Key className="w-4 h-4" />
+                  <span className="text-[9px] font-mono font-black">TLS Record</span>
+                </div>
+              )}
+            </div>
+
+            {/* HTTPS Web Server */}
+            <div className="flex flex-col items-center gap-2 z-10">
+              <span className="px-2 py-0.5 bg-emerald-950 text-emerald-300 rounded border border-emerald-700 font-bold text-[10px]">
+                93.184.216.34:443
+              </span>
+              <div className="p-4 bg-slate-900 border-2 border-emerald-500 rounded-2xl shadow-xl">
+                <Server className="w-10 h-10 text-emerald-400" />
+              </div>
+              <p className="font-bold text-slate-200 text-xs">HTTPS WEB SERVER</p>
+            </div>
           </div>
         </div>
       )}
