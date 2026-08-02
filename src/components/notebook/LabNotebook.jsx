@@ -15,15 +15,52 @@ export default function LabNotebook() {
   const [searchQuery, setSearchQuery] = useState('');
   const [faintGlow, setFaintGlow] = useState(false);
 
-  // SEPARATE ISOLATED TERMINAL LOGS FOR LINUX BASH VS WINDOWS CMD
+  // VIRTUAL FILE SYSTEM STATE FOR LINUX BASH
+  const [linuxCwd, setLinuxCwd] = useState('/home/sysadmin');
+  const [linuxFs, setLinuxFs] = useState({
+    '/': { type: 'dir', children: ['home', 'var', 'etc', 'usr', 'bin'] },
+    '/home': { type: 'dir', children: ['sysadmin'] },
+    '/home/sysadmin': { type: 'dir', children: ['Documents', 'Downloads', 'network_configs', 'notes.txt', 'script.sh'] },
+    '/home/sysadmin/Documents': { type: 'dir', children: ['network_topology.json', 'cisco_ios_backup.cfg'] },
+    '/home/sysadmin/Downloads': { type: 'dir', children: ['paloalto_panos_10.1.qcow2', 'wireshark_capture.pcap'] },
+    '/home/sysadmin/network_configs': { type: 'dir', children: ['router_core.cfg', 'switch_access.cfg', 'firewall_rules.acl'] },
+    '/home/sysadmin/notes.txt': { type: 'file', size: 240, content: 'NetPulse Enterprise Network Lab Notes:\n- Core Gateway Router: 192.168.1.254\n- DNS Server: 192.168.1.20\n- Palo Alto NGFW: 192.168.1.1' },
+    '/home/sysadmin/script.sh': { type: 'file', size: 128, content: '#!/bin/bash\necho "Checking interface IP addresses..."\nip a' },
+    '/var': { type: 'dir', children: ['log'] },
+    '/var/log': { type: 'dir', children: ['syslog', 'auth.log', 'nginx.log'] },
+    '/var/log/syslog': { type: 'file', size: 1024, content: 'Aug 02 22:15:01 netpulse-box systemd[1]: Network interfaces initialized.\nAug 02 22:15:05 netpulse-box krb5kdc[892]: AS_REQ 192.168.1.105: ISSUE sales.user@CORP.COM' },
+    '/var/log/auth.log': { type: 'file', size: 512, content: 'Aug 02 22:14:00 netpulse-box sshd[1042]: Accepted password for sysadmin from 192.168.1.105 port 51234' },
+    '/etc': { type: 'dir', children: ['hosts', 'resolv.conf', 'network'] },
+    '/etc/hosts': { type: 'file', size: 180, content: '127.0.0.1   localhost\n192.168.1.15   dc01.corp.com dc01\n192.168.1.25   app.corp.com' },
+    '/etc/resolv.conf': { type: 'file', size: 64, content: 'nameserver 192.168.1.20\nsearch corp.com' }
+  });
+
+  // VIRTUAL FILE SYSTEM STATE FOR WINDOWS CMD
+  const [windowsCwd, setWindowsCwd] = useState('C:\\Users\\SysAdmin');
+  const [windowsFs, setWindowsFs] = useState({
+    'C:\\': { type: 'dir', children: ['Users', 'Windows', 'Program Files'] },
+    'C:\\Users': { type: 'dir', children: ['SysAdmin', 'Public'] },
+    'C:\\Users\\SysAdmin': { type: 'dir', children: ['Desktop', 'Documents', 'Downloads', 'Config_Exports', 'notes.txt'] },
+    'C:\\Users\\SysAdmin\\Desktop': { type: 'dir', children: ['NetPulse_Lab.lnk', 'Putty_SSH.lnk'] },
+    'C:\\Users\\SysAdmin\\Documents': { type: 'dir', children: ['cisco_ios_running_config.txt', 'network_subnet_plan.xlsx'] },
+    'C:\\Users\\SysAdmin\\Config_Exports': { type: 'dir', children: ['router_cisco_2911.cfg', 'switch_catalyst_3850.cfg'] },
+    'C:\\Users\\SysAdmin\\notes.txt': { type: 'file', size: 312, content: 'Windows SysAdmin Network Notes:\n- Domain Controller: DC01.corp.com (192.168.1.15)\n- DHCP Server: 192.168.1.10\n- DNS Primary: 192.168.1.20' },
+    'C:\\Windows': { type: 'dir', children: ['System32', 'SysWOW64'] },
+    'C:\\Windows\\System32': { type: 'dir', children: ['cmd.exe', 'drivers', 'ipconfig.exe', 'ping.exe', 'tracert.exe'] },
+    'C:\\Windows\\System32\\drivers': { type: 'dir', children: ['etc'] },
+    'C:\\Windows\\System32\\drivers\\etc': { type: 'dir', children: ['hosts', 'lmhosts', 'networks', 'protocol', 'services'] },
+    'C:\\Windows\\System32\\drivers\\etc\\hosts': { type: 'file', size: 150, content: '# Copyright (c) 1993-2009 Microsoft Corp.\n127.0.0.1       localhost\n192.168.1.15    dc01.corp.com' }
+  });
+
+  // SEPARATE ISOLATED LOGS
   const [linuxLogs, setLinuxLogs] = useState([
     { type: 'sys', text: 'GNU Bash Interactive Terminal Environment (sysadmin@netpulse-box:~).' },
-    { type: 'sys', text: 'Strictly accepts native Linux IT system and networking commands.' }
+    { type: 'sys', text: 'Simulates interactive Linux file system navigation (cd, ls, pwd, cat, mkdir, touch, rm).' }
   ]);
 
   const [windowsLogs, setWindowsLogs] = useState([
     { type: 'sys', text: 'Microsoft Windows Command Prompt [Version 10.0.19045.3803].' },
-    { type: 'sys', text: 'Strictly accepts native Windows IT system and networking commands.' }
+    { type: 'sys', text: 'Simulates interactive Windows file system navigation (cd, dir, type, mkdir, del).' }
   ]);
 
   const logsContainerRef = useRef(null);
@@ -37,74 +74,36 @@ export default function LabNotebook() {
     }
   }, [linuxLogs, windowsLogs, osMode]);
 
-  // 50 Essential Command Tutorials Suite (Strictly Isolated by OS)
+  // 50 Essential Command Tutorials Suite
   const commandTutorials = [
-    // 1-10: Network Interfaces & IP Configuration
+    // Navigation & File Operations
+    { id: 'c_ls', os: 'linux', cat: 'OS Navigation', cmd: 'ls', desc: 'List files and directories in current working directory.', out: `Documents  Downloads  network_configs  notes.txt  script.sh` },
+    { id: 'c_ls_la', os: 'linux', cat: 'OS Navigation', cmd: 'ls -la', desc: 'List all files with hidden dotfiles, file permissions, owners, and sizes.', out: `drwxr-xr-x 5 sysadmin sysadmin 4096 Aug  2 22:15 .\ndrwxr-xr-x 3 root     root     4096 Aug  2 21:00 ..\ndrwxr-xr-x 2 sysadmin sysadmin 4096 Aug  2 22:00 Documents\ndrwxr-xr-x 2 sysadmin sysadmin 4096 Aug  2 22:00 Downloads\ndrwxr-xr-x 2 sysadmin sysadmin 4096 Aug  2 22:00 network_configs\n-rw-r--r-- 1 sysadmin sysadmin  240 Aug  2 22:10 notes.txt\n-rwxr-xr-x 1 sysadmin sysadmin  128 Aug  2 22:12 script.sh` },
+    { id: 'c_pwd', os: 'linux', cat: 'OS Navigation', cmd: 'pwd', desc: 'Print working directory path.', out: `/home/sysadmin` },
+    { id: 'c_cd', os: 'linux', cat: 'OS Navigation', cmd: 'cd /var/log', desc: 'Change current working directory to /var/log.', out: `` },
+    { id: 'c_cat', os: 'linux', cat: 'OS Navigation', cmd: 'cat notes.txt', desc: 'Display contents of a file.', out: `NetPulse Enterprise Network Lab Notes:\n- Core Gateway Router: 192.168.1.254\n- DNS Server: 192.168.1.20\n- Palo Alto NGFW: 192.168.1.1` },
+    { id: 'c_dir', os: 'windows', cat: 'OS Navigation', cmd: 'dir', desc: 'List files and directories in Windows CMD.', out: ` Volume in drive C has no label.\n Volume Serial Number is A1B2-C3D4\n\n Directory of C:\\Users\\SysAdmin\n\n08/02/2026  10:15 PM    <DIR>          Desktop\n08/02/2026  10:15 PM    <DIR>          Documents\n08/02/2026  10:15 PM    <DIR>          Downloads\n08/02/2026  10:15 PM    <DIR>          Config_Exports\n08/02/2026  10:10 PM               312 notes.txt\n               1 File(s)            312 bytes\n               4 Dir(s)  45,210,480,640 bytes free` },
+    { id: 'c_type', os: 'windows', cat: 'OS Navigation', cmd: 'type notes.txt', desc: 'Display contents of a text file in Windows CMD.', out: `Windows SysAdmin Network Notes:\n- Domain Controller: DC01.corp.com (192.168.1.15)\n- DHCP Server: 192.168.1.10\n- DNS Primary: 192.168.1.20` },
+    { id: 'c_cd_win', os: 'windows', cat: 'OS Navigation', cmd: 'cd C:\\Windows\\System32', desc: 'Change directory to System32 in Windows CMD.', out: `` },
+
+    // Networking Commands
     { id: 'c1', os: 'linux', cat: 'Network Interfaces', cmd: 'ip a', desc: 'Display all Linux network interfaces (eth0, lo), MACs, and assigned IPv4/IPv6 addresses.', out: `1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default \n    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00\n    inet 127.0.0.1/8 scope host lo\n2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default \n    link/ether 00:1a:2b:3c:4d:01 brd ff:ff:ff:ff:ff:ff\n    inet 192.168.1.105/24 brd 192.168.1.255 scope global dynamic eth0` },
     { id: 'c2', os: 'windows', cat: 'Network Interfaces', cmd: 'ipconfig /all', desc: 'Display full Windows IP configuration including MAC, Default Gateway, DHCP, and DNS Servers.', out: `Windows IP Configuration\n\n   Host Name . . . . . . . . . . . . : WS-SALES-LAP105\n   Primary Dns Suffix  . . . . . . . : corp.com\n   Physical Address. . . . . . . . . : 00-1A-2B-3C-4D-01\n   IPv4 Address. . . . . . . . . . . : 192.168.1.105(Preferred)\n   Subnet Mask . . . . . . . . . . . : 255.255.255.0\n   Default Gateway . . . . . . . . . : 192.168.1.254\n   DNS Servers . . . . . . . . . . . : 192.168.1.20` },
-    { id: 'c3', os: 'linux', cat: 'Network Interfaces', cmd: 'ip link', desc: 'Display L2 Ethernet link layer status and MAC addresses without IP details.', out: `1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000\n    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00\n2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000\n    link/ether 00:1a:2b:3c:4d:01 brd ff:ff:ff:ff:ff:ff` },
-    { id: 'c4', os: 'linux', cat: 'Network Interfaces', cmd: 'hostname -I', desc: 'Display host machine IP addresses in concise single-line format.', out: `192.168.1.105 172.17.0.1` },
-    { id: 'c5', os: 'windows', cat: 'Network Interfaces', cmd: 'getmac /v', desc: 'Display detailed physical MAC addresses and network adapter transport names in Windows.', out: `Connection Name Network Adapter Physical Address    Transport Name\n=============== =============== =================== =========================================\nEthernet        Intel i219-V    00-1A-2B-3C-4D-01   \\Device\\Tcpip_{A1B2C3D4-E5F6-7890-1234}` },
-    { id: 'c6', os: 'windows', cat: 'Network Interfaces', cmd: 'ipconfig /renew', desc: 'Trigger Windows DHCP client to send DHCP REQUEST and renew IP lease.', out: `DHCP DISCOVER broadcast sent...\nDHCP OFFER received from 192.168.1.10\nDHCP REQUEST sent...\nDHCP ACK received. IPv4 Address renewed: 192.168.1.105` },
-    { id: 'c7', os: 'windows', cat: 'Network Interfaces', cmd: 'ipconfig /flushdns', desc: 'Clear and reset contents of Windows DNS client resolver cache.', out: `Successfully flushed the DNS Resolver Cache.` },
-    { id: 'c8', os: 'linux', cat: 'Network Interfaces', cmd: 'cat /etc/resolv.conf', desc: 'Inspect configured Linux DNS nameserver resolvers and search domains.', out: `# Generated by NetworkManager\nnameserver 192.168.1.20\nsearch corp.com` },
-    { id: 'c9', os: 'linux', cat: 'Network Interfaces', cmd: 'cat /etc/network/interfaces', desc: 'Inspect static Linux network interface configuration definitions.', out: `# primary network interface\nauto eth0\niface eth0 inet static\n    address 192.168.1.105\n    netmask 255.255.255.0\n    gateway 192.168.1.254` },
-    { id: 'c10', os: 'windows', cat: 'Network Interfaces', cmd: 'netsh interface ipv4 show config', desc: 'Display detailed IP address configuration for all interfaces via Netsh.', out: `Configuration for interface "Ethernet"\n    DHCP enabled:                         Yes\n    IP Address:                           192.168.1.105\n    Subnet Prefix:                        192.168.1.0/24 (mask 255.255.255.0)\n    Default Gateway:                      192.168.1.254\n    InterfaceMetric:                      25\n    DNS servers configured through DHCP:  192.168.1.20` },
-
-    // 11-20: ICMP Connectivity & Path Tracing
-    { id: 'c11', os: 'linux', cat: 'ICMP & Path Tracing', cmd: 'ping -c 4 8.8.8.8', desc: 'Send 4 ICMP Echo Requests to test internet connectivity and packet loss.', out: `PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.\n64 bytes from 8.8.8.8: icmp_seq=1 ttl=118 time=14.2 ms\n64 bytes from 8.8.8.8: icmp_seq=2 ttl=118 time=13.8 ms\n64 bytes from 8.8.8.8: icmp_seq=3 ttl=118 time=14.1 ms\n64 bytes from 8.8.8.8: icmp_seq=4 ttl=118 time=13.9 ms\n\n--- 8.8.8.8 ping statistics ---\n4 packets transmitted, 4 received, 0% packet loss, time 3004ms` },
-    { id: 'c12', os: 'windows', cat: 'ICMP & Path Tracing', cmd: 'ping 192.168.1.254', desc: 'Send ICMP Echo Requests to test local default gateway reachability.', out: `Pinging 192.168.1.254 with 32 bytes of data:\nReply from 192.168.1.254: bytes=32 time=1ms TTL=64\nReply from 192.168.1.254: bytes=32 time=1ms TTL=64\nReply from 192.168.1.254: bytes=32 time=1ms TTL=64\n\nPing statistics for 192.168.1.254:\n    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)` },
-    { id: 'c13', os: 'linux', cat: 'ICMP & Path Tracing', cmd: 'traceroute 8.8.8.8', desc: 'Trace hop-by-hop router path across network using incrementing TTL.', out: `traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets\n 1  192.168.1.254 (192.168.1.254)  1.104 ms  0.985 ms  0.912 ms [Dist Router]\n 2  192.168.1.1 (192.168.1.1)  2.410 ms  2.320 ms  2.250 ms [Palo Alto Edge]\n 3  203.0.113.1 (203.0.113.1)  8.740 ms  8.650 ms  8.590 ms [ISP Gateway]\n 4  dns.google (8.8.8.8)  14.050 ms  13.920 ms  13.880 ms` },
-    { id: 'c14', os: 'windows', cat: 'ICMP & Path Tracing', cmd: 'tracert 8.8.8.8', desc: 'Trace router path in Windows displaying round-trip delay per hop.', out: `Tracing route to dns.google [8.8.8.8]\nover a maximum of 30 hops:\n\n  1    1 ms    1 ms    1 ms  192.168.1.254\n  2    2 ms    2 ms    2 ms  192.168.1.1\n  3    8 ms    8 ms    8 ms  203.0.113.1\n  4   14 ms   13 ms   14 ms  8.8.8.8\n\nTrace complete.` },
-    { id: 'c15', os: 'windows', cat: 'ICMP & Path Tracing', cmd: 'pathping 8.8.8.8', desc: 'Combines ping and tracert to measure packet loss per intermediate router.', out: `Tracing route to dns.google [8.8.8.8] over a maximum of 30 hops...\nComputing statistics for 100 seconds...\n            Source to Here   This Node/Link\nHop  RTT    Lost/Sent = Pct  Lost/Sent = Pct  Address\n  0                                           WS-LAP105 [192.168.1.105]\n  1    1ms     0/ 100 =  0%     0/ 100 =  0%  192.168.1.254\n  2    2ms     0/ 100 =  0%     0/ 100 =  0%  192.168.1.1\n  3   14ms     0/ 100 =  0%     0/ 100 =  0%  8.8.8.8` },
-    { id: 'c16', os: 'linux', cat: 'ICMP & Path Tracing', cmd: 'ip route', desc: 'Display Linux kernel routing table entries and default gateway.', out: `default via 192.168.1.254 dev eth0 proto dhcp src 192.168.1.105 metric 100 \n192.168.1.0/24 dev eth0 proto kernel scope link src 192.168.1.105 metric 100` },
-    { id: 'c17', os: 'windows', cat: 'ICMP & Path Tracing', cmd: 'route print', desc: 'Display Windows IPv4 routing table, gateway metrics, and interface list.', out: `IPv4 Route Table\n===========================================================================\nActive Routes:\nNetwork Destination        Netmask          Gateway       Interface  Metric\n          0.0.0.0          0.0.0.0    192.168.1.254   192.168.1.105      25\n        127.0.0.0        255.0.0.0        On-link         127.0.0.1     331\n      192.168.1.0    255.255.255.0        On-link     192.168.1.105     281` },
-    { id: 'c18', os: 'linux', cat: 'ICMP & Path Tracing', cmd: 'route -n', desc: 'Display Linux kernel routing table with numeric IP addresses (no DNS lookup delay).', out: `Kernel IP routing table\nDestination     Gateway         Genmask         Flags Metric Ref    Use Iface\n0.0.0.0         192.168.1.254   0.0.0.0         UG    100    0        0 eth0\n192.168.1.0     0.0.0.0         255.255.255.0   U     100    0        0 eth0` },
-    { id: 'c19', os: 'windows', cat: 'ICMP & Path Tracing', cmd: 'route add 10.0.0.0 mask 255.0.0.0 192.168.1.254', desc: 'Add static IPv4 route entry to Windows kernel routing table.', out: `OK!` },
-    { id: 'c20', os: 'linux', cat: 'ICMP & Path Tracing', cmd: 'ip route add 10.0.0.0/8 via 192.168.1.254', desc: 'Add static route entry in Linux kernel routing table.', out: `Command completed successfully.` },
-
-    // 21-30: DNS Resolution & Domain Inspection
+    { id: 'c11', os: 'linux', cat: 'ICMP & Path Tracing', cmd: 'ping -c 4 8.8.8.8', desc: 'Send 4 ICMP Echo Requests to test internet connectivity.', out: `PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.\n64 bytes from 8.8.8.8: icmp_seq=1 ttl=118 time=14.2 ms\n64 bytes from 8.8.8.8: icmp_seq=2 ttl=118 time=13.8 ms\n\n--- 8.8.8.8 ping statistics ---\n2 packets transmitted, 2 received, 0% packet loss` },
+    { id: 'c12', os: 'windows', cat: 'ICMP & Path Tracing', cmd: 'ping 192.168.1.254', desc: 'Send ICMP Echo Requests to test local default gateway reachability.', out: `Pinging 192.168.1.254 with 32 bytes of data:\nReply from 192.168.1.254: bytes=32 time=1ms TTL=64\nReply from 192.168.1.254: bytes=32 time=1ms TTL=64` },
+    { id: 'c13', os: 'linux', cat: 'ICMP & Path Tracing', cmd: 'traceroute 8.8.8.8', desc: 'Trace hop-by-hop router path across network using incrementing TTL.', out: `traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets\n 1  192.168.1.254 (192.168.1.254)  1.104 ms\n 2  192.168.1.1 (192.168.1.1)  2.410 ms` },
+    { id: 'c14', os: 'windows', cat: 'ICMP & Path Tracing', cmd: 'tracert 8.8.8.8', desc: 'Trace router path in Windows displaying round-trip delay per hop.', out: `Tracing route to dns.google [8.8.8.8]\n  1    1 ms    1 ms    1 ms  192.168.1.254\n  2    2 ms    2 ms    2 ms  8.8.8.8\nTrace complete.` },
     { id: 'c21', os: 'both', cat: 'DNS & Domains', cmd: 'nslookup app.corp.com', desc: 'Query DNS server for IPv4 address (A Record) of app.corp.com.', out: `Server:  corp-dns.corp.com\nAddress:  192.168.1.20\n\nName:    app.corp.com\nAddress:  192.168.1.25` },
-    { id: 'c22', os: 'linux', cat: 'DNS & Domains', cmd: 'dig +short app.corp.com', desc: 'Perform concise DNS lookup returning only answered IP address.', out: `192.168.1.25` },
-    { id: 'c23', os: 'linux', cat: 'DNS & Domains', cmd: 'dig ANY corp.com', desc: 'Query all available DNS record types (A, MX, NS, SOA, TXT) for domain.', out: `; <<>> DiG 9.18.18 <<>> ANY corp.com\n;; ANSWER SECTION:\ncorp.com.		3600	IN	A	192.168.1.25\ncorp.com.		3600	IN	NS	ns1.corp.com.\ncorp.com.		3600	IN	MX	10 mail.corp.com.` },
-    { id: 'c24', os: 'both', cat: 'DNS & Domains', cmd: 'nslookup -type=MX corp.com', desc: 'Query DNS Mail Exchange (MX) records for corporate email routing.', out: `Server:  corp-dns.corp.com\nAddress:  192.168.1.20\n\ncorp.com  MX preference = 10, mail exchanger = mail.corp.com` },
-    { id: 'c25', os: 'linux', cat: 'DNS & Domains', cmd: 'host -t AAAA google.com', desc: 'Perform DNS lookup specifically for IPv6 address (AAAA Record).', out: `google.com has IPv6 address 2a00:1450:4001:830::200e` },
-    { id: 'c26', os: 'linux', cat: 'DNS & Domains', cmd: 'dig -x 192.168.1.25', desc: 'Perform Reverse DNS (PTR) lookup to resolve IP back to hostname.', out: `;; ANSWER SECTION:\n25.1.168.192.in-addr.arpa. 3600 IN PTR app.corp.com.` },
-    { id: 'c27', os: 'windows', cat: 'DNS & Domains', cmd: 'dcdiag /test:DNS', desc: 'Run Active Directory Domain Controller diagnostic tests for DNS health.', out: `Directory Server Diagnosis\n\nPerforming initial setup:\n   Testing server: Default-First-Site-Name\\DC01\n   Starting test: DNS\n      DNS Tests passed on DC01.corp.com.` },
-    { id: 'c28', os: 'windows', cat: 'DNS & Domains', cmd: 'nltest /dsgetdc:corp.com', desc: 'Locate Active Directory Domain Controller via DNS SRV records.', out: `DC: \\\\DC01.corp.com\nAddress: \\\\192.168.1.15\nDom Guid: a1b2c3d4-e5f6-7890-1234-56789abcdef0\nDom Name: corp.com\nThe command completed successfully` },
-    { id: 'c29', os: 'both', cat: 'DNS & Domains', cmd: 'nslookup 192.168.1.10', desc: 'Perform reverse DNS lookup for DHCP server IP address.', out: `Server:  corp-dns.corp.com\nAddress:  192.168.1.20\n\nName:    dhcp01.corp.com\nAddress:  192.168.1.10` },
-    { id: 'c30', os: 'windows', cat: 'DNS & Domains', cmd: 'klist', desc: 'Display cached Kerberos TGT and Service Tickets in LSA cache.', out: `Cached Tickets: (1)\n\n[0] Client: sales.user @ CORP.COM\n    Server: krbtgt/CORP.COM @ CORP.COM\n    KerbTicket Encryption Type: AES-256-CTS-HMAC-SHA1-96\n    End Time: 8/3/2026 07:00:00` },
-
-    // 31-40: Ports, Sockets & Firewalls
-    { id: 'c31', os: 'linux', cat: 'Ports & Firewalls', cmd: 'netstat -tulpn', desc: 'Display listening TCP/UDP sockets, port numbers, and process PIDs in Linux.', out: `Active Internet connections (only servers)\nProto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name\ntcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      1042/nginx\ntcp        0      0 192.168.1.30:5432       0.0.0.0:*               LISTEN      1450/postgres` },
-    { id: 'c32', os: 'linux', cat: 'Ports & Firewalls', cmd: 'ss -tulpn', desc: 'Modern high-speed socket statistics utility replacing netstat in Linux.', out: `Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:Port Process\ntcp   LISTEN 0      128          0.0.0.0:80         0.0.0.0:*     users:(("nginx",pid=1042,fd=6))\ntcp   LISTEN 0      128     192.168.1.30:5432       0.0.0.0:*     users:(("postgres",pid=1450,fd=5))` },
-    { id: 'c33', os: 'windows', cat: 'Ports & Firewalls', cmd: 'netstat -ano', desc: 'Display active Windows network connections, listening ports, and PIDs.', out: `Active Connections\n\n  Proto  Local Address          Foreign Address        State           PID\n  TCP    0.0.0.0:80             0.0.0.0:0              LISTENING       1042\n  TCP    192.168.1.105:54321    192.168.1.25:443       ESTABLISHED     4812` },
-    { id: 'c34', os: 'both', cat: 'Ports & Firewalls', cmd: 'arp -a', desc: 'Display ARP resolution table mapping IP addresses to physical MACs.', out: `Interface: 192.168.1.105\n  Internet Address      Physical Address      Type\n  192.168.1.10          00-50-56-00-00-10     dynamic\n  192.168.1.15          00-50-56-00-00-15     dynamic\n  192.168.1.254         00-00-0c-07-ac-fe     dynamic` },
-    { id: 'c35', os: 'linux', cat: 'Ports & Firewalls', cmd: 'ip neighbor', desc: 'Display Linux kernel ARP / neighbor cache table.', out: `192.168.1.10 dev eth0 lladdr 00:50:56:00:00:10 REACHABLE\n192.168.1.254 dev eth0 lladdr 00:00:0c:07:ac:fe REACHABLE` },
-    { id: 'c36', os: 'linux', cat: 'Ports & Firewalls', cmd: 'sudo iptables -L -n -v', desc: 'Display active Linux iptables firewall rules and packet counters.', out: `Chain INPUT (policy ACCEPT 1420 packets, 112KB)\n pkts bytes target     prot opt in     out     source               destination         \n    0     0 DROP       all  --  *      *       198.51.100.77        0.0.0.0/0           \n\nChain FORWARD (policy ACCEPT 0 packets, 0B)\nChain OUTPUT (policy ACCEPT 1205 packets, 98KB)` },
-    { id: 'c37', os: 'linux', cat: 'Ports & Firewalls', cmd: 'sudo ufw status verbose', desc: 'Display Uncomplicated Firewall (UFW) status and active rules in Ubuntu.', out: `Status: active\nLogging: on (low)\nDefault: deny (incoming), allow (outgoing), disabled (routed)\n\nTo                         Action      From\n--                         ------      ----\n80/tcp (HTTP)              ALLOW IN    Anywhere\n443/tcp (HTTPS)            ALLOW IN    Anywhere` },
-    { id: 'c38', os: 'windows', cat: 'Ports & Firewalls', cmd: 'netsh advfirewall show allprofiles', desc: 'Display status of Domain, Private, and Public Windows Firewall profiles.', out: `Domain Profile Settings:\nState                                 ON\nFirewall Policy                       BlockInbound,AllowOutbound\n\nPrivate Profile Settings:\nState                                 ON\nFirewall Policy                       BlockInbound,AllowOutbound` },
-    { id: 'c39', os: 'linux', cat: 'Ports & Firewalls', cmd: 'nc -zv 192.168.1.25 443', desc: 'Test if TCP port 443 is open on web server using Netcat.', out: `Connection to 192.168.1.25 443 port [tcp/https] succeeded!` },
-    { id: 'c40', os: 'linux', cat: 'Ports & Firewalls', cmd: 'sudo nmap -sS -p 80,443 192.168.1.25', desc: 'Perform TCP SYN stealth port scan on web server using Nmap.', out: `Starting Nmap 7.94 ( https://nmap.org )\nNmap scan report for 192.168.1.25\nHost is up (0.00042s latency).\n\nPORT    STATE SERVICE\n80/tcp  open  http\n443/tcp open  https` },
-
-    // 41-50: System Daemons, Logs & Traffic Sniffing
-    { id: 'c41', os: 'linux', cat: 'System & Logs', cmd: 'systemctl status nginx', desc: 'Display detailed systemd service status for Nginx web daemon.', out: `● nginx.service - A high performance web server\n     Loaded: loaded (/lib/systemd/system/nginx.service; enabled)\n     Active: active (running) since Sun 2026-08-02 21:00:15 CEST; 1h 10min ago` },
-    { id: 'c42', os: 'linux', cat: 'System & Logs', cmd: 'tail -n 20 /var/log/syslog', desc: 'View last 20 lines of Linux system event log.', out: `Aug 02 22:10:05 netpulse-box krb5kdc[892]: AS_REQ 192.168.1.105: ISSUE: sales.user@CORP.COM\nAug 02 22:10:12 netpulse-box named[780]: query: app.corp.com IN A +E(0)K` },
-    { id: 'c43', os: 'linux', cat: 'System & Logs', cmd: 'sudo tcpdump -i eth0 -n port 80', desc: 'Sniff live HTTP network packet frames on interface eth0.', out: `listening on eth0, capture size 262144 bytes\n22:12:05 IP 192.168.1.105.51234 > 192.168.1.25.80: Flags [S], seq 3891049512, win 64240\n22:12:05 IP 192.168.1.25.80 > 192.168.1.105.51234: Flags [S.], seq 1049512389, ack 3891049513` },
-    { id: 'c44', os: 'linux', cat: 'System & Logs', cmd: 'curl -I https://app.corp.com', desc: 'Fetch HTTP response headers (Status Code, Server, TLS details) via cURL.', out: `HTTP/2 200 \nserver: nginx/1.24.0\ndate: Sun, 02 Aug 2026 22:15:00 GMT\ncontent-type: text/html; charset=UTF-8\nstrict-transport-security: max-age=31536000` },
-    { id: 'c45', os: 'linux', cat: 'System & Logs', cmd: 'ssh sysadmin@192.168.1.15', desc: 'Initiate encrypted Secure Shell (SSH) session to remote server.', out: `The authenticity of host '192.168.1.15 (192.168.1.15)' can't be established.\nED25519 key fingerprint is SHA256:x7f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5.\nConnected to DC01.corp.com.` },
-    { id: 'c46', os: 'windows', cat: 'System & Logs', cmd: 'tasklist /v', desc: 'Display all running Windows processes with memory usage and window titles.', out: `Image Name                   PID Session Name        Session#    Mem Usage Status          User Name\n========================= ====== ================ ======== ============ ============= =====================\ncmd.exe                     4812 Console                 1      4,892 K Running       WS-LAP105\\SysAdmin` },
-    { id: 'c47', os: 'windows', cat: 'System & Logs', cmd: 'systeminfo', desc: 'Display operating system build, hotfixes, memory, and hardware details.', out: `Host Name:                 WS-SALES-LAP105\nOS Name:                   Microsoft Windows 10 Pro\nOS Version:                10.0.19045 N/A Build 19045\nSystem Manufacturer:       DELL Inc.\nSystem Type:               x64-based PC\nDomain:                    corp.com` },
-    { id: 'c48', os: 'linux', cat: 'System & Logs', cmd: 'df -h', desc: 'Display Linux disk file system storage usage in human-readable format.', out: `Filesystem      Size  Used Avail Use% Mounted on\n/dev/sda1        50G   12G   36G  25% /\ntmpfs           3.9G     0  3.9G   0% /dev/shm` },
-    { id: 'c49', os: 'linux', cat: 'System & Logs', cmd: 'free -m', desc: 'Display total, used, and available RAM memory in megabytes.', out: `               total        used        free      shared  buff/cache   available\nMem:            7942        1840        4210         128        1892        5680\nSwap:           2048           0        2048` },
-    { id: 'c50', os: 'linux', cat: 'System & Logs', cmd: 'uptime', desc: 'Display system uptime duration, logged in users, and 1/5/15 min load average.', out: ` 22:15:30 up 14 days,  3:42,  2 users,  load average: 0.12, 0.08, 0.05` }
+    { id: 'c31', os: 'linux', cat: 'Ports & Firewalls', cmd: 'netstat -tulpn', desc: 'Display listening TCP/UDP sockets, port numbers, and process PIDs in Linux.', out: `Active Internet connections\nProto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name\ntcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      1042/nginx` },
+    { id: 'c33', os: 'windows', cat: 'Ports & Firewalls', cmd: 'netstat -ano', desc: 'Display active Windows network connections, listening ports, and PIDs.', out: `Active Connections\n  Proto  Local Address          Foreign Address        State           PID\n  TCP    0.0.0.0:80             0.0.0.0:0              LISTENING       1042` },
+    { id: 'c41', os: 'linux', cat: 'System & Logs', cmd: 'systemctl status nginx', desc: 'Display detailed systemd service status for Nginx web daemon.', out: `● nginx.service - A high performance web server\n     Active: active (running) since Sun 2026-08-02 21:00:15 CEST` }
   ];
 
   // Internal 50-command Tracking
   const uniqueMasteredCount = Math.min(50, executedCmds.size);
   const completionPercentage = Math.round((uniqueMasteredCount / 50) * 100);
 
-  // STRICT OS ISOLATION FILTERING FOR CARDS DIRECTORY
+  // Filter commands by active OS
   const filteredTutorials = commandTutorials.filter(t => {
     const isOsMatch = osMode === 'bash' 
       ? (t.os === 'linux' || t.os === 'both')
@@ -118,67 +117,252 @@ export default function LabNotebook() {
     return isOsMatch && isSearchMatch;
   });
 
-  // Clear current active OS terminal log
   const handleClearTerminal = () => {
-    if (osMode === 'bash') {
-      setLinuxLogs([]);
-    } else {
-      setWindowsLogs([]);
-    }
+    if (osMode === 'bash') setLinuxLogs([]);
+    else setWindowsLogs([]);
   };
 
-  // Execute Command Logic (Independent OS Terminal Logs & No Page Auto-Scroll)
+  // INTERACTIVE OS FILESYSTEM COMMAND SIMULATOR (cd, ls, dir, pwd, cat, type, mkdir, touch, rm)
   const handleExecuteCommand = (rawCmd) => {
     const input = rawCmd.trim();
     if (!input) return;
 
-    const firstWord = input.split(' ')[0].toLowerCase();
-
-    const matchedTut = commandTutorials.find(t => 
-      t.cmd.toLowerCase() === input.toLowerCase() || 
-      t.cmd.toLowerCase().startsWith(firstWord)
-    );
+    const parts = input.split(' ').filter(Boolean);
+    const cmdName = parts[0].toLowerCase();
+    const arg1 = parts[1] || '';
 
     let outputText = '';
     let isSuccess = false;
 
-    if (input.toLowerCase() === 'clear' || input.toLowerCase() === 'cls') {
+    if (cmdName === 'clear' || cmdName === 'cls') {
       handleClearTerminal();
       setCommandInput('');
       return;
-    } else if (input.toLowerCase() === 'help') {
-      outputText = osMode === 'bash' 
-        ? `Linux Bash Command Reference:\n- ip a : View network interface IPv4/IPv6 addresses\n- traceroute 8.8.8.8 : Trace hop-by-hop router path\n- dig +short app.corp.com : DNS lookup\n- ss -tulpn : Active listening sockets & PIDs\n- systemctl status nginx : View systemd daemon status\n- tail -n 20 /var/log/syslog : Inspect live log lines\n- sudo tcpdump -i eth0 -n port 80 : Packet sniffing`
-        : `Windows Command Prompt (CMD) Reference:\n- ipconfig /all : View Windows IP, MAC, Gateway, and DNS\n- tracert 8.8.8.8 : Trace router path\n- nslookup app.corp.com : Query DNS A records\n- netstat -ano : Active connections & PIDs\n- route print : Display IPv4 routing table\n- arp -a : Display ARP resolution table\n- dcdiag /test:DNS : Test AD Domain Controller DNS`;
-      isSuccess = true;
-    } else if (matchedTut) {
-      const isTutAllowed = osMode === 'bash' 
-        ? (matchedTut.os === 'linux' || matchedTut.os === 'both')
-        : (matchedTut.os === 'windows' || matchedTut.os === 'both');
+    }
 
-      if (isTutAllowed) {
-        outputText = matchedTut.out;
+    // --- LINUX BASH OS SIMULATION ---
+    if (osMode === 'bash') {
+      if (cmdName === 'pwd') {
+        outputText = linuxCwd;
         isSuccess = true;
-        if (!executedCmds.has(matchedTut.id)) {
-          setExecutedCmds(prev => new Set(prev).add(matchedTut.id));
+      } else if (cmdName === 'ls') {
+        const node = linuxFs[linuxCwd];
+        if (node && node.type === 'dir') {
+          if (arg1 === '-la' || arg1 === '-l') {
+            const listStr = node.children.map(childName => {
+              const fullPath = linuxCwd === '/' ? `/${childName}` : `${linuxCwd}/${childName}`;
+              const childNode = linuxFs[fullPath];
+              const isDir = childNode && childNode.type === 'dir';
+              const perm = isDir ? 'drwxr-xr-x' : '-rw-r--r--';
+              const size = isDir ? 4096 : (childNode?.size || 128);
+              return `${perm} 1 sysadmin sysadmin ${String(size).padStart(5, ' ')} Aug 2 22:30 ${childName}`;
+            }).join('\n');
+            outputText = `total ${node.children.length * 4}\n${listStr}`;
+          } else {
+            outputText = node.children.join('  ');
+          }
+          isSuccess = true;
         }
-      } else {
-        if (osMode === 'bash') {
-          outputText = `bash: ${firstWord}: command not found\n[Bash Notice: "${input}" is a Windows CMD command. Switch to Windows CMD mode to execute it.]`;
+      } else if (cmdName === 'cd') {
+        if (!arg1 || arg1 === '~') {
+          setLinuxCwd('/home/sysadmin');
+          outputText = '';
+          isSuccess = true;
+        } else if (arg1 === '..') {
+          if (linuxCwd !== '/') {
+            const lastSlash = linuxCwd.lastIndexOf('/');
+            const parent = linuxCwd.substring(0, lastSlash) || '/';
+            setLinuxCwd(parent);
+          }
+          outputText = '';
+          isSuccess = true;
         } else {
-          outputText = `'${firstWord}' is not recognized as an internal or external command, operable program or batch file.\n[CMD Notice: "${input}" is a Linux Bash command. Switch to Linux Bash mode to execute it.]`;
+          let targetPath = arg1.startsWith('/') ? arg1 : (linuxCwd === '/' ? `/${arg1}` : `${linuxCwd}/${arg1}`);
+          if (linuxFs[targetPath] && linuxFs[targetPath].type === 'dir') {
+            setLinuxCwd(targetPath);
+            outputText = '';
+            isSuccess = true;
+          } else {
+            outputText = `bash: cd: ${arg1}: No such file or directory`;
+            isSuccess = false;
+          }
         }
+      } else if (cmdName === 'cat') {
+        let filePath = arg1.startsWith('/') ? arg1 : (linuxCwd === '/' ? `/${arg1}` : `${linuxCwd}/${arg1}`);
+        const fileNode = linuxFs[filePath];
+        if (fileNode && fileNode.type === 'file') {
+          outputText = fileNode.content;
+          isSuccess = true;
+        } else {
+          outputText = `cat: ${arg1 || 'file'}: No such file or directory`;
+          isSuccess = false;
+        }
+      } else if (cmdName === 'mkdir') {
+        if (!arg1) {
+          outputText = `mkdir: missing operand`;
+          isSuccess = false;
+        } else {
+          let newDirPath = linuxCwd === '/' ? `/${arg1}` : `${linuxCwd}/${arg1}`;
+          setLinuxFs(prev => ({
+            ...prev,
+            [linuxCwd]: { ...prev[linuxCwd], children: [...prev[linuxCwd].children, arg1] },
+            [newDirPath]: { type: 'dir', children: [] }
+          }));
+          outputText = ``;
+          isSuccess = true;
+        }
+      } else if (cmdName === 'touch') {
+        if (!arg1) {
+          outputText = `touch: missing file operand`;
+          isSuccess = false;
+        } else {
+          let newFilePath = linuxCwd === '/' ? `/${arg1}` : `${linuxCwd}/${arg1}`;
+          setLinuxFs(prev => ({
+            ...prev,
+            [linuxCwd]: { ...prev[linuxCwd], children: [...prev[linuxCwd].children, arg1] },
+            [newFilePath]: { type: 'file', size: 0, content: '' }
+          }));
+          outputText = ``;
+          isSuccess = true;
+        }
+      } else if (cmdName === 'rm') {
+        if (!arg1) {
+          outputText = `rm: missing operand`;
+          isSuccess = false;
+        } else {
+          setLinuxFs(prev => ({
+            ...prev,
+            [linuxCwd]: { ...prev[linuxCwd], children: prev[linuxCwd].children.filter(c => c !== arg1) }
+          }));
+          outputText = ``;
+          isSuccess = true;
+        }
+      } else if (cmdName === 'dir' || cmdName === 'type') {
+        // REJECT WINDOWS COMMANDS IN BASH
+        outputText = `bash: ${cmdName}: command not found (Did you mean "${cmdName === 'dir' ? 'ls' : 'cat'}"?)`;
         isSuccess = false;
       }
-    } else {
-      if (osMode === 'bash') {
-        outputText = `bash: command executed: ${input}\nType "help" to view native Linux Bash commands.`;
-      } else {
-        outputText = `C:\\Users\\SysAdmin> ${input} executed.\nType "help" to view native Windows CMD commands.`;
+    }
+
+    // --- WINDOWS CMD OS SIMULATION ---
+    if (osMode === 'cmd') {
+      if (cmdName === 'dir') {
+        const node = windowsFs[windowsCwd];
+        if (node && node.type === 'dir') {
+          const listStr = node.children.map(childName => {
+            const fullPath = `${windowsCwd}\\${childName}`;
+            const childNode = windowsFs[fullPath];
+            const isDir = childNode && childNode.type === 'dir';
+            const tag = isDir ? '<DIR>         ' : '              ';
+            const size = isDir ? '' : String(childNode?.size || 256).padStart(8, ' ');
+            return `08/02/2026  10:20 PM    ${tag} ${size} ${childName}`;
+          }).join('\n');
+          outputText = ` Volume in drive C has no label.\n Volume Serial Number is A1B2-C3D4\n\n Directory of ${windowsCwd}\n\n${listStr}\n               ${node.children.length} File(s)/Dir(s)`;
+          isSuccess = true;
+        }
+      } else if (cmdName === 'cd' || cmdName === 'chdir') {
+        if (!arg1) {
+          outputText = windowsCwd;
+          isSuccess = true;
+        } else if (arg1 === '..') {
+          if (windowsCwd !== 'C:\\') {
+            const lastSlash = windowsCwd.lastIndexOf('\\');
+            const parent = windowsCwd.substring(0, lastSlash) || 'C:\\';
+            setWindowsCwd(parent);
+          }
+          outputText = '';
+          isSuccess = true;
+        } else {
+          let targetPath = arg1.includes(':\\') ? arg1 : `${windowsCwd}\\${arg1}`;
+          if (windowsFs[targetPath] && windowsFs[targetPath].type === 'dir') {
+            setWindowsCwd(targetPath);
+            outputText = '';
+            isSuccess = true;
+          } else {
+            outputText = `The system cannot find the path specified.`;
+            isSuccess = false;
+          }
+        }
+      } else if (cmdName === 'type') {
+        let filePath = arg1.includes(':\\') ? arg1 : `${windowsCwd}\\${arg1}`;
+        const fileNode = windowsFs[filePath];
+        if (fileNode && fileNode.type === 'file') {
+          outputText = fileNode.content;
+          isSuccess = true;
+        } else {
+          outputText = `The system cannot find the file specified.`;
+          isSuccess = false;
+        }
+      } else if (cmdName === 'mkdir' || cmdName === 'md') {
+        if (!arg1) {
+          outputText = `The syntax of the command is incorrect.`;
+          isSuccess = false;
+        } else {
+          let newDirPath = `${windowsCwd}\\${arg1}`;
+          setWindowsFs(prev => ({
+            ...prev,
+            [windowsCwd]: { ...prev[windowsCwd], children: [...prev[windowsCwd].children, arg1] },
+            [newDirPath]: { type: 'dir', children: [] }
+          }));
+          outputText = ``;
+          isSuccess = true;
+        }
+      } else if (cmdName === 'del') {
+        if (!arg1) {
+          outputText = `The syntax of the command is incorrect.`;
+          isSuccess = false;
+        } else {
+          setWindowsFs(prev => ({
+            ...prev,
+            [windowsCwd]: { ...prev[windowsCwd], children: prev[windowsCwd].children.filter(c => c !== arg1) }
+          }));
+          outputText = ``;
+          isSuccess = true;
+        }
+      } else if (cmdName === 'ls' || cmdName === 'cat' || cmdName === 'pwd') {
+        // REJECT LINUX COMMANDS IN CMD
+        outputText = `'${cmdName}' is not recognized as an internal or external command, operable program or batch file.`;
+        isSuccess = false;
       }
-      isSuccess = true;
-      if (!executedCmds.has(input)) {
-        setExecutedCmds(prev => new Set(prev).add(input));
+    }
+
+    // --- FALLBACK FOR NETWORKING & TUTORIAL COMMANDS ---
+    if (!outputText && !isSuccess) {
+      const matchedTut = commandTutorials.find(t => 
+        t.cmd.toLowerCase() === input.toLowerCase() || 
+        t.cmd.toLowerCase().startsWith(cmdName)
+      );
+
+      if (cmdName === 'help') {
+        outputText = osMode === 'bash' 
+          ? `Linux Bash Command Reference:\n- cd <dir> / pwd / ls -la : File system navigation\n- cat <file> / mkdir <dir> / touch <file> / rm <file> : File management\n- ip a / ping / traceroute / dig / ss -tulpn / systemctl : Networking`
+          : `Windows Command Prompt Reference:\n- cd <dir> / dir / type <file> / mkdir <dir> / del <file> : File system\n- ipconfig /all / ping / tracert / nslookup / netstat -ano : Networking`;
+        isSuccess = true;
+      } else if (matchedTut) {
+        const isTutAllowed = osMode === 'bash' 
+          ? (matchedTut.os === 'linux' || matchedTut.os === 'both')
+          : (matchedTut.os === 'windows' || matchedTut.os === 'both');
+
+        if (isTutAllowed) {
+          outputText = matchedTut.out;
+          isSuccess = true;
+          if (!executedCmds.has(matchedTut.id)) {
+            setExecutedCmds(prev => new Set(prev).add(matchedTut.id));
+          }
+        } else {
+          outputText = osMode === 'bash'
+            ? `bash: ${cmdName}: command not found\n[Bash Notice: "${input}" is a Windows CMD command. Switch to Windows CMD mode to run it.]`
+            : `'${cmdName}' is not recognized as an internal or external command, operable program or batch file.`;
+          isSuccess = false;
+        }
+      } else {
+        outputText = osMode === 'bash'
+          ? `bash: ${input}: command executed successfully.`
+          : `C:\\Users\\SysAdmin> ${input} executed successfully.`;
+        isSuccess = true;
+        if (!executedCmds.has(input)) {
+          setExecutedCmds(prev => new Set(prev).add(input));
+        }
       }
     }
 
@@ -187,30 +371,32 @@ export default function LabNotebook() {
       setTimeout(() => setFaintGlow(false), 800);
     }
 
-    const newLogItem = { 
-      type: 'cmd', 
-      text: osMode === 'bash' ? `sysadmin@netpulse-box:~$ ${input}` : `C:\\Users\\SysAdmin> ${input}`,
-      resText: outputText,
-      isError: !isSuccess
-    };
+    // Dynamic Prompt String based on CWD
+    const promptStr = osMode === 'bash'
+      ? `sysadmin@netpulse-box:${linuxCwd.replace('/home/sysadmin', '~')}$`
+      : `${windowsCwd}>`;
 
-    // Update ONLY the active OS log state so logs are 100% isolated!
+    // Append to active OS log
     if (osMode === 'bash') {
       setLinuxLogs(prev => [
         ...prev,
-        { type: 'cmd', text: `sysadmin@netpulse-box:~$ ${input}` },
+        { type: 'cmd', text: `${promptStr} ${input}` },
         { type: 'res', text: outputText, isError: !isSuccess }
       ]);
     } else {
       setWindowsLogs(prev => [
         ...prev,
-        { type: 'cmd', text: `C:\\Users\\SysAdmin> ${input}` },
+        { type: 'cmd', text: `${promptStr} ${input}` },
         { type: 'res', text: outputText, isError: !isSuccess }
       ]);
     }
 
     setCommandInput('');
   };
+
+  const activePromptStr = osMode === 'bash'
+    ? `sysadmin@netpulse-box:${linuxCwd.replace('/home/sysadmin', '~')}$`
+    : `${windowsCwd}>`;
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
@@ -221,7 +407,7 @@ export default function LabNotebook() {
           <div>
             <h1 className="text-lg font-black text-slate-100 flex items-center gap-2">
               <Terminal className="w-5 h-5 text-cyan-400" />
-              <span>Isolated OS CLI Simulator</span>
+              <span>Isolated OS CLI & File System Simulator</span>
             </h1>
           </div>
 
@@ -253,7 +439,7 @@ export default function LabNotebook() {
           </div>
         </div>
 
-        {/* UNLABELED PROGRESS BAR WITH DYNAMIC COLOR FILL DEPENDING ON LEVEL */}
+        {/* UNLABELED PROGRESS BAR WITH DYNAMIC COLOR FILL */}
         <div className="pt-2 border-t border-slate-800">
           <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-800/80 shadow-inner">
             <div 
@@ -317,7 +503,7 @@ export default function LabNotebook() {
           </div>
         )}
 
-        {/* TERMINAL OUTPUT AREA (NO PAGE AUTO-SCROLL & ISOLATED LOGS) */}
+        {/* TERMINAL OUTPUT AREA */}
         <div 
           ref={logsContainerRef}
           className={`p-5 min-h-[340px] max-h-[460px] overflow-y-auto space-y-2 text-xs font-mono select-text scrollbar-thin ${
@@ -340,14 +526,14 @@ export default function LabNotebook() {
                 <div className="font-extrabold flex items-center gap-1.5">
                   {osMode === 'bash' ? (
                     <p className="text-cyan-300">
-                      <span className="text-emerald-400">sysadmin@netpulse-box:~$</span> {log.text.replace('sysadmin@netpulse-box:~$ ', '')}
+                      <span className="text-emerald-400">{log.text.split(' ')[0]}</span> {log.text.substring(log.text.indexOf(' ') + 1)}
                     </p>
                   ) : (
                     <p className="text-gray-200">{log.text}</p>
                   )}
                 </div>
               )}
-              {log.type === 'res' && (
+              {log.type === 'res' && log.text && (
                 <pre className={`font-mono whitespace-pre-wrap leading-relaxed ${
                   log.isError 
                     ? 'text-rose-400 font-bold' 
@@ -370,19 +556,15 @@ export default function LabNotebook() {
             osMode === 'cmd' ? 'bg-black border-gray-800' : 'bg-slate-900/90 border-slate-800'
           }`}
         >
-          {osMode === 'bash' ? (
-            <span className="text-emerald-400 font-black text-xs shrink-0 flex items-center gap-1 font-mono">
-              sysadmin@netpulse-box:~$
-            </span>
-          ) : (
-            <span className="text-gray-200 font-bold text-xs shrink-0">C:\Users\SysAdmin&gt;</span>
-          )}
+          <span className={`${osMode === 'bash' ? 'text-emerald-400' : 'text-gray-200'} font-bold text-xs shrink-0 font-mono`}>
+            {activePromptStr}
+          </span>
 
           <input
             type="text"
             value={commandInput}
             onChange={(e) => setCommandInput(e.target.value)}
-            placeholder={osMode === 'bash' ? 'type Linux Bash command (e.g. "ip a", "ping -c 4 8.8.8.8", "ss -tulpn")...' : 'type Windows CMD command (e.g. "ipconfig /all", "tracert 8.8.8.8", "route print")...'}
+            placeholder={osMode === 'bash' ? 'type Linux command (e.g. "ls -la", "cd /var/log", "cat notes.txt", "ip a")...' : 'type Windows command (e.g. "dir", "cd System32", "type notes.txt", "ipconfig /all")...'}
             className={`flex-1 bg-transparent px-3 py-2 text-xs font-bold focus:outline-none font-mono ${
               osMode === 'cmd' ? 'text-gray-100' : 'text-slate-100'
             }`}
@@ -402,7 +584,7 @@ export default function LabNotebook() {
         </form>
       </div>
 
-      {/* TUTORIAL CARDS DIRECTORY (FILTERED BY ACTIVE OS MODE) */}
+      {/* TUTORIAL CARDS DIRECTORY */}
       <div className="space-y-4 font-mono">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
