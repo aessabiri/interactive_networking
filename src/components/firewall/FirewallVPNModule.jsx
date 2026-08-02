@@ -48,6 +48,7 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
 
   // Stateful Firewall Interactive State
   const [selectedService, setSelectedService] = useState('https'); // 'https', 'ssh', 'rdp', 'icmp', 'telnet'
+  const [trafficDirection, setTrafficDirection] = useState('inbound'); // 'inbound' (WAN -> LAN) or 'outbound' (LAN -> WAN)
   const [firewallAction, setFirewallAction] = useState(null); // 'ALLOW' or 'DROP'
   const [inspectionDetail, setInspectionDetail] = useState(null);
 

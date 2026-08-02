@@ -136,7 +136,6 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
     }
     if (activeStep >= 5) setActiveStep(1);
     else if (activeStep === 0) setActiveStep(1);
-    setIsSingleStep(false);
     setIsPlaying(true);
   };
 
