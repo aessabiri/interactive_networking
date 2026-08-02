@@ -615,21 +615,21 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
 
   // Node Icon Helper (With Glowing Green Internet ISP Icon)
   const getNodeIcon = (type, roles = [], name = '') => {
-    if (roles.includes('esxi')) return <Cpu className="w-10 h-10 text-emerald-400" />;
+    if (roles.includes('esxi')) return <Cpu className="w-7 h-7 text-emerald-400" />;
     if (type === 'cloud' || name.toUpperCase().includes('ISP') || name.toUpperCase().includes('INTERNET')) {
-      return <Globe className="w-10 h-10 text-emerald-400 animate-pulse drop-shadow-[0_0_15px_rgba(16,185,129,1)]" />;
+      return <Globe className="w-8 h-8 text-emerald-400 animate-pulse drop-shadow-[0_0_15px_rgba(16,185,129,1)]" />;
     }
     switch(type) {
-      case 'laptop': return <Laptop className="w-10 h-10 text-cyan-400" />;
-      case 'desktop': return <Laptop className="w-10 h-10 text-blue-400" />;
-      case 'server': return <Server className="w-10 h-10 text-amber-400" />;
-      case 'switch': return <Layers className="w-10 h-10 text-blue-400" />;
-      case 'router': return <Router className="w-10 h-10 text-purple-400" />;
-      case 'firewall': return <ShieldCheck className="w-10 h-10 text-rose-400" />;
-      case 'printer': return <Printer className="w-10 h-10 text-slate-300" />;
-      case 'wifi': return <Wifi className="w-10 h-10 text-teal-400" />;
-      case 'storage': return <Database className="w-10 h-10 text-amber-300" />;
-      default: return <Server className="w-10 h-10 text-slate-400" />;
+      case 'laptop': return <Laptop className="w-7 h-7 text-cyan-400" />;
+      case 'desktop': return <Laptop className="w-7 h-7 text-blue-400" />;
+      case 'server': return <Server className="w-7 h-7 text-purple-400" />;
+      case 'switch': return <Layers className="w-7 h-7 text-blue-400" />;
+      case 'router': return <Router className="w-8 h-8 text-amber-400" />;
+      case 'firewall': return <ShieldCheck className="w-7 h-7 text-rose-400" />;
+      case 'printer': return <Printer className="w-7 h-7 text-emerald-400" />;
+      case 'wifi': return <Wifi className="w-7 h-7 text-teal-400" />;
+      case 'storage': return <Database className="w-7 h-7 text-amber-300" />;
+      default: return <Server className="w-7 h-7 text-slate-400" />;
     }
   };
 
@@ -1046,7 +1046,7 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
           ref={canvasRef}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          className="rounded-2xl border border-slate-800 h-[520px] relative overflow-hidden bg-[radial-gradient(#1e293b_1.5px,transparent_1.5px)] [background-size:20px_20px] bg-slate-950/90 select-none"
+          className="rounded-2xl border border-slate-800 min-h-[660px] h-[680px] relative overflow-hidden bg-[radial-gradient(#1e293b_1.5px,transparent_1.5px)] [background-size:20px_20px] bg-slate-950/90 select-none"
         >
           {/* FLOATING CABLE COLOR LEGEND AT TOP-LEFT OF WORKPLACE CANVAS */}
           <div className="absolute top-4 left-4 z-30 font-mono hidden sm:flex items-center gap-3 text-[11px] font-bold bg-slate-900/90 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-slate-800 text-slate-300 shadow-xl">
@@ -1250,7 +1250,7 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
                 key={node.id}
                 onMouseDown={(e) => handleMouseDown(e, node.id)}
                 style={{ left: `${node.x}px`, top: `${node.y}px` }}
-                className={`absolute p-4 rounded-3xl border-4 transition-all cursor-grab active:cursor-grabbing z-20 flex flex-col items-center gap-1.5 font-mono text-xs ${
+                className={`absolute p-3 px-3.5 rounded-2xl border-2 transition-all cursor-grab active:cursor-grabbing z-20 flex flex-col items-center gap-1 font-mono text-[11px] ${
                   isCloudISP
                     ? 'bg-emerald-950/90 border-emerald-400 shadow-2xl shadow-emerald-500/60 scale-105 animate-pulse'
                     : isSelected
