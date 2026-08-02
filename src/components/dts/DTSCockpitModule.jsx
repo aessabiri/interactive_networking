@@ -19,7 +19,9 @@ import {
   Layers, 
   Eye, 
   RefreshCw,
-  Gauge
+  Gauge,
+  Play,
+  Pause
 } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
@@ -30,6 +32,7 @@ export default function DTSCockpitModule({ appMode = 'clean' }) {
   const [activeStep, setActiveStep] = useState(0);
   const [speed, setSpeed] = useState(0.5); // Default 0.5x speed (Blue)
   const [logs, setLogs] = useState([]);
+  const [liveStreamActive, setLiveStreamActive] = useState(true);
   const [remediationsApplied, setRemediationsApplied] = useState({
     hostIsolated: false,
     ipBlocked: false,
@@ -119,6 +122,36 @@ export default function DTSCockpitModule({ appMode = 'clean' }) {
 
   const currScenario = attackScenarios[activeScenario];
 
+  // 24/7 Live Monitoring Telemetry Stream
+  useEffect(() => {
+    if (!liveStreamActive || isSimulating) return;
+
+    const monitoringTemplates = [
+      { tag: 'PAN-OS_SPI', msg: '🟢 Palo Alto NGFW Session #84920: ALLOW TCP 192.168.1.105:51234 -> 192.168.1.25:443 (SSL Ingress OK)' },
+      { tag: 'CORTEX_XDR', msg: '🟢 EDR Heartbeat: WS-SALES-LAP105 Agent v8.3.1 Active • 0 Behavioral Anomalies' },
+      { tag: 'DTS_DNS_GUARD', msg: '🟢 DNS Inspection: Resolved app.corp.com -> 192.168.1.20 (Latency: 1.1ms, Reputation: 100/100)' },
+      { tag: 'DTS_AD_KDC', msg: '🟢 AD Kerberos Audit: AS_REQ ticket issued for sales.user@CORP.COM (AES-256 Encryption OK)' },
+      { tag: 'DTS_OT_INSIGHTS', msg: '🟢 SCADA Gateway Sensor: Modbus FC03 Register 40001 Read • PLC Node 192.168.10.15 Normal' },
+      { tag: 'DTS_MAIL_GUARD', msg: '🟢 Mail Security Relay: Inbound SMTP 192.168.1.28 • SPF/DKIM/DMARC PASSED' },
+      { tag: 'DTS_NAC_GUARD', msg: '🟢 Switch Port Gi1/0/12: MAC 00:1A:2B:3C:4D:01 Verified • 802.1X Auth Succeeded' },
+      { tag: 'SIEM_CORRELATOR', msg: 'ℹ️ DTS Cockpit SIEM: 1,420 events/sec ingested across 12 PAN-OS Firewalls and 1,248 Endpoints' }
+    ];
+
+    const interval = setInterval(() => {
+      const randomItem = monitoringTemplates[Math.floor(Math.random() * monitoringTemplates.length)];
+      setLogs(prev => [
+        ...prev.slice(-30), // keep last 30 logs
+        {
+          time: new Date().toLocaleTimeString(),
+          tag: randomItem.tag,
+          message: randomItem.msg
+        }
+      ]);
+    }, 2800);
+
+    return () => clearInterval(interval);
+  }, [liveStreamActive, isSimulating]);
+
   // Simulation Controller Timer
   useEffect(() => {
     let timer;
@@ -148,7 +181,8 @@ export default function DTSCockpitModule({ appMode = 'clean' }) {
     setActiveStep(1);
     setIsSimulating(true);
     const firstStep = attackScenarios[scenarioKey].steps[0];
-    setLogs([
+    setLogs(prev => [
+      ...prev,
       {
         time: new Date().toLocaleTimeString(),
         tag: 'DTS_SOC_INIT',
@@ -256,6 +290,39 @@ export default function DTSCockpitModule({ appMode = 'clean' }) {
           <p className="text-xl font-black text-purple-300">Herford 24/7/365</p>
           <p className="text-[10px] text-slate-500">Purple Teaming Active</p>
         </div>
+      </div>
+
+      {/* LIVE 24/7 SYSTEM MONITORING TELEMETRY TICKER BAR */}
+      <div className="p-4 bg-slate-900/90 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono text-xs shadow-xl">
+        <div className="flex items-center gap-3">
+          <span className="relative flex h-3 w-3">
+            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${liveStreamActive ? 'bg-emerald-400' : 'bg-amber-400'} opacity-75`}></span>
+            <span className={`relative inline-flex rounded-full h-3 w-3 ${liveStreamActive ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+          </span>
+          <div>
+            <p className="font-extrabold text-slate-100 flex items-center gap-2">
+              <span>DTS Cockpit Live Telemetry Ingestion Feed</span>
+              <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800 font-bold">
+                1,420 events/sec
+              </span>
+            </p>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Active Monitoring: Palo Alto NGFW • Cortex XDR • DTS DNS Guard • Active Directory KDC • DTS OT Insights
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setLiveStreamActive(!liveStreamActive)}
+          className={`px-3 py-1.5 rounded-xl font-extrabold text-xs border transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+            liveStreamActive
+              ? 'bg-slate-950 text-emerald-300 border-emerald-800 hover:bg-slate-800'
+              : 'bg-amber-950 text-amber-300 border-amber-800 hover:bg-amber-900'
+          }`}
+        >
+          {liveStreamActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+          <span>{liveStreamActive ? 'Pause Telemetry' : 'Resume Telemetry'}</span>
+        </button>
       </div>
 
       {/* PURPLE TEAMING ATTACK SCENARIO SELECTOR CARDS */}
