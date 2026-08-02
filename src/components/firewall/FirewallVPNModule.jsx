@@ -249,98 +249,107 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
-      {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
-      <CleanWidget
-        title="Stateful Firewall, NAT & VPN Security Lab"
-        subtitle="L4-L7 Deep Packet Inspection"
-        icon={ShieldCheck}
-        ip={activeSubTab === 'stateful' ? '192.168.1.105 (LAN) → 8.8.8.8' : activeSubTab === 'nat' ? '192.168.1.10 ➔ 203.0.113.1 (PAT)' : activeSubTab === 'vpn' ? '192.168.10.1 ➔ 172.16.0.1 (IPsec)' : '192.168.1.105 ➔ 93.184.216.34'}
-        protocol={activeSubTab === 'stateful' ? selectedService.toUpperCase() : activeSubTab === 'nat' ? 'PAT Overload' : activeSubTab === 'vpn' ? 'IPsec ESP (AES-256)' : 'TLS 1.3 (ECDHE)'}
-        port={activeSubTab === 'stateful' ? (selectedService === 'https' ? 443 : selectedService === 'ssh' ? 22 : selectedService === 'rdp' ? 3389 : selectedService === 'telnet' ? 23 : 'ICMP') : activeSubTab === 'nat' ? 'Ephemeral 40001' : activeSubTab === 'vpn' ? 'UDP 500 / ESP 50' : 'Port 443'}
-        status={activeSubTab === 'stateful' ? (firewallAction === 'ALLOW' ? '🟢 ALLOWED' : firewallAction === 'DROP' ? '🔴 DROPPED' : 'Ready') : activeSubTab === 'nat' ? 'Stateful PAT Table Active' : activeSubTab === 'vpn' ? `VPN Phase ${activeStep}/4` : `TLS Step ${activeStep}/4`}
-        actionTitle={activeSubTab === 'stateful' ? (firewallAction ? `Verdict: ${firewallAction}` : 'Ready to Send Packet') : activeSubTab === 'nat' ? 'Port Address Translation' : activeSubTab === 'vpn' ? vpnSteps[activeStep].title : tlsSteps[activeStep].title}
-        actionDesc={activeSubTab === 'stateful' ? (firewallAction === 'ALLOW' ? '🟢 PERMITTED: Traffic passed firewall rule inspection!' : firewallAction === 'DROP' ? '🔴 BLOCKED: Traffic dropped by firewall rule!' : 'Select traffic service and click Play in top right.') : activeSubTab === 'nat' ? 'Rewriting private IP to public WAN IP' : activeSubTab === 'vpn' ? vpnSteps[activeStep].subtitle : tlsSteps[activeStep].subtitle}
-        isPlaying={isPlaying}
-        onPlay={handlePlayActiveTab}
-        onStep={handleStepActiveTab}
-        onReset={handleReset}
-        speed={speed}
-        setSpeed={setSpeed}
-        showAnimation={showAnimation}
-        setShowAnimation={setShowAnimation}
-      />
+      {/* SINGLE UNIFIED TOP CARD (COMBINED CLEAN WIDGET + LAB SECURITY MODES + TRAFFIC SELECTOR) */}
+      <div className="glass-panel p-4 rounded-3xl border border-slate-800 space-y-3 shadow-2xl bg-slate-900/90 font-mono text-xs">
+        {/* TOP ROW: CLEAN WIDGET HEADER */}
+        <CleanWidget
+          title="Stateful Firewall, NAT & VPN Security Lab"
+          subtitle="L4-L7 Deep Packet Inspection & Security Rules"
+          icon={ShieldCheck}
+          ip={activeSubTab === 'stateful' ? '192.168.1.105 (LAN) → 8.8.8.8' : activeSubTab === 'nat' ? '192.168.1.10 ➔ 203.0.113.1 (PAT)' : activeSubTab === 'vpn' ? '192.168.10.1 ➔ 172.16.0.1 (IPsec)' : '192.168.1.105 ➔ 93.184.216.34'}
+          protocol={activeSubTab === 'stateful' ? selectedService.toUpperCase() : activeSubTab === 'nat' ? 'PAT Overload' : activeSubTab === 'vpn' ? 'IPsec ESP (AES-256)' : 'TLS 1.3 (ECDHE)'}
+          port={activeSubTab === 'stateful' ? (selectedService === 'https' ? 443 : selectedService === 'ssh' ? 22 : selectedService === 'rdp' ? 3389 : selectedService === 'telnet' ? 23 : 'ICMP') : activeSubTab === 'nat' ? 'Ephemeral 40001' : activeSubTab === 'vpn' ? 'UDP 500 / ESP 50' : 'Port 443'}
+          status={activeSubTab === 'stateful' ? (firewallAction === 'ALLOW' ? '🟢 ALLOWED' : firewallAction === 'DROP' ? '🔴 DROPPED' : 'Ready') : activeSubTab === 'nat' ? 'Stateful PAT Table Active' : activeSubTab === 'vpn' ? `VPN Phase ${activeStep}/4` : `TLS Step ${activeStep}/4`}
+          actionTitle={activeSubTab === 'stateful' ? (firewallAction ? `Verdict: ${firewallAction}` : 'Ready to Send Packet') : activeSubTab === 'nat' ? 'Port Address Translation' : activeSubTab === 'vpn' ? vpnSteps[activeStep].title : tlsSteps[activeStep].title}
+          actionDesc={activeSubTab === 'stateful' ? (firewallAction === 'ALLOW' ? '🟢 PERMITTED: Traffic passed firewall rule inspection!' : firewallAction === 'DROP' ? '🔴 BLOCKED: Traffic dropped by firewall rule!' : 'Select traffic service and click Play in top right.') : activeSubTab === 'nat' ? 'Rewriting private IP to public WAN IP' : activeSubTab === 'vpn' ? vpnSteps[activeStep].subtitle : tlsSteps[activeStep].subtitle}
+          isPlaying={isPlaying}
+          onPlay={handlePlayActiveTab}
+          onStep={handleStepActiveTab}
+          onReset={handleReset}
+          speed={speed}
+          setSpeed={setSpeed}
+          showAnimation={showAnimation}
+          setShowAnimation={setShowAnimation}
+        />
 
-      {/* COMPACT MODE SELECTOR SUB-TABS BAR */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 px-4 py-2 rounded-2xl border border-slate-800 font-mono text-xs shadow-lg">
-        <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-rose-400" />
-          <span className="text-slate-300 font-extrabold">Lab Security Mode:</span>
-        </div>
-        <div className="flex flex-wrap items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
-          {[
-            { id: 'stateful', label: 'Stateful Firewall (SPI)', icon: ShieldCheck },
-            { id: 'nat', label: 'NAT / PAT Engine', icon: Router },
-            { id: 'vpn', label: 'IPsec VPN Tunnel', icon: Lock },
-            { id: 'tls', label: 'TLS 1.3 Handshake', icon: Key },
-          ].map(tab => {
-            const Icon = tab.icon;
-            const isActive = activeSubTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => { setActiveSubTab(tab.id); handleReset(); }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-extrabold transition-all cursor-pointer text-xs ${
-                  isActive
-                    ? 'bg-gradient-to-r from-rose-600 to-amber-600 text-white shadow-md shadow-rose-500/20'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+        {/* BOTTOM ROW: LAB SECURITY MODE TABS & TRAFFIC SELECTOR */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-slate-800/80 text-[11px]">
+          {/* Mode Selector Tabs */}
+          <div className="flex flex-wrap items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+            {[
+              { id: 'stateful', label: 'Stateful Firewall (SPI)', icon: ShieldCheck },
+              { id: 'nat', label: 'NAT / PAT Engine', icon: Router },
+              { id: 'vpn', label: 'IPsec VPN Tunnel', icon: Lock },
+              { id: 'tls', label: 'TLS 1.3 Handshake', icon: Key },
+            ].map(tab => {
+              const Icon = tab.icon;
+              const isActive = activeSubTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => { setActiveSubTab(tab.id); handleReset(); }}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-extrabold transition-all cursor-pointer text-[11px] ${
+                    isActive
+                      ? 'bg-gradient-to-r from-rose-600 to-amber-600 text-white shadow'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
 
-      {/* SUB-TAB 1: STATEFUL FIREWALL INSPECTION (SPI) */}
-      {activeSubTab === 'stateful' && (
-        <div className="space-y-6">
-          
-          {/* FIREWALL WORKSPACE CONTROL TOOLBAR */}
-          <div className="glass-panel p-3 rounded-2xl border border-slate-800/90 bg-slate-900/95 flex flex-wrap items-center justify-between gap-3 shadow-xl font-mono text-xs">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
-                <Send className="w-4 h-4 text-rose-400" />
-                <span className="text-slate-400 font-bold">Select Traffic Service:</span>
+          {/* Traffic Service Selector & Add Rule Button (Only when Stateful Firewall active) */}
+          {activeSubTab === 'stateful' && (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">
+                <Send className="w-3.5 h-3.5 text-rose-400" />
+                <span className="text-slate-400 font-bold">Traffic Service:</span>
                 <select
                   value={selectedService}
                   onChange={(e) => { setSelectedService(e.target.value); handleReset(); }}
-                  className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-mono font-bold text-cyan-300 focus:outline-none focus:border-cyan-500 cursor-pointer"
+                  className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-0.5 text-[11px] font-mono font-bold text-cyan-300 focus:outline-none cursor-pointer"
                 >
                   <optgroup label="🌐 Web Services">
                     <option value="https">HTTPS Secure Web (Port 443)</option>
                     <option value="http">HTTP Web Unencrypted (Port 80)</option>
                   </optgroup>
-                  <optgroup label="🔑 Administration & Remote Access">
+                  <optgroup label="🔑 Admin Access">
                     <option value="ssh">SSH Secure Shell (Port 22)</option>
                     <option value="rdp">RDP Remote Desktop (Port 3389)</option>
                     <option value="telnet">Telnet Plaintext Admin (Port 23)</option>
                   </optgroup>
-                  <optgroup label="💾 Data & File Services">
+                  <optgroup label="💾 Data & File">
                     <option value="ftp">FTP File Transfer (Port 21)</option>
-                    <option value="mysql">MySQL Database Query (Port 3306)</option>
-                    <option value="smb">SMB Windows File Share (Port 445)</option>
+                    <option value="mysql">MySQL DB Query (Port 3306)</option>
+                    <option value="smb">SMB File Share (Port 445)</option>
                   </optgroup>
-                  <optgroup label="🛠️ Core Infrastructure">
-                    <option value="dns">DNS Hostname Query (Port 53)</option>
-                    <option value="smtp">SMTP Mail Server (Port 25)</option>
-                    <option value="icmp">ICMP Echo Ping Diagnostic</option>
+                  <optgroup label="🛠️ Core Services">
+                    <option value="dns">DNS Query (Port 53)</option>
+                    <option value="smtp">SMTP Mail (Port 25)</option>
+                    <option value="icmp">ICMP Ping</option>
                   </optgroup>
                 </select>
               </div>
+
+              <button
+                onClick={() => setShowAddRuleModal(true)}
+                className="px-3 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[11px] shadow transition-all flex items-center gap-1 cursor-pointer"
+                title="Add Custom Firewall Rule"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Add Rule</span>
+              </button>
             </div>
-          </div>
+          )}
+        </div>
+      </div>
+
+      {/* SUB-TAB 1: STATEFUL FIREWALL INSPECTION (SPI) */}
+      {activeSubTab === 'stateful' && (
+        <div className="space-y-4">
 
           {/* VISUAL FIREWALL TOPOLOGY STAGE */}
           <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4 shadow-2xl relative overflow-hidden bg-slate-950/70 min-h-[380px]">
@@ -430,6 +439,59 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
                 )}
               </div>
             )}
+          </div>
+
+          {/* INTERACTIVE FIREWALL RULE SETTER QUICK BAR (SETTABLE IN ALL MODES) */}
+          <div className="glass-panel p-4 rounded-2xl border border-slate-800 bg-slate-900/90 space-y-2 font-mono text-xs shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-rose-400" />
+                <span className="text-slate-200 font-extrabold text-xs">Active Firewall Rules (Click Action Badge to ACCEPT ↔ DROP)</span>
+              </div>
+              <button
+                onClick={() => setShowAddRuleModal(true)}
+                className="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[10px] shadow transition-all flex items-center gap-1 cursor-pointer"
+              >
+                <Plus className="w-3 h-3" />
+                <span>Add Rule</span>
+              </button>
+            </div>
+
+            {/* Quick Rule Matrix Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-1">
+              {fwRules.map((rule, idx) => (
+                <div key={rule.id} className="p-2 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between text-[11px]">
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-500 font-bold text-[10px]">#{rule.id}</span>
+                    <div>
+                      <span className="text-amber-300 font-extrabold block">{rule.port}</span>
+                      <span className="text-slate-400 text-[9px]">{rule.protocol}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleToggleRuleAction(rule.id)}
+                      className={`px-2.5 py-0.5 rounded-full font-black text-[10px] cursor-pointer transition-all border shadow ${
+                        rule.action === 'ACCEPT'
+                          ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-600'
+                          : 'bg-rose-950 hover:bg-rose-900 text-rose-300 border-rose-600'
+                      }`}
+                      title="Click to toggle Accept/Drop verdict"
+                    >
+                      {rule.action === 'ACCEPT' ? '🟢 ACCEPT' : '🔴 DROP'}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRule(rule.id)}
+                      className="p-1 rounded bg-rose-950/60 hover:bg-rose-900 text-rose-400 border border-rose-800/80 transition-colors cursor-pointer"
+                      title="Delete Rule"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* INSPECTION RESULTS & USER-CONFIGURABLE RULES MATRIX (DETAILED MODE ONLY) */}
