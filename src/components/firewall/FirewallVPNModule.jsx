@@ -41,7 +41,7 @@ import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/Ea
 export default function FirewallVPNModule({ appMode = 'clean' }) {
   const [showAnimation, setShowAnimation] = useState(true);
   const [activeSubTab, setActiveSubTab] = useState('stateful'); // 'stateful', 'nat', 'vpn', 'tls'
-  const [speed, setSpeed] = useState(1);
+  const [speed, setSpeed] = useState(0.5); // Default 0.5x speed (Blue - Slowest)
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [packetProgress, setPacketProgress] = useState(0);

@@ -116,17 +116,26 @@ export function CleanWidget({
       {/* RIGHT: CIRCULAR CONTROL BUTTONS */}
       <div className="flex items-center gap-1.5 font-mono">
         
-        {/* SPEED SELECTOR */}
+        {/* SPEED SELECTOR WITH BLUE ➔ YELLOW ➔ RED COLOR FEEDBACK & STATE BADGE */}
         {setSpeed && (
           <button
             onClick={() => {
-              const nextSpeed = speed === 0.25 ? 0.5 : speed === 0.5 ? 1 : 0.25;
+              const nextSpeed = speed === 0.5 ? 1 : speed === 1 ? 2 : 0.5;
               setSpeed(nextSpeed);
             }}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 hover:scale-105 active:scale-95 transition-all shadow cursor-pointer flex items-center justify-center font-mono text-[10px] font-black"
-            title={`Speed: ${speed}x (Click to cycle 0.25x ➔ 0.5x ➔ 1x)`}
+            className={`h-8 px-2.5 rounded-full font-mono text-[10px] font-black border transition-all duration-300 shadow cursor-pointer flex items-center gap-1.5 hover:scale-105 active:scale-95 ${
+              speed === 0.5
+                ? 'bg-blue-950/90 text-blue-300 border-blue-500 shadow-blue-500/30'
+                : speed === 1
+                ? 'bg-amber-950/90 text-amber-300 border-amber-500 shadow-amber-500/30'
+                : 'bg-rose-950/90 text-rose-300 border-rose-500 shadow-rose-500/30 animate-pulse'
+            }`}
+            title={`Animation Speed: ${speed}x (Blue = 0.5x Slowest Default | Yellow = 1x Medium | Red = 2x Fast)`}
           >
-            <Gauge className="w-3.5 h-3.5 text-amber-400" />
+            <Gauge className={`w-3.5 h-3.5 ${
+              speed === 0.5 ? 'text-blue-400' : speed === 1 ? 'text-amber-400' : 'text-rose-400'
+            }`} />
+            <span>{speed}x</span>
           </button>
         )}
 

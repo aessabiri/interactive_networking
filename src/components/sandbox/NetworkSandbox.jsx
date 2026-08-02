@@ -88,7 +88,7 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
   const [simSource, setSimSource] = useState('lap1');
   const [simTarget, setSimTarget] = useState('isp1');
   const [simType, setSimType] = useState('http');
-  const [speed, setSpeed] = useState(1);
+  const [speed, setSpeed] = useState(0.5); // Default speed 0.5x (Blue - Slowest)
   const [isSimulating, setIsSimulating] = useState(false);
   const [simPacketPos, setSimPacketPos] = useState(null); // { x, y, isReturn }
   const [livePacketData, setLivePacketData] = useState(null); // Real-time packet inspector details
@@ -1218,16 +1218,25 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
             </select>
           </div>
 
-          {/* Speed Selector Circle Icon Button */}
+          {/* SPEED SELECTOR WITH BLUE ➔ YELLOW ➔ RED COLOR FEEDBACK & STATE BADGE */}
           <button
             onClick={() => {
               const nextSpeed = speed === 0.5 ? 1 : speed === 1 ? 2 : 0.5;
               setSpeed(nextSpeed);
             }}
-            className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 hover:scale-110 active:scale-95 transition-all shadow cursor-pointer flex items-center justify-center font-mono text-[10px] font-black"
-            title={`Animation Speed: ${speed}x (Click to cycle speed 0.5x ➔ 1x ➔ 2x)`}
+            className={`h-9 px-3 rounded-2xl font-mono text-xs font-black border transition-all duration-300 shadow cursor-pointer flex items-center gap-1.5 hover:scale-105 active:scale-95 ${
+              speed === 0.5
+                ? 'bg-blue-950/90 text-blue-300 border-blue-500 shadow-blue-500/30'
+                : speed === 1
+                ? 'bg-amber-950/90 text-amber-300 border-amber-500 shadow-amber-500/30'
+                : 'bg-rose-950/90 text-rose-300 border-rose-500 shadow-rose-500/30 animate-pulse'
+            }`}
+            title={`Animation Speed: ${speed}x (Blue = 0.5x Slowest Default | Yellow = 1x Medium | Red = 2x Fast)`}
           >
-            <Gauge className="w-4 h-4 text-amber-400" />
+            <Gauge className={`w-4 h-4 ${
+              speed === 0.5 ? 'text-blue-400' : speed === 1 ? 'text-amber-400' : 'text-rose-400'
+            }`} />
+            <span>{speed}x</span>
           </button>
         </div>
 
