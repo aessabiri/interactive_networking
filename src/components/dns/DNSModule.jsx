@@ -658,7 +658,7 @@ export default function DNSModule({ appMode = 'clean' }) {
           {/* 6. DYNAMIC PUBLIC DNS SERVER (RIGHT: 88%, 55%) */}
           <div className="absolute left-[88%] top-[55%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
             <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-purple-950 text-purple-300 border border-purple-700 shadow">
-              {resolvedTargetMeta ? resolvedTargetMeta.ip : 'DNS Server'}
+              {currDomain ? currDomain.dnsIp : '8.8.8.8'}
             </span>
             <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
               isExternalDomain && activeStep === 3
@@ -668,8 +668,8 @@ export default function DNSModule({ appMode = 'clean' }) {
               <Server className="w-14 h-14 text-purple-400" />
             </div>
             <div className="text-center font-mono space-y-1">
-              <p className="text-sm font-extrabold text-purple-300">{resolvedTargetMeta ? resolvedTargetMeta.title : 'PUBLIC DNS'}</p>
-              <p className="text-xs text-slate-400">{resolvedTargetMeta ? resolvedTargetMeta.desc : 'Root / Authoritative'}</p>
+              <p className="text-sm font-extrabold text-purple-300">{currDomain ? currDomain.dnsName : 'PUBLIC DNS'}</p>
+              <p className="text-xs text-slate-400">Resolves: {currDomain ? currDomain.resolvedIp : 'Target IP'}</p>
             </div>
           </div>
 
