@@ -11,7 +11,8 @@ import {
   ShieldAlert,
   Sparkles,
   Sliders,
-  Building2
+  Building2,
+  Terminal
 } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab, appMode = 'clean', setAppMode }) {
@@ -25,7 +26,7 @@ export default function Navbar({ activeTab, setActiveTab, appMode = 'clean', set
     { id: 'mail', label: 'Mail Server', fullName: 'Mail SMTP/IMAP', icon: Mail },
     { id: 'firewall', label: 'Firewall & VPN', fullName: 'Stateful Firewall & VPN', icon: ShieldAlert },
     { id: 'sandbox', label: 'Sandbox Canvas', fullName: 'Topology Sandbox', icon: Network },
-    { id: 'notebook', label: 'CLI & Quiz', fullName: 'Lab Notebook', icon: BookOpen },
+    { id: 'notebook', label: 'CLI', fullName: 'Linux & Windows CLI Terminal Tutor', icon: Terminal },
   ];
 
   return (
