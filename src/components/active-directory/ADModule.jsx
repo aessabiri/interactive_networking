@@ -516,16 +516,16 @@ export default function ADModule({ appMode = 'clean' }) {
 
           {/* 2. TOP RIGHT: FILESVR01 MEMBER SERVER (78%, 15%) */}
           <div className="absolute left-[78%] top-[15%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 text-center z-10">
-            <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-700 shadow">
+            <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-purple-950 text-purple-300 border border-purple-700 shadow">
               TCP Port 445 (Microsoft SMB)
             </span>
             <div className={`p-4 rounded-2xl border-2 transition-all ${
-              activeStep === 4 ? 'bg-emerald-950 border-emerald-400 scale-110 shadow-2xl shadow-emerald-500/30' : 'bg-slate-900 border-slate-700'
+              activeStep === 4 ? 'bg-purple-950 border-purple-400 scale-110 shadow-2xl shadow-purple-500/30' : 'bg-slate-900 border-purple-500/60'
             }`}>
-              <HardDrive className="w-10 h-10 text-cyan-400" />
+              <Server className="w-10 h-10 text-purple-400" />
             </div>
             <div className="font-mono text-[10px]">
-              <p className="font-bold text-cyan-300">FILESVR01 (MEMBER SERVER)</p>
+              <p className="font-bold text-purple-300">FILESVR01 (MEMBER SERVER)</p>
               <p className="text-slate-400">SPN: cifs/FILESVR01</p>
             </div>
           </div>
@@ -538,7 +538,7 @@ export default function ADModule({ appMode = 'clean' }) {
             <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
               isPlaying ? 'bg-blue-900/90 border-blue-400 shadow-2xl shadow-blue-500/40 scale-110' : 'bg-blue-950/90 border-blue-500 text-blue-300'
             }`}>
-              <Router className="w-14 h-14 text-blue-300" />
+              <Layers className="w-14 h-14 text-blue-400" />
             </div>
             <div className="text-center font-mono">
               <p className="text-xs font-extrabold text-blue-300">SWITCH</p>
@@ -548,7 +548,7 @@ export default function ADModule({ appMode = 'clean' }) {
 
           {/* 4. LEFT DOWN: WORKSTATION PC-01 CLIENT (12%, 58%) */}
           <div className="absolute left-[12%] top-[58%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
-            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-purple-950 text-purple-300 border border-purple-700 shadow">
+            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-cyan-950 text-cyan-300 border border-cyan-700 shadow">
               Kerberos Client ({username})
             </span>
             <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
@@ -556,12 +556,12 @@ export default function ADModule({ appMode = 'clean' }) {
                 ? 'bg-emerald-950/90 border-emerald-400 shadow-2xl shadow-emerald-500/30 scale-110'
                 : activeStep >= 2
                 ? 'bg-purple-950/90 border-purple-400 shadow-2xl scale-105'
-                : 'bg-slate-900/90 border-slate-700'
+                : 'bg-slate-900/90 border-cyan-500/60'
             }`}>
-              <UserCheck className={`w-14 h-14 ${activeStep === 4 ? 'text-emerald-400' : 'text-purple-400'}`} />
+              <Laptop className={`w-14 h-14 ${activeStep === 4 ? 'text-emerald-400' : 'text-cyan-400'}`} />
             </div>
             <div className="text-center font-mono space-y-1">
-              <p className="text-sm font-extrabold text-slate-100">LAPTOP-01</p>
+              <p className="text-sm font-extrabold text-cyan-300">LAPTOP-01</p>
               <p className="text-xs text-slate-400">192.168.1.105</p>
               <div className={`px-3 py-1 rounded-full text-xs font-extrabold border transition-all ${
                 activeStep >= 2 ? 'bg-purple-950 text-purple-300 border-purple-600 shadow' : 'bg-slate-800 text-slate-400 border-slate-700'

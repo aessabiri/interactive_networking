@@ -393,10 +393,10 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
               </div>
 
               {/* Target Internet Server */}
-              <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-900/90 border border-emerald-500/40 shadow-lg text-center w-44">
-                <Server className="w-10 h-10 text-emerald-400" />
-                <span className="font-bold text-slate-100">Target Server</span>
-                <span className="text-[10px] text-emerald-300 font-mono bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">203.0.113.99 / WAN</span>
+              <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-900/90 border border-purple-500/40 shadow-lg text-center w-44">
+                <Server className="w-10 h-10 text-purple-400" />
+                <span className="font-bold text-purple-300">Target Server</span>
+                <span className="text-[10px] text-purple-300 font-mono bg-purple-950 px-2 py-0.5 rounded border border-purple-800">203.0.113.99 / WAN</span>
               </div>
             </div>
 

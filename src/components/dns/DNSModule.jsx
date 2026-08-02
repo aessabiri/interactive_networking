@@ -639,37 +639,37 @@ export default function DNSModule({ appMode = 'clean' }) {
 
           {/* 5. ISP (INTERNET SERVICE PROVIDER) NODE (TOP-RIGHT 72%, 20%) */}
           <div className="absolute left-[72%] top-[20%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 text-center z-10">
-            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono bg-amber-950 text-amber-300 border border-amber-700 shadow flex items-center gap-1">
-              <Building2 className="w-3.5 h-3.5 text-amber-400" /> ISP BACKBONE POP
+            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono bg-sky-950 text-sky-300 border border-sky-700 shadow flex items-center gap-1">
+              <Cloud className="w-3.5 h-3.5 text-sky-400" /> ISP WAN CLOUD
             </span>
             <div className={`p-5 rounded-3xl border-4 transition-all duration-300 ${
               isExternalDomain && (activeStep === 2 || activeStep === 3 || (activeStep === 4 && packetProgress > 30 && packetProgress < 70))
-                ? 'bg-amber-900/90 border-amber-400 shadow-2xl shadow-amber-500/50 scale-110 animate-bounce'
-                : 'bg-slate-900 border-slate-700'
+                ? 'bg-sky-900/90 border-sky-400 shadow-2xl shadow-sky-500/50 scale-110 animate-bounce'
+                : 'bg-slate-900 border-sky-500/60'
             }`}>
-              <Building2 className="w-12 h-12 text-amber-400" />
+              <Cloud className="w-12 h-12 text-sky-400" />
             </div>
             <div className="font-mono text-[10px]">
-              <p className="font-bold text-amber-300">ISP TELECOM POP</p>
+              <p className="font-bold text-sky-300">ISP TELECOM POP</p>
               <p className="text-slate-400">WAN Gateway & DNS Forwarder</p>
             </div>
           </div>
 
           {/* 6. DYNAMIC PUBLIC DNS SERVER (RIGHT: 88%, 55%) */}
           <div className="absolute left-[88%] top-[55%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
-            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-blue-950 text-blue-300 border border-blue-700 shadow">
-              Public IP: {currDomain.dnsIp}
+            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-purple-950 text-purple-300 border border-purple-700 shadow">
+              {resolvedTargetMeta ? resolvedTargetMeta.ip : 'DNS Server'}
             </span>
             <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
               isExternalDomain && activeStep === 3
-                ? 'bg-blue-950 border-blue-400 shadow-2xl scale-105'
-                : 'bg-slate-900 border-slate-700'
+                ? 'bg-purple-950/90 border-purple-400 shadow-2xl shadow-purple-500/30 scale-105 animate-bounce'
+                : 'bg-slate-900/90 border-purple-500/60'
             }`}>
-              <Server className="w-14 h-14 text-blue-400" />
+              <Server className="w-14 h-14 text-purple-400" />
             </div>
-            <div className="text-center font-mono space-y-0.5">
-              <p className="text-xs font-extrabold text-blue-300">{currDomain.dnsName}</p>
-              <p className="text-[10px] text-slate-400">Resolves: {currDomain.resolvedIp}</p>
+            <div className="text-center font-mono space-y-1">
+              <p className="text-sm font-extrabold text-purple-300">{resolvedTargetMeta ? resolvedTargetMeta.title : 'PUBLIC DNS'}</p>
+              <p className="text-xs text-slate-400">{resolvedTargetMeta ? resolvedTargetMeta.desc : 'Root / Authoritative'}</p>
             </div>
           </div>
 

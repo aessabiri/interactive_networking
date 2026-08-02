@@ -580,7 +580,7 @@ export default function DHCPModule({ appMode = 'clean' }) {
             <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
               isPlaying ? 'bg-blue-900/90 border-blue-400 shadow-2xl shadow-blue-500/40 scale-110' : 'bg-blue-950/90 border-blue-500 text-blue-300'
             }`}>
-              <Router className="w-14 h-14 text-blue-300" />
+              <Layers className="w-14 h-14 text-blue-400" />
             </div>
             <div className="text-center font-mono">
               <p className="text-xs font-extrabold text-blue-300">SWITCH</p>
@@ -597,13 +597,13 @@ export default function DHCPModule({ appMode = 'clean' }) {
               activeStep === 4
                 ? 'bg-emerald-950/90 border-emerald-400 shadow-2xl shadow-emerald-500/30 scale-110'
                 : activeStep === 1 || activeStep === 3
-                ? 'bg-amber-950/90 border-amber-400 shadow-2xl shadow-amber-500/30 scale-105 animate-bounce'
-                : 'bg-slate-900/90 border-slate-700'
+                ? 'bg-cyan-950/90 border-cyan-400 shadow-2xl shadow-cyan-500/30 scale-105 animate-bounce'
+                : 'bg-slate-900/90 border-cyan-500/60'
             }`}>
               <Laptop className={`w-14 h-14 ${activeStep === 4 ? 'text-emerald-400' : 'text-cyan-400'}`} />
             </div>
             <div className="text-center font-mono space-y-1">
-              <p className="text-sm font-extrabold text-slate-100">LAPTOP-01</p>
+              <p className="text-sm font-extrabold text-cyan-300">LAPTOP-01</p>
               <p className="text-xs text-slate-400">MAC: 00:50:56:A1:B2:C3</p>
               <div className={`px-3 py-1 rounded-full text-xs font-extrabold border transition-all ${
                 activeStep === 4 ? 'bg-emerald-950 text-emerald-300 border-emerald-600 shadow' : 'bg-slate-800 text-slate-400 border-slate-700'
@@ -615,25 +615,25 @@ export default function DHCPModule({ appMode = 'clean' }) {
 
           {/* 5. RIGHT DOWN: DHCP SERVER (88%, 58%) */}
           <div className="absolute left-[88%] top-[58%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
-            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-amber-950 text-amber-300 border border-amber-700 shadow">
+            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-purple-950 text-purple-300 border border-purple-700 shadow">
               UDP Port 67 (DHCP Server)
             </span>
             <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
               activeStep === 2 || activeStep === 4
-                ? 'bg-amber-950/90 border-amber-400 shadow-2xl shadow-amber-500/30 scale-105'
-                : 'bg-slate-900/90 border-slate-700'
+                ? 'bg-purple-950/90 border-purple-400 shadow-2xl shadow-purple-500/30 scale-105'
+                : 'bg-slate-900/90 border-purple-500/60'
             }`}>
-              <Server className="w-14 h-14 text-amber-400" />
+              <Server className="w-14 h-14 text-purple-400" />
             </div>
             <div className="text-center font-mono space-y-1">
-              <p className="text-sm font-extrabold text-amber-300">DHCP SERVER</p>
+              <p className="text-sm font-extrabold text-purple-300">DHCP SERVER</p>
               <p className="text-xs text-slate-400">IP: 192.168.1.10</p>
               <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all ${
                 activeStep === 4
                   ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
                   : activeStep === 2
                   ? 'bg-cyan-950 text-cyan-300 border-cyan-700'
-                  : 'bg-amber-950 text-amber-300 border-amber-800'
+                  : 'bg-purple-950 text-purple-300 border-purple-800'
               }`}>
                 Pool IP 192.168.1.105: {currentMeta.serverPoolState}
               </div>

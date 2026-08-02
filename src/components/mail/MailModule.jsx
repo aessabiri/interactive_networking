@@ -854,19 +854,19 @@ export default function MailModule({ appMode = 'clean' }) {
 
         {/* 5. ISP TELECOM POP / INTERNET BACKBONE CLOUD (TOP-CENTER: 58%, 18%) */}
         <div className="absolute left-[58%] top-[18%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 z-10">
-          <span className="px-3 py-1 rounded-full text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-500 shadow-2xl shadow-emerald-500/50 font-black flex items-center gap-1 animate-pulse">
-            <Globe className="w-3.5 h-3.5 text-emerald-400" /> ISP BACKBONE 🌐
+          <span className="px-3 py-1 rounded-full text-[10px] bg-sky-950 text-sky-300 border border-sky-500 shadow-2xl shadow-sky-500/50 font-black flex items-center gap-1 animate-pulse">
+            <Cloud className="w-3.5 h-3.5 text-sky-400" /> ISP WAN CLOUD 🌐
           </span>
           <div className={`p-5 rounded-3xl border-4 transition-all duration-300 ${
             (domainMode === 'cross' && (activeStep === 2 || (activeStep === 3 && packetProgress > 25 && packetProgress < 75)))
-              ? 'bg-emerald-950 border-emerald-400 shadow-2xl shadow-emerald-500/60 scale-110 animate-bounce'
-              : 'bg-emerald-950/80 border-emerald-500/80'
+              ? 'bg-sky-950 border-sky-400 shadow-2xl shadow-sky-500/60 scale-110 animate-bounce'
+              : 'bg-slate-900 border-sky-500/60'
           }`}>
-            <Building2 className="w-12 h-12 text-emerald-400 animate-pulse" />
+            <Cloud className="w-12 h-12 text-sky-400 animate-pulse" />
           </div>
           <div className="text-center text-[10px]">
-            <p className="font-black text-emerald-300">INTERNET ISP POP</p>
-            <p className="text-emerald-400 font-bold">MX WAN Transit</p>
+            <p className="font-black text-sky-300">INTERNET ISP WAN</p>
+            <p className="text-sky-400 font-bold">MX WAN Transit</p>
           </div>
         </div>
 
@@ -876,7 +876,7 @@ export default function MailModule({ appMode = 'clean' }) {
             <Search className="w-3.5 h-3.5 text-purple-400" /> ISP PUBLIC DNS (8.8.8.8)
           </span>
           <div className={`p-5 rounded-3xl border-4 transition-all duration-300 ${
-            domainMode === 'cross' && activeStep === 2 ? 'bg-purple-900 border-purple-400 shadow-2xl shadow-purple-500/60 scale-110 animate-bounce' : 'bg-slate-900 border-slate-700'
+            domainMode === 'cross' && activeStep === 2 ? 'bg-purple-900 border-purple-400 shadow-2xl shadow-purple-500/60 scale-110 animate-bounce' : 'bg-slate-900 border-purple-500/60'
           }`}>
             <Server className="w-11 h-11 text-purple-400" />
           </div>
@@ -888,32 +888,32 @@ export default function MailModule({ appMode = 'clean' }) {
 
         {/* 7. REMOTE GATEWAY ROUTER (TOP-RIGHT: 76%, 18%) */}
         <div className="absolute left-[76%] top-[18%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 z-10">
-          <span className="px-2.5 py-0.5 rounded-full text-[9px] bg-blue-950 text-blue-300 border border-blue-600 shadow font-extrabold flex items-center gap-1">
-            <ShieldCheck className="w-3 h-3 text-blue-400" /> REMOTE ROUTER
+          <span className="px-2.5 py-0.5 rounded-full text-[9px] bg-amber-950 text-amber-300 border border-amber-600 shadow font-extrabold flex items-center gap-1">
+            <ShieldCheck className="w-3 h-3 text-amber-400" /> REMOTE ROUTER
           </span>
           <div className={`p-4 rounded-2xl border-4 transition-all ${
-            domainMode === 'cross' && activeStep === 3 && packetProgress >= 50 ? 'bg-blue-900/90 border-blue-400 shadow-2xl scale-110' : 'bg-slate-900 border-slate-700'
+            domainMode === 'cross' && activeStep === 3 && packetProgress >= 50 ? 'bg-amber-900/90 border-amber-400 shadow-2xl scale-110' : 'bg-slate-900 border-amber-500/60'
           }`}>
-            <Router className="w-10 h-10 text-blue-400" />
+            <Router className="w-10 h-10 text-amber-400" />
           </div>
           <div className="text-center text-[10px]">
-            <p className="font-extrabold text-blue-300">REMOTE-GW-02</p>
+            <p className="font-extrabold text-amber-300">REMOTE-GW-02</p>
             <p className="text-slate-400">198.51.100.1 (WAN)</p>
           </div>
         </div>
 
         {/* 8. DESTINATION INBOUND MDA / MRA SERVER (CENTER-RIGHT: 76%, 68%) */}
         <div className="absolute left-[76%] top-[68%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 z-10">
-          <span className="px-2.5 py-0.5 rounded-full text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-700 shadow font-extrabold">
+          <span className="px-2.5 py-0.5 rounded-full text-[9px] bg-purple-950 text-purple-300 border border-purple-700 shadow font-extrabold">
             {serverStack === 'exchange' ? `Exchange MDA (${recipientDomain})` : `Dovecot MDA/MRA (${recipientDomain})`}
           </span>
           <div className={`p-5 rounded-3xl border-4 transition-all duration-300 ${
-            (domainMode === 'cross' ? (activeStep === 3 || activeStep === 4) : (activeStep === 2 || activeStep === 3)) ? 'bg-emerald-950 border-emerald-400 shadow-2xl scale-105' : 'bg-slate-900 border-slate-700'
+            (domainMode === 'cross' ? (activeStep === 3 || activeStep === 4) : (activeStep === 2 || activeStep === 3)) ? 'bg-purple-950 border-purple-400 shadow-2xl scale-105' : 'bg-slate-900 border-purple-500/60'
           }`}>
-            <HardDrive className="w-12 h-12 text-emerald-400" />
+            <Server className="w-12 h-12 text-purple-400" />
           </div>
           <div className="text-center space-y-0.5">
-            <p className="text-xs font-extrabold text-emerald-300">
+            <p className="text-xs font-extrabold text-purple-300">
               {serverStack === 'exchange' ? 'EXCHANGE-MDA-MRA' : 'DOVECOT-MDA-MRA'}
             </p>
             <p className="text-[10px] text-slate-400">{resolvedMxIp} ({mxHost})</p>
@@ -922,17 +922,17 @@ export default function MailModule({ appMode = 'clean' }) {
 
         {/* 9. RECIPIENT CLIENT MUA PC-02 (BOTTOM-RIGHT: 92%, 68%) */}
         <div className="absolute left-[92%] top-[68%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 z-10">
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-700 shadow font-extrabold">
+          <span className="px-2.5 py-0.5 rounded-full text-[9px] bg-cyan-950 text-cyan-300 border border-cyan-700 shadow font-extrabold">
             Recipient MUA (Outlook)
           </span>
           <div className={`p-5 rounded-3xl border-4 transition-all duration-300 ${
-            (domainMode === 'cross' ? activeStep === 4 : activeStep === 3) ? 'bg-emerald-950 border-emerald-400 shadow-2xl scale-110' : 'bg-slate-900 border-slate-700'
+            (domainMode === 'cross' ? activeStep === 4 : activeStep === 3) ? 'bg-emerald-950 border-emerald-400 shadow-2xl scale-110' : 'bg-slate-900 border-cyan-500/60'
           }`}>
-            <Laptop className="w-11 h-11 text-emerald-400" />
+            <Laptop className="w-11 h-11 text-cyan-400" />
           </div>
           <div className="text-center space-y-0.5">
-            <p className="text-xs font-extrabold text-slate-100">RECIPIENT-MUA-02</p>
-            <p className="text-[10px] text-emerald-300 font-bold max-w-[130px] truncate">{recipientEmail}</p>
+            <p className="text-xs font-extrabold text-cyan-300">RECIPIENT-MUA-02</p>
+            <p className="text-[10px] text-cyan-300 font-bold max-w-[130px] truncate">{recipientEmail}</p>
           </div>
         </div>
 

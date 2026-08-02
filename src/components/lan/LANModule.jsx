@@ -513,20 +513,20 @@ export default function LANModule({ appMode = 'clean' }) {
 
           {/* 4. LEFT DOWN: WORKSTATION PC-A CLIENT (12%, 58%) */}
           <div className="absolute left-[12%] top-[58%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
-            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-blue-950 text-blue-300 border border-blue-700 shadow">
+            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-cyan-950 text-cyan-300 border border-cyan-700 shadow">
               Port 1 (Sender Host)
             </span>
             <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
               activeStep === 4
                 ? 'bg-emerald-950/90 border-emerald-400 shadow-2xl shadow-emerald-500/30 scale-110'
                 : activeStep >= 1
-                ? 'bg-blue-950/90 border-blue-400 shadow-2xl scale-105'
-                : 'bg-slate-900/90 border-slate-700'
+                ? 'bg-cyan-950/90 border-cyan-400 shadow-2xl scale-105'
+                : 'bg-slate-900/90 border-cyan-500/60'
             }`}>
-              <Network className={`w-14 h-14 ${activeStep === 4 ? 'text-emerald-400' : 'text-blue-400'}`} />
+              <Laptop className={`w-14 h-14 ${activeStep === 4 ? 'text-emerald-400' : 'text-cyan-400'}`} />
             </div>
             <div className="text-center font-mono space-y-1">
-              <p className="text-sm font-extrabold text-slate-100">LAPTOP-PC-A</p>
+              <p className="text-sm font-extrabold text-cyan-300">LAPTOP-PC-A</p>
               <p className="text-xs text-slate-400">IP: 192.168.1.50</p>
               <p className="text-[10px] text-slate-500">MAC: 00:11:22:33:44:55</p>
             </div>
@@ -540,9 +540,9 @@ export default function LANModule({ appMode = 'clean' }) {
             <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
               activeStep === 3 || activeStep === 4
                 ? 'bg-emerald-950/90 border-emerald-400 shadow-2xl scale-105'
-                : 'bg-slate-900/90 border-slate-700'
+                : 'bg-slate-900/90 border-cyan-500/60'
             }`}>
-              <Network className="w-14 h-14 text-cyan-400" />
+              <Laptop className="w-14 h-14 text-cyan-400" />
             </div>
             <div className="text-center font-mono space-y-1">
               <p className="text-sm font-extrabold text-cyan-300">LAPTOP-PC-B</p>
