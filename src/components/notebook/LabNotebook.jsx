@@ -4,11 +4,9 @@ import {
   Send, 
   RotateCcw, 
   Search, 
-  CheckCircle2, 
   Check, 
-  Copy, 
-  Sliders,
-  Monitor
+  Monitor,
+  AlertTriangle
 } from 'lucide-react';
 
 export default function LabNotebook() {
@@ -18,8 +16,8 @@ export default function LabNotebook() {
   const [searchQuery, setSearchQuery] = useState('');
   const [faintGlow, setFaintGlow] = useState(false);
   const [cliLogs, setCliLogs] = useState([
-    { type: 'sys', text: 'Oh My Zsh & Windows CMD Interactive Terminal Loaded.' },
-    { type: 'sys', text: 'Type any command or click a tutorial card below to test commands and master all 50 unique CLI tools.' }
+    { type: 'sys', text: 'Oh My Zsh & Windows CMD Isolated Terminal Environment.' },
+    { type: 'sys', text: 'Each CLI terminal mode strictly accepts its native operating system commands.' }
   ]);
 
   const terminalEndRef = useRef(null);
@@ -29,7 +27,7 @@ export default function LabNotebook() {
     terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [cliLogs]);
 
-  // 50 Essential Command Tutorials Suite
+  // 50 Essential Command Tutorials Suite (Strictly Isolated by OS)
   const commandTutorials = [
     // 1-10: Network Interfaces & IP Configuration
     { id: 'c1', os: 'linux', cat: 'Network Interfaces', cmd: 'ip a', desc: 'Display all Linux network interfaces (eth0, lo), MACs, and assigned IPv4/IPv6 addresses.', out: `1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default \n    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00\n    inet 127.0.0.1/8 scope host lo\n2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default \n    link/ether 00:1a:2b:3c:4d:01 brd ff:ff:ff:ff:ff:ff\n    inet 192.168.1.105/24 brd 192.168.1.255 scope global dynamic eth0` },
@@ -96,21 +94,33 @@ export default function LabNotebook() {
   const uniqueMasteredCount = Math.min(50, executedCmds.size);
   const completionPercentage = Math.round((uniqueMasteredCount / 50) * 100);
 
-  // Filter commands by search query
-  const filteredTutorials = commandTutorials.filter(t => 
-    t.cmd.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.cat.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // STRICT OS ISOLATION FILTERING FOR CARDS DIRECTORY
+  const filteredTutorials = commandTutorials.filter(t => {
+    // Check OS Compatibility
+    const isOsMatch = osMode === 'zsh' 
+      ? (t.os === 'linux' || t.os === 'both')
+      : (t.os === 'windows' || t.os === 'both');
+    
+    // Check Search Query
+    const isSearchMatch = searchQuery === '' ||
+      t.cmd.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.cat.toLowerCase().includes(searchQuery.toLowerCase());
 
-  // Execute Command Logic
+    return isOsMatch && isSearchMatch;
+  });
+
+  // Execute Command Logic with Strict OS Enforcement
   const handleExecuteCommand = (rawCmd) => {
     const input = rawCmd.trim();
     if (!input) return;
 
+    const firstWord = input.split(' ')[0].toLowerCase();
+
+    // Find if command exists in tutorial suite
     const matchedTut = commandTutorials.find(t => 
       t.cmd.toLowerCase() === input.toLowerCase() || 
-      input.toLowerCase().startsWith(t.cmd.split(' ')[0])
+      t.cmd.toLowerCase().startsWith(firstWord)
     );
 
     let outputText = '';
@@ -121,27 +131,38 @@ export default function LabNotebook() {
       setCommandInput('');
       return;
     } else if (input.toLowerCase() === 'help') {
-      outputText = `Available Quick Reference:
-- ip a / ipconfig /all : View interface IP addresses & MACs
-- ping 8.8.8.8 : Test ICMP connectivity
-- traceroute 8.8.8.8 / tracert : Trace hop-by-hop router paths
-- nslookup app.corp.com : Perform DNS hostname resolution
-- netstat -tulpn / netstat -ano : View active ports & sockets
-- arp -a : Display Address Resolution Protocol MAC cache
-- systemctl status nginx : View systemd daemon status
-- tail -n 20 /var/log/syslog : Inspect live log lines
-- clear / cls : Clear terminal screen`;
+      outputText = osMode === 'zsh' 
+        ? `Oh My Zsh (Linux) Command Reference:\n- ip a : View network interface IPv4/IPv6 addresses\n- traceroute 8.8.8.8 : Trace hop-by-hop router path\n- dig +short app.corp.com : DNS lookup\n- ss -tulpn : Active listening sockets & PIDs\n- systemctl status nginx : View systemd daemon status\n- tail -n 20 /var/log/syslog : Inspect live log lines\n- sudo tcpdump -i eth0 -n port 80 : Packet sniffing`
+        : `Windows Command Prompt (CMD) Reference:\n- ipconfig /all : View Windows IP, MAC, Gateway, and DNS\n- tracert 8.8.8.8 : Trace router path\n- nslookup app.corp.com : Query DNS A records\n- netstat -ano : Active connections & PIDs\n- route print : Display IPv4 routing table\n- arp -a : Display ARP resolution table\n- dcdiag /test:DNS : Test AD Domain Controller DNS`;
       isSuccess = true;
     } else if (matchedTut) {
-      outputText = matchedTut.out;
-      isSuccess = true;
-      if (!executedCmds.has(matchedTut.id)) {
-        setExecutedCmds(prev => new Set(prev).add(matchedTut.id));
+      // STRICT OS VALIDATION CHECK
+      const isTutAllowed = osMode === 'zsh' 
+        ? (matchedTut.os === 'linux' || matchedTut.os === 'both')
+        : (matchedTut.os === 'windows' || matchedTut.os === 'both');
+
+      if (isTutAllowed) {
+        outputText = matchedTut.out;
+        isSuccess = true;
+        if (!executedCmds.has(matchedTut.id)) {
+          setExecutedCmds(prev => new Set(prev).add(matchedTut.id));
+        }
+      } else {
+        // OS REJECTION ERROR MESSAGES
+        if (osMode === 'zsh') {
+          outputText = `zsh: command not found: ${firstWord}\n[Zsh Notice: "${input}" is a Windows-only command. Switch to Windows CMD mode to execute it.]`;
+        } else {
+          outputText = `'${firstWord}' is not recognized as an internal or external command, operable program or batch file.\n[CMD Notice: "${input}" is a Linux-only command. Switch to Oh My Zsh (Linux) mode to execute it.]`;
+        }
+        isSuccess = false;
       }
     } else {
-      outputText = osMode === 'zsh'
-        ? `zsh: command executed: ${input}\nType "help" to view 50 unique command suite.`
-        : `C:\\Users\\SysAdmin> ${input} executed.\nType "help" to view Windows command list.`;
+      // Generic Command Execution in Native OS Mode
+      if (osMode === 'zsh') {
+        outputText = `zsh: command executed: ${input}\nType "help" to view 25+ native Linux CLI commands.`;
+      } else {
+        outputText = `C:\\Users\\SysAdmin> ${input} executed.\nType "help" to view 25+ native Windows CMD commands.`;
+      }
       isSuccess = true;
       if (!executedCmds.has(input)) {
         setExecutedCmds(prev => new Set(prev).add(input));
@@ -156,7 +177,7 @@ export default function LabNotebook() {
     setCliLogs(prev => [
       ...prev,
       { type: 'cmd', text: osMode === 'zsh' ? `➜  netpulse-box git:(main) ✗ ${input}` : `C:\\Users\\SysAdmin> ${input}` },
-      { type: 'res', text: outputText }
+      { type: 'res', text: outputText, isError: !isSuccess }
     ]);
 
     setCommandInput('');
@@ -171,10 +192,10 @@ export default function LabNotebook() {
           <div>
             <h1 className="text-lg font-black text-slate-100 flex items-center gap-2">
               <Terminal className="w-5 h-5 text-cyan-400" />
-              <span>Oh My Zsh & Windows CMD Terminal Simulator</span>
+              <span>Isolated OS CLI Simulator & Command Master</span>
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Master 50 essential networking, security, and sysadmin commands across Linux & Windows CLI.
+              Test isolated native IT system commands: Oh My Zsh (Linux) vs Windows Command Prompt (CMD).
             </p>
           </div>
 
@@ -189,7 +210,7 @@ export default function LabNotebook() {
               }`}
             >
               <Terminal className="w-4 h-4" />
-              <span>🐧 Oh My Zsh (Linux)</span>
+              <span>🐧 Oh My Zsh (Linux Only)</span>
             </button>
 
             <button
@@ -201,7 +222,7 @@ export default function LabNotebook() {
               }`}
             >
               <Monitor className="w-4 h-4" />
-              <span>🪟 Windows CMD (Classic)</span>
+              <span>🪟 Windows CMD (Windows Only)</span>
             </button>
           </div>
         </div>
@@ -210,7 +231,7 @@ export default function LabNotebook() {
         <div className="space-y-1.5 pt-2 border-t border-slate-800">
           <div className="flex items-center justify-between text-xs font-bold font-mono">
             <span className="text-slate-300">Command Mastery Progress:</span>
-            <span className="text-cyan-400 font-extrabold">{uniqueMasteredCount} / 50 Unique Commands ({completionPercentage}%)</span>
+            <span className="text-cyan-400 font-extrabold">{uniqueMasteredCount} / 50 Unique Commands Mastered ({completionPercentage}%)</span>
           </div>
           <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-800/80">
             <div 
@@ -221,7 +242,7 @@ export default function LabNotebook() {
         </div>
       </div>
 
-      {/* DUAL THEMED TERMINAL WINDOW STAGE */}
+      {/* DUAL THEMED ISOLATED TERMINAL WINDOW STAGE */}
       <div className={`transition-all duration-500 rounded-3xl overflow-hidden shadow-2xl font-mono ${
         osMode === 'cmd' 
           ? 'bg-black border-2 border-gray-800 text-gray-200' 
@@ -235,7 +256,7 @@ export default function LabNotebook() {
           <div className="bg-gray-900 px-4 py-2 flex items-center justify-between border-b border-gray-800 select-none">
             <div className="flex items-center gap-2">
               <Monitor className="w-4 h-4 text-gray-400" />
-              <span className="text-xs font-bold text-gray-300">Command Prompt - C:\Windows\system32\cmd.exe</span>
+              <span className="text-xs font-bold text-gray-300">Command Prompt - C:\Windows\system32\cmd.exe (Windows Native Only)</span>
             </div>
             <div className="flex items-center gap-3 text-xs font-bold text-gray-400">
               <span>_</span>
@@ -251,7 +272,7 @@ export default function LabNotebook() {
                 <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
                 <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
               </div>
-              <span className="text-xs font-extrabold text-slate-300 ml-2">sysadmin@netpulse-box:~ (zsh)</span>
+              <span className="text-xs font-extrabold text-slate-300 ml-2">sysadmin@netpulse-box:~ (Oh My Zsh - Linux Native Only)</span>
             </div>
 
             <button
@@ -293,7 +314,11 @@ export default function LabNotebook() {
               )}
               {log.type === 'res' && (
                 <pre className={`font-mono whitespace-pre-wrap leading-relaxed ${
-                  osMode === 'cmd' ? 'text-gray-300' : 'text-emerald-300'
+                  log.isError 
+                    ? 'text-rose-400 font-bold' 
+                    : osMode === 'cmd' 
+                    ? 'text-gray-300' 
+                    : 'text-emerald-300'
                 }`}>{log.text}</pre>
               )}
             </div>
@@ -324,7 +349,7 @@ export default function LabNotebook() {
             type="text"
             value={commandInput}
             onChange={(e) => setCommandInput(e.target.value)}
-            placeholder={osMode === 'zsh' ? 'type zsh command (e.g. "ip a", "ping 8.8.8.8", "nslookup app.corp.com")...' : 'type cmd command (e.g. "ipconfig /all", "tracert 8.8.8.8", "arp -a")...'}
+            placeholder={osMode === 'zsh' ? 'type Linux command (e.g. "ip a", "ping -c 4 8.8.8.8", "ss -tulpn")...' : 'type Windows command (e.g. "ipconfig /all", "tracert 8.8.8.8", "route print")...'}
             className={`flex-1 bg-transparent px-3 py-2 text-xs font-bold focus:outline-none font-mono ${
               osMode === 'cmd' ? 'text-gray-100' : 'text-slate-100'
             }`}
@@ -344,14 +369,17 @@ export default function LabNotebook() {
         </form>
       </div>
 
-      {/* 50 TUTORIAL COMMAND CARDS DIRECTORY WITH SEARCH FILTER */}
+      {/* TUTORIAL CARDS DIRECTORY (FILTERED BY ACTIVE OS MODE) */}
       <div className="space-y-4 font-mono">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="font-extrabold text-slate-100 text-sm">
-              50 Unique Command Tutorials Directory
+            <h3 className="font-extrabold text-slate-100 text-sm flex items-center gap-2">
+              <span>{osMode === 'zsh' ? '🐧 Native Linux Commands Directory' : '🪟 Native Windows Commands Directory'}</span>
+              <span className="px-2 py-0.5 rounded text-[10px] bg-slate-900 text-cyan-400 border border-slate-800 font-bold">
+                {filteredTutorials.length} Commands Available
+              </span>
             </h3>
-            <p className="text-xs text-slate-400">Click any command card to test in terminal</p>
+            <p className="text-xs text-slate-400">Click any card to test in active {osMode === 'zsh' ? 'Oh My Zsh' : 'Windows CMD'} terminal</p>
           </div>
 
           {/* Search Filter */}
@@ -361,7 +389,7 @@ export default function LabNotebook() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search 50 commands (e.g. ping, ip, dns)..."
+              placeholder={`Search ${osMode === 'zsh' ? 'Linux' : 'Windows'} commands...`}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
             />
           </div>
@@ -405,6 +433,8 @@ export default function LabNotebook() {
                   className={`w-full py-1.5 px-3 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     isDone
                       ? 'bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 border-emerald-600/80'
+                      : osMode === 'cmd'
+                      ? 'bg-gray-900 hover:bg-gray-800 text-white border-gray-700'
                       : 'bg-slate-900 hover:bg-slate-800 text-cyan-300 border-slate-700'
                   }`}
                 >
