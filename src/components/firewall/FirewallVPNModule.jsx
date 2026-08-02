@@ -472,8 +472,8 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
                 ) : (
                   <Shield className="w-12 h-12 text-rose-400" />
                 )}
-                <span className="font-extrabold text-sm">FortiGate Firewall</span>
-                <span className="text-[10px] font-mono opacity-80 uppercase">Stateful Inspection Engine</span>
+                <span className="font-extrabold text-sm">Palo Alto Next-Gen Firewall</span>
+                <span className="text-[10px] font-mono opacity-80 uppercase">PAN-OS Stateful Engine</span>
               </div>
 
               {/* Target Internet Server */}

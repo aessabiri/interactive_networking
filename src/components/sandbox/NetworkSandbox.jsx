@@ -326,7 +326,7 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
         nodes: [
           { id: 'lap1', name: 'ADMIN-PC', type: 'laptop', x: 80, y: 160, ip: '192.168.1.100', mac: '00:50:56:11:22:33', os: 'Windows 11 Enterprise', roles: [], subnetMask: '255.255.255.0', vlan: '10 (MGMT)', gateway: '192.168.1.1' },
           { id: 'sw1', name: 'INTERNAL-SWITCH', type: 'switch', x: 300, y: 160, ip: 'N/A (L2)', mac: '00:11:22:33:00:01', os: 'Cisco Catalyst L2', roles: [], vlan: 'TRUNK' },
-          { id: 'fw1', name: 'DMZ-FIREWALL', type: 'firewall', x: 520, y: 220, ip: '192.168.1.1', mac: '00:90:0B:22:33:44', os: 'FortiGate PAN-OS', roles: ['firewall'], subnetMask: '255.255.255.0' },
+          { id: 'fw1', name: 'DMZ-FIREWALL', type: 'firewall', x: 520, y: 220, ip: '192.168.1.1', mac: '00:90:0B:22:33:44', os: 'Palo Alto PAN-OS Firewall', roles: ['firewall'], subnetMask: '255.255.255.0' },
           { id: 'web1', name: 'DMZ-WEB-SERVER', type: 'server', x: 520, y: 80, ip: '10.0.0.50', mac: '00:0C:29:AA:BB:CC', os: 'Linux Ubuntu Server', roles: ['http'], subnetMask: '255.255.255.0', vlan: '50 (DMZ)', gateway: '10.0.0.1' },
           { id: 'isp1', name: 'INTERNET-ISP 🌐', type: 'cloud', x: 780, y: 220, ip: '8.8.8.8 (WAN)', mac: '00:FE:88:99:AA:BB', os: 'Public WAN ISP', roles: [] }
         ],
