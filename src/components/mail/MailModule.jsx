@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Server, Laptop, ShieldCheck, Play, Pause, RotateCcw, CheckCircle2, Gauge, HelpCircle, FileCode, Terminal, SkipForward, Radio, Layers, Cpu, ArrowRight, X, Activity, Zap, HardDrive, Lock, RefreshCw, Send, Check, Inbox, Globe, Building2, Router, Search, Sparkles } from 'lucide-react';
+import { Mail, Server, Laptop, ShieldCheck, Play, Pause, RotateCcw, CheckCircle2, Gauge, HelpCircle, FileCode, Terminal, SkipForward, Radio, Layers, Cpu, ArrowRight, X, Activity, Zap, HardDrive, Lock, RefreshCw, Send, Check, Inbox, Globe, Building2, Router, Search, Sparkles, Cloud } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
 
