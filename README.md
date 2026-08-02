@@ -27,11 +27,16 @@
    * Simulates real-world multi-hop cable wire traversal across workstations, floor switches, distribution/edge routers, and 8-node Data Center server racks (DHCP, AD KDC, DNS, App Server, Mail, SQL Database, SAN Storage Array, Backup Vault).
    * Live Packet Header & Frame Inspector displaying Layer 2 MAC addresses, Layer 3 IPv4 headers, Layer 4 TCP/UDP ports, and protocol payloads.
 
-3. **🛡️ Palo Alto Next-Gen Firewall & VPN (`FirewallVPNModule.jsx`)**:
+3. **🛸 DTS Cockpit Security Operations & Cyber Defense (`DTSCockpitModule.jsx`)**:
+   * Simulates the proprietary **DTS Cockpit** platform developed by **DTS Systeme GmbH (Herford, Germany)**.
+   * Centralized 24/7 Managed Security Operations Center (SOC) dashboard tracking Security Health Score, Palo Alto NGFWs, EDR Agents (Cortex XDR), and DTS OT Insights.
+   * **Purple Teaming & SOAR Playbook Engine**: Live interactive execution of attack scenarios (Ransomware Outbreak, SSH Brute-Force, Phishing Campaign, DNS Tunneling Exfiltration, OT Industrial Intrusion) with 1-click SOC remediation actions.
+
+4. **🛡️ Palo Alto Next-Gen Firewall & VPN (`FirewallVPNModule.jsx`)**:
    * Stateful Inspection (SPI) engine enforcing bidirectional inbound/outbound security rules.
    * Includes interactive ACL rule setter, NAT Port Address Translation, IPsec VPN tunnel phase negotiation, and TLS v1.3 handshakes.
 
-4. **⚡ Core Protocol Modules**:
+5. **⚡ Core Protocol Modules**:
    * **DHCP Protocol Module**: Interactive 4-step DORA (Discover, Offer, Request, Ack) simulation with OS CLI inspector.
    * **DNS Resolver Module**: Recursive vs Iterative resolution engine with real-time NAT address rewriting inspection.
    * **Active Directory & Kerberos**: Kerberos AS/TGS ticket-granting exchange, LSA ticket cache inspector, and FreeIPA/OpenLDAP ecosystem toggle.

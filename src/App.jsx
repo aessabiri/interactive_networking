@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import EnterpriseModule from './components/enterprise/EnterpriseModule';
+import DTSCockpitModule from './components/dts/DTSCockpitModule';
 import DHCPModule from './components/dhcp/DHCPModule';
 import DNSModule from './components/dns/DNSModule';
 import ADModule from './components/active-directory/ADModule';
@@ -22,6 +23,7 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
         {activeTab === 'enterprise' && <EnterpriseModule appMode={appMode} />}
+        {activeTab === 'dts' && <DTSCockpitModule appMode={appMode} />}
         {activeTab === 'dhcp' && <DHCPModule appMode={appMode} />}
         {activeTab === 'dns' && <DNSModule appMode={appMode} />}
         {activeTab === 'ad' && <ADModule appMode={appMode} />}

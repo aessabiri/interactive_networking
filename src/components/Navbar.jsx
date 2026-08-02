@@ -17,6 +17,7 @@ import {
 export default function Navbar({ activeTab, setActiveTab, appMode = 'clean', setAppMode }) {
   const tabs = [
     { id: 'enterprise', label: 'Enterprise Infra', fullName: 'Enterprise Infrastructure Workflow', icon: Building2 },
+    { id: 'dts', label: 'DTS Cockpit', fullName: 'DTS Cockpit — SOC Security Platform', icon: ShieldCheck },
     { id: 'dhcp', label: 'DHCP', fullName: 'DHCP Protocol', icon: Zap },
     { id: 'dns', label: 'DNS', fullName: 'DNS Resolver', icon: Globe },
     { id: 'ad', label: 'Active Directory', fullName: 'Active Directory & DC', icon: ShieldCheck },
