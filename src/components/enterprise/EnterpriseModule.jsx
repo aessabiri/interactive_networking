@@ -308,17 +308,19 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
         })}
       </div>
 
-      {/* DYNAMIC ACTION STATUS BANNER */}
-      <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 font-mono text-xs ${currentMeta.color}`}>
-        <div className="flex items-center gap-3">
-          <span className="px-3 py-1 rounded-xl text-xs font-black uppercase bg-slate-950/80 border border-white/10 shadow flex items-center gap-1.5">
-            <Radio className="w-3.5 h-3.5 text-cyan-400 animate-ping" />
-            {currentMeta.badge}
-          </span>
-          <h3 className="text-base font-black text-slate-100">{currentMeta.title}</h3>
+      {/* DYNAMIC ACTION STATUS BANNER (DETAILED MODE ONLY) */}
+      {(appMode === 'detailed' || appMode === 'expert') && (
+        <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 font-mono text-xs ${currentMeta.color}`}>
+          <div className="flex items-center gap-3">
+            <span className="px-3 py-1 rounded-xl text-xs font-black uppercase bg-slate-950/80 border border-white/10 shadow flex items-center gap-1.5">
+              <Radio className="w-3.5 h-3.5 text-cyan-400 animate-ping" />
+              {currentMeta.badge}
+            </span>
+            <h3 className="text-base font-black text-slate-100">{currentMeta.title}</h3>
+          </div>
+          <p className="text-xs text-slate-200 max-w-md text-center sm:text-right">{currentMeta.subtitle}</p>
         </div>
-        <p className="text-xs text-slate-200 max-w-md text-center sm:text-right">{currentMeta.subtitle}</p>
-      </div>
+      )}
 
       {/* MAIN TOPOLOGY CANVAS STAGE */}
       <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4 shadow-2xl relative overflow-hidden bg-slate-950/80 min-h-[660px]">

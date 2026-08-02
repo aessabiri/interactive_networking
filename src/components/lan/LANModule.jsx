@@ -432,17 +432,19 @@ export default function LANModule({ appMode = 'clean' }) {
 
 
 
-        {/* Dynamic Action Status Banner */}
-        <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 ${currentMeta.badgeColor}`}>
-          <div className="flex items-center gap-3">
-            <span className="px-3 py-1 rounded-xl text-xs font-mono font-black uppercase bg-slate-950/80 border border-white/10 shadow flex items-center gap-1.5">
-              <Radio className="w-3.5 h-3.5 text-blue-400 animate-ping" />
-              {currentMeta.badge}
-            </span>
-            <h3 className="text-lg font-black text-slate-100">{currentMeta.title}</h3>
+        {/* Dynamic Action Status Banner (DETAILED MODE ONLY) */}
+        {(appMode === 'detailed' || appMode === 'expert') && (
+          <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 ${currentMeta.badgeColor}`}>
+            <div className="flex items-center gap-3">
+              <span className="px-3 py-1 rounded-xl text-xs font-mono font-black uppercase bg-slate-950/80 border border-white/10 shadow flex items-center gap-1.5">
+                <Radio className="w-3.5 h-3.5 text-blue-400 animate-ping" />
+                {currentMeta.badge}
+              </span>
+              <h3 className="text-lg font-black text-slate-100">{currentMeta.title}</h3>
+            </div>
+            <p className="text-xs text-slate-200 font-medium text-center sm:text-right max-w-md">{currentMeta.subtitle}</p>
           </div>
-          <p className="text-xs text-slate-200 font-medium text-center sm:text-right max-w-md">{currentMeta.subtitle}</p>
-        </div>
+        )}
 
         {/* ENLARGED TOPOLOGY STAGE (DEAD-CENTER SWITCH, PC-A LEFT, PC-B RIGHT, ROUTER TOP-RIGHT, DUMMY TOP-LEFT) */}
         <div className={`py-6 px-4 relative bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden ${appMode !== 'detailed' && appMode !== 'expert' ? 'min-h-[520px]' : 'min-h-[660px]'}`}>
@@ -563,61 +565,61 @@ export default function LANModule({ appMode = 'clean' }) {
           )}
         </div>
 
-        {/* LIVE PACKET & ETHERNET FRAME VIEWER */}
-        <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-            <div className="flex items-center gap-2 text-blue-400 font-extrabold text-xs">
-              <Activity className="w-4 h-4 text-blue-400 animate-pulse" />
-              <span>LIVE ETHERNET FRAME & ARP VIEWER</span>
+        {/* LIVE PACKET & ETHERNET FRAME VIEWER (DETAILED MODE ONLY) */}
+        {(appMode === 'detailed' || appMode === 'expert') && (
+          <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+              <div className="flex items-center gap-2 text-blue-400 font-extrabold text-xs">
+                <Activity className="w-4 h-4 text-blue-400 animate-pulse" />
+                <span>LIVE ETHERNET FRAME & ARP VIEWER</span>
+              </div>
+              <span className="text-slate-400 text-[10px] font-bold">
+                {packetPos ? packetPos.label : 'Waiting for ARP Resolution'}
+              </span>
             </div>
-            <span className="text-slate-400 text-[10px] font-bold">
-              {packetPos ? packetPos.label : 'Waiting for ARP Resolution'}
-            </span>
+
+            {currentPayload ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
+                  <div className="flex items-center justify-between text-blue-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                    <span>Ethernet Stack Headers:</span>
+                    <span className="text-amber-400">{currentPayload.stepName}</span>
+                  </div>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">EtherType:</span> <span className="text-amber-300 font-bold">{currentPayload.etherType}</span>
+                  </p>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">Layer 2 (Ethernet):</span> <span className="text-cyan-300 font-bold">{currentPayload.l2Header}</span>
+                  </p>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">Layer 3 (IPv4):</span> <span className="text-blue-300 font-bold">{currentPayload.l3Header}</span>
+                  </p>
+                </div>
+
+                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
+                  <div className="flex items-center justify-between text-cyan-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                    <span>ARP Message Data & Opcode:</span>
+                    <span className="text-slate-400 text-[10px]">{currentPayload.hardwareType}</span>
+                  </div>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">Sender MAC (SHA):</span> <span className="text-cyan-300 font-bold">00:11:22:33:44:55 (PC-A)</span>
+                  </p>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">Target IP (TPA):</span> <span className="text-amber-300 font-bold">192.168.1.60 (PC-B)</span>
+                  </p>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">Key Frame Info:</span> <span className="text-emerald-300 font-bold">{currentPayload.frameDetails[0]}</span>
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
+                <p className="font-bold">No active ARP frame in flight.</p>
+                <p className="text-[10px]">Click "Next Step" or "Start ARP Animation" to observe real-time Ethernet frame resolution.</p>
+              </div>
+            )}
           </div>
-
-          {currentPayload ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* Column 1: Network Headers */}
-              <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
-                <div className="flex items-center justify-between text-blue-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
-                  <span>Ethernet Stack Headers:</span>
-                  <span className="text-amber-400">{currentPayload.stepName}</span>
-                </div>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">EtherType:</span> <span className="text-amber-300 font-bold">{currentPayload.etherType}</span>
-                </p>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Layer 2 (Ethernet):</span> <span className="text-cyan-300 font-bold">{currentPayload.l2Header}</span>
-                </p>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Layer 3 (IPv4):</span> <span className="text-blue-300 font-bold">{currentPayload.l3Header}</span>
-                </p>
-              </div>
-
-              {/* Column 2: ARP Payload Fields */}
-              <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
-                <div className="flex items-center justify-between text-cyan-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
-                  <span>ARP Message Data & Opcode:</span>
-                  <span className="text-slate-400 text-[10px]">{currentPayload.hardwareType}</span>
-                </div>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Sender MAC (SHA):</span> <span className="text-cyan-300 font-bold">00:11:22:33:44:55 (PC-A)</span>
-                </p>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Target IP (TPA):</span> <span className="text-amber-300 font-bold">192.168.1.60 (PC-B)</span>
-                </p>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Key Frame Info:</span> <span className="text-emerald-300 font-bold">{currentPayload.frameDetails[0]}</span>
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
-              <p className="font-bold">No active ARP frame in flight.</p>
-              <p className="text-[10px]">Click "Next Step" or "Start ARP Animation" to observe real-time Ethernet frame resolution.</p>
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
       {/* WINDOWS CLI CHEATSHEET & FRAME INSPECTOR BUTTONS */}

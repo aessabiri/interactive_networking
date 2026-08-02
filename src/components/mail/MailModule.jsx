@@ -708,7 +708,7 @@ export default function MailModule({ appMode = 'clean' }) {
             <span>MDA</span>
           </div>
           <p className="text-[11px] font-bold text-slate-100">Mail Delivery Agent</p>
-          <p className="text-[10px] text-slate-400 leading-tight">Receives from MTA and writes message to storage (Maildir / .edb DB).</p>
+          <p className="text-[10px] text-slate-400 leading-tight">Delivers incoming mail to local mailbox storage.</p>
         </div>
 
         <div className="p-3 bg-slate-900/90 rounded-2xl border border-emerald-500/40 space-y-1">
@@ -721,22 +721,22 @@ export default function MailModule({ appMode = 'clean' }) {
         </div>
       </div>
 
-
-
-      {/* Dynamic Action Status Banner */}
-      <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 font-mono ${currentMeta.badgeColor}`}>
-        <div className="flex items-center gap-3">
-          <span className="px-3 py-1 rounded-xl text-xs font-black uppercase bg-slate-950/80 border border-white/10 shadow flex items-center gap-1.5">
-            <Radio className="w-3.5 h-3.5 text-amber-400 animate-ping" />
-            {currentMeta.badge}
-          </span>
-          <h3 className="text-lg font-black text-slate-100">{currentMeta.title}</h3>
+      {/* Dynamic Action Status Banner (DETAILED MODE ONLY) */}
+      {(appMode === 'detailed' || appMode === 'expert') && (
+        <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 font-mono ${currentMeta.badgeColor}`}>
+          <div className="flex items-center gap-3">
+            <span className="px-3 py-1 rounded-xl text-xs font-black uppercase bg-slate-950/80 border border-white/10 shadow flex items-center gap-1.5">
+              <Radio className="w-3.5 h-3.5 text-amber-400 animate-ping" />
+              {currentMeta.badge}
+            </span>
+            <h3 className="text-lg font-black text-slate-100">{currentMeta.title}</h3>
+          </div>
+          <p className="text-xs text-slate-200 font-medium text-center sm:text-right max-w-md">{currentMeta.subtitle}</p>
         </div>
-        <p className="text-xs text-slate-200 font-medium text-center sm:text-right max-w-md">{currentMeta.subtitle}</p>
-      </div>
+      )}
 
       {/* ENLARGED MULTI-TIER TOPOLOGY STAGE WITH EXACT USER-SPECIFIED NODE POSITIONS & WIRES */}
-      <div className="py-8 px-4 relative min-h-[640px] bg-slate-950/70 rounded-3xl border border-slate-800/80 overflow-hidden font-mono select-none">
+      <div className={`py-8 px-4 relative bg-slate-950/70 rounded-3xl border border-slate-800/80 overflow-hidden font-mono select-none ${appMode !== 'detailed' && appMode !== 'expert' ? 'min-h-[520px]' : 'min-h-[660px]'}`}>
         
         {/* NETWORK BOUNDARY CONTAINERS */}
         {/* Private Subnet A Container */}

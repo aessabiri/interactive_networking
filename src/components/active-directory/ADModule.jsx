@@ -468,17 +468,19 @@ export default function ADModule({ appMode = 'clean' }) {
 
 
 
-        {/* Dynamic Action Status Banner */}
-        <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 ${currentMeta.badgeColor}`}>
-          <div className="flex items-center gap-3">
-            <span className="px-3 py-1 rounded-xl text-xs font-mono font-black uppercase bg-slate-950/80 border border-white/10 shadow flex items-center gap-1.5">
-              <Radio className="w-3.5 h-3.5 text-purple-400 animate-ping" />
-              {currentMeta.badge}
-            </span>
-            <h3 className="text-lg font-black text-slate-100">{currentMeta.title}</h3>
+        {/* Dynamic Action Status Banner (DETAILED MODE ONLY) */}
+        {(appMode === 'detailed' || appMode === 'expert') && (
+          <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 ${currentMeta.badgeColor}`}>
+            <div className="flex items-center gap-3">
+              <span className="px-3 py-1 rounded-xl text-xs font-mono font-black uppercase bg-slate-950/80 border border-white/10 shadow flex items-center gap-1.5">
+                <Radio className="w-3.5 h-3.5 text-purple-400 animate-ping" />
+                {currentMeta.badge}
+              </span>
+              <h3 className="text-lg font-black text-slate-100">{currentMeta.title}</h3>
+            </div>
+            <p className="text-xs text-slate-200 font-medium text-center sm:text-right max-w-md">{currentMeta.subtitle}</p>
           </div>
-          <p className="text-xs text-slate-200 font-medium text-center sm:text-right max-w-md">{currentMeta.subtitle}</p>
-        </div>
+        )}
 
         {/* ENLARGED TOPOLOGY STAGE (DEAD-CENTER SWITCH, PC-01 LEFT, DC01 RIGHT, FILESVR TOP-RIGHT, DUMMY TOP-LEFT) */}
         <div className={`py-6 px-4 relative bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden ${appMode !== 'detailed' && appMode !== 'expert' ? 'min-h-[520px]' : 'min-h-[660px]'}`}>
