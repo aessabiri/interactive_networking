@@ -535,7 +535,7 @@ export default function DNSModule({ appMode = 'clean' }) {
 
         {/* WORKSPACE STAGE CANVAS (TOGGLEABLE VIA ICON IN CLEAN MODE) */}
         {(showAnimation || appMode === 'detailed' || appMode === 'expert') && (
-          <div className={`py-6 px-4 relative bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden ${appMode !== 'detailed' && appMode !== 'expert' ? 'min-h-[340px]' : 'min-h-[520px]'}`}>
+          <div className={`py-6 px-4 relative bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden ${appMode !== 'detailed' && appMode !== 'expert' ? 'min-h-[520px]' : 'min-h-[660px]'}`}>
           
           {/* VISIBLE NETWORK CONNECTION LINES (WIRES) */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
@@ -574,12 +574,12 @@ export default function DNSModule({ appMode = 'clean' }) {
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-cyan-950 text-cyan-300 border border-cyan-700 shadow">
               Private IP: 192.168.1.105
             </span>
-            <div className={`p-5 rounded-3xl border-4 transition-all duration-300 ${
+            <div className={`p-3.5 rounded-2xl border-2 transition-all duration-300 ${
               activeStep === 4 || (!isExternalDomain && activeStep === 3)
                 ? 'bg-emerald-950 border-emerald-400 shadow-2xl scale-110'
                 : 'bg-slate-900 border-slate-700'
             }`}>
-              <Laptop className="w-12 h-12 text-cyan-400" />
+              <Laptop className="w-8 h-8 text-cyan-400" />
             </div>
             <div className="text-center font-mono space-y-0.5">
               <p className="text-xs font-extrabold text-slate-100">LAPTOP-01</p>
@@ -592,10 +592,10 @@ export default function DNSModule({ appMode = 'clean' }) {
             <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-blue-950 text-blue-300 border border-blue-600 shadow-lg">
               CENTRAL L2 SWITCH
             </span>
-            <div className={`p-5 rounded-3xl border-4 transition-all duration-300 ${
+            <div className={`p-3.5 rounded-2xl border-2 transition-all duration-300 ${
               isPlaying ? 'bg-blue-900/90 border-blue-400 shadow-2xl shadow-blue-500/40 scale-110' : 'bg-blue-950/90 border-blue-500 text-blue-300'
             }`}>
-              <Layers className="w-12 h-12 text-blue-300" />
+              <Layers className="w-8 h-8 text-blue-300" />
             </div>
             <div className="text-center font-mono">
               <p className="text-xs font-extrabold text-blue-300">SWITCH</p>
@@ -608,10 +608,10 @@ export default function DNSModule({ appMode = 'clean' }) {
             <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-purple-950 text-purple-300 border border-purple-700 shadow">
               192.168.1.10 (UDP Port 53)
             </span>
-            <div className={`p-4 rounded-2xl border-2 transition-all ${
+            <div className={`p-3 rounded-xl border-2 transition-all ${
               !isExternalDomain && activeStep === 2 ? 'bg-purple-900 border-purple-400 scale-110 shadow-xl' : 'bg-slate-900 border-slate-700'
             }`}>
-              <Server className="w-10 h-10 text-purple-400" />
+              <Server className="w-7 h-7 text-purple-400" />
             </div>
             <div className="font-mono text-[10px]">
               <p className="font-bold text-purple-300">DC01 (LOCAL AD DNS)</p>
@@ -624,12 +624,12 @@ export default function DNSModule({ appMode = 'clean' }) {
             <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-amber-950 text-amber-300 border border-amber-600 shadow-lg flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-amber-400" /> ISP ROUTER (NAT GATEWAY)
             </span>
-            <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
+            <div className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
               isExternalDomain && (activeStep === 2 || activeStep === 4)
                 ? 'bg-amber-900/90 border-amber-400 shadow-2xl shadow-amber-500/40 scale-110 animate-pulse'
                 : 'bg-amber-950/80 border-amber-700 text-amber-300'
             }`}>
-              <Router className="w-14 h-14 text-amber-400" />
+              <Router className="w-9 h-9 text-amber-400" />
             </div>
             <div className="text-center font-mono">
               <p className="text-xs font-extrabold text-amber-300">LAN: 192.168.1.1</p>
@@ -642,12 +642,12 @@ export default function DNSModule({ appMode = 'clean' }) {
             <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono bg-sky-950 text-sky-300 border border-sky-700 shadow flex items-center gap-1">
               <Cloud className="w-3.5 h-3.5 text-sky-400" /> ISP WAN CLOUD
             </span>
-            <div className={`p-5 rounded-3xl border-4 transition-all duration-300 ${
+            <div className={`p-3.5 rounded-2xl border-2 transition-all duration-300 ${
               isExternalDomain && (activeStep === 2 || activeStep === 3 || (activeStep === 4 && packetProgress > 30 && packetProgress < 70))
                 ? 'bg-sky-900/90 border-sky-400 shadow-2xl shadow-sky-500/50 scale-110 animate-bounce'
                 : 'bg-slate-900 border-sky-500/60'
             }`}>
-              <Cloud className="w-12 h-12 text-sky-400" />
+              <Cloud className="w-8 h-8 text-sky-400" />
             </div>
             <div className="font-mono text-[10px]">
               <p className="font-bold text-sky-300">ISP TELECOM POP</p>
@@ -660,12 +660,12 @@ export default function DNSModule({ appMode = 'clean' }) {
             <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-purple-950 text-purple-300 border border-purple-700 shadow">
               {currDomain ? currDomain.dnsIp : '8.8.8.8'}
             </span>
-            <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
+            <div className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
               isExternalDomain && activeStep === 3
                 ? 'bg-purple-950/90 border-purple-400 shadow-2xl shadow-purple-500/30 scale-105 animate-bounce'
                 : 'bg-slate-900/90 border-purple-500/60'
             }`}>
-              <Server className="w-14 h-14 text-purple-400" />
+              <Server className="w-9 h-9 text-purple-400" />
             </div>
             <div className="text-center font-mono space-y-1">
               <p className="text-sm font-extrabold text-purple-300">{currDomain ? currDomain.dnsName : 'PUBLIC DNS'}</p>

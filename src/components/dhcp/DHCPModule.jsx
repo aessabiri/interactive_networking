@@ -509,7 +509,7 @@ export default function DHCPModule({ appMode = 'clean' }) {
 
         {/* WORKSPACE STAGE CANVAS (TOGGLEABLE VIA ICON IN CLEAN MODE) */}
         {(showAnimation || appMode === 'detailed' || appMode === 'expert') && (
-          <div className={`py-6 px-4 relative bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden ${appMode !== 'detailed' && appMode !== 'expert' ? 'min-h-[360px]' : 'min-h-[580px]'}`}>
+          <div className={`py-6 px-4 relative bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden ${appMode !== 'detailed' && appMode !== 'expert' ? 'min-h-[520px]' : 'min-h-[660px]'}`}>
           
           {/* VISIBLE SVG NETWORK CABLE LINES */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
@@ -531,12 +531,12 @@ export default function DHCPModule({ appMode = 'clean' }) {
             <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-slate-900 text-slate-400 border border-slate-700 shadow">
               UDP Port 68 (Client 2)
             </span>
-            <div className={`p-4 rounded-2xl border-2 transition-all ${
+            <div className={`p-3 rounded-xl border transition-all ${
               isPlaying && currentMeta.transmissionType === 'BROADCAST' && packetProgress > 80
                 ? 'bg-rose-950/90 border-rose-500 shadow-xl shadow-rose-500/30 animate-bounce'
                 : 'bg-slate-900/90 border-slate-700'
             }`}>
-              <Laptop className="w-10 h-10 text-slate-400" />
+              <Laptop className="w-7 h-7 text-slate-400" />
             </div>
             <div className="font-mono text-[10px]">
               <p className="font-bold text-slate-300">LAPTOP-02 (DUMMY)</p>
@@ -554,12 +554,12 @@ export default function DHCPModule({ appMode = 'clean' }) {
             <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-700 shadow">
               UDP Port 53 (DNS Server)
             </span>
-            <div className={`p-4 rounded-2xl border-2 transition-all ${
+            <div className={`p-3 rounded-xl border transition-all ${
               isPlaying && currentMeta.transmissionType === 'BROADCAST' && packetProgress > 80
                 ? 'bg-rose-950/90 border-rose-500 shadow-xl shadow-rose-500/30 animate-bounce'
                 : 'bg-slate-900/90 border-slate-700'
             }`}>
-              <Globe className="w-10 h-10 text-cyan-400" />
+              <Globe className="w-7 h-7 text-cyan-400" />
             </div>
             <div className="font-mono text-[10px]">
               <p className="font-bold text-cyan-300">DNS-SERVER-02 (DUMMY)</p>
@@ -577,10 +577,10 @@ export default function DHCPModule({ appMode = 'clean' }) {
             <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-blue-950 text-blue-300 border border-blue-600 shadow-lg">
               CENTRAL L2 SWITCH
             </span>
-            <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
+            <div className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
               isPlaying ? 'bg-blue-900/90 border-blue-400 shadow-2xl shadow-blue-500/40 scale-110' : 'bg-blue-950/90 border-blue-500 text-blue-300'
             }`}>
-              <Layers className="w-14 h-14 text-blue-400" />
+              <Layers className="w-9 h-9 text-blue-400" />
             </div>
             <div className="text-center font-mono">
               <p className="text-xs font-extrabold text-blue-300">SWITCH</p>
@@ -593,14 +593,14 @@ export default function DHCPModule({ appMode = 'clean' }) {
             <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-cyan-950 text-cyan-300 border border-cyan-700 shadow">
               UDP Port 68 (Client 1)
             </span>
-            <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
+            <div className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
               activeStep === 4
                 ? 'bg-emerald-950/90 border-emerald-400 shadow-2xl shadow-emerald-500/30 scale-110'
                 : activeStep === 1 || activeStep === 3
                 ? 'bg-cyan-950/90 border-cyan-400 shadow-2xl shadow-cyan-500/30 scale-105 animate-bounce'
                 : 'bg-slate-900/90 border-cyan-500/60'
             }`}>
-              <Laptop className={`w-14 h-14 ${activeStep === 4 ? 'text-emerald-400' : 'text-cyan-400'}`} />
+              <Laptop className={`w-9 h-9 ${activeStep === 4 ? 'text-emerald-400' : 'text-cyan-400'}`} />
             </div>
             <div className="text-center font-mono space-y-1">
               <p className="text-sm font-extrabold text-cyan-300">LAPTOP-01</p>
@@ -618,12 +618,12 @@ export default function DHCPModule({ appMode = 'clean' }) {
             <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-purple-950 text-purple-300 border border-purple-700 shadow">
               UDP Port 67 (DHCP Server)
             </span>
-            <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
+            <div className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
               activeStep === 2 || activeStep === 4
                 ? 'bg-purple-950/90 border-purple-400 shadow-2xl shadow-purple-500/30 scale-105'
                 : 'bg-slate-900/90 border-purple-500/60'
             }`}>
-              <Server className="w-14 h-14 text-purple-400" />
+              <Server className="w-9 h-9 text-purple-400" />
             </div>
             <div className="text-center font-mono space-y-1">
               <p className="text-sm font-extrabold text-purple-300">DHCP SERVER</p>

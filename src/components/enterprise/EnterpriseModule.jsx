@@ -321,7 +321,7 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
       </div>
 
       {/* MAIN TOPOLOGY CANVAS STAGE */}
-      <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4 shadow-2xl relative overflow-hidden bg-slate-950/80 min-h-[540px]">
+      <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4 shadow-2xl relative overflow-hidden bg-slate-950/80 min-h-[660px]">
         
         {/* NETWORK CABLES SVG OVERLAY */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
@@ -357,74 +357,74 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
         
         {/* OFFICE FLOOR 1 WORKSTATIONS ZONE */}
         {/* 1. Laptop-A (Sales) */}
-        <div className="absolute left-[12%] top-[65%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 font-mono text-center z-10">
+        <div className="absolute left-[12%] top-[65%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 font-mono text-center z-10">
           <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-800 shadow">
             192.168.1.105
           </span>
-          <div className="p-4 bg-slate-900 border-2 border-cyan-500 rounded-2xl shadow-xl">
-            <Laptop className="w-10 h-10 text-cyan-400" />
+          <div className="p-3 bg-slate-900 border-2 border-cyan-500 rounded-xl shadow-xl">
+            <Laptop className="w-7 h-7 text-cyan-400" />
           </div>
           <p className="font-extrabold text-xs text-cyan-300">Laptop-A (Sales)</p>
           <p className="text-[10px] text-slate-400">MAC: 00:1A:2B:3C:4D:01</p>
         </div>
 
         {/* 2. PC-B (HR) */}
-        <div className="absolute left-[28%] top-[65%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 font-mono text-center z-10">
+        <div className="absolute left-[28%] top-[65%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 font-mono text-center z-10">
           <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-800 shadow">
             192.168.1.106
           </span>
-          <div className="p-4 bg-slate-900 border-2 border-cyan-500 rounded-2xl shadow-xl">
-            <Laptop className="w-10 h-10 text-cyan-400" />
+          <div className="p-3 bg-slate-900 border-2 border-cyan-500 rounded-xl shadow-xl">
+            <Laptop className="w-7 h-7 text-cyan-400" />
           </div>
           <p className="font-extrabold text-xs text-cyan-300">PC-B (HR Dept)</p>
           <p className="text-[10px] text-slate-400">MAC: 00:1A:2B:3C:4D:02</p>
         </div>
 
         {/* 3. Network Laser Printer */}
-        <div className="absolute left-[20%] top-[32%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 font-mono text-center z-10">
+        <div className="absolute left-[20%] top-[32%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 font-mono text-center z-10">
           <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800 shadow">
             192.168.1.50
           </span>
-          <div className={`p-4 rounded-2xl border-2 transition-all ${
+          <div className={`p-3 rounded-xl border-2 transition-all ${
             activeStep === 5 ? 'bg-emerald-950 border-emerald-400 scale-110 shadow-2xl shadow-emerald-500/40' : 'bg-slate-900 border-emerald-500/60'
           }`}>
-            <Printer className="w-10 h-10 text-emerald-400" />
+            <Printer className="w-7 h-7 text-emerald-400" />
           </div>
           <p className="font-extrabold text-xs text-emerald-300">Office Printer</p>
           <p className="text-[10px] text-slate-400">LPR / RAW Print Server</p>
         </div>
 
         {/* 4. Floor-1 L2 Access Switch */}
-        <div className="absolute left-[45%] top-[65%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 font-mono text-center z-10">
+        <div className="absolute left-[45%] top-[65%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 font-mono text-center z-10">
           <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-950 text-blue-300 border border-blue-800 shadow">
             Floor-1 Switch (L2)
           </span>
-          <div className="p-5 bg-slate-900 border-2 border-blue-500 rounded-3xl shadow-xl">
-            <Layers className="w-12 h-12 text-blue-400" />
+          <div className="p-3.5 bg-slate-900 border-2 border-blue-500 rounded-2xl shadow-xl">
+            <Layers className="w-8 h-8 text-blue-400" />
           </div>
           <p className="font-extrabold text-xs text-blue-300">Floor-1 Access Switch</p>
         </div>
 
         {/* CORE ROUTING ZONE */}
         {/* 5. Enterprise Core Router & Firewall */}
-        <div className="absolute left-[45%] top-[42%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 font-mono text-center z-10">
+        <div className="absolute left-[45%] top-[42%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 font-mono text-center z-10">
           <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-950 text-amber-300 border border-amber-700 shadow">
             Gateway: 192.168.1.1
           </span>
-          <div className="p-5 bg-slate-900 border-2 border-amber-500 rounded-3xl shadow-2xl">
-            <Router className="w-12 h-12 text-amber-400 animate-pulse" />
+          <div className="p-3.5 bg-slate-900 border-2 border-amber-500 rounded-2xl shadow-2xl">
+            <Router className="w-8 h-8 text-amber-400 animate-pulse" />
           </div>
           <p className="font-extrabold text-xs text-amber-300">Core Router & Firewall</p>
         </div>
 
         {/* DATA CENTER SERVER RACK ZONE */}
         {/* 6. Data Center Switch */}
-        <div className="absolute left-[72%] top-[42%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 font-mono text-center z-10">
+        <div className="absolute left-[72%] top-[42%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 font-mono text-center z-10">
           <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-950 text-blue-300 border border-blue-800 shadow">
             Data Center Core Switch
           </span>
-          <div className="p-4 bg-slate-900 border-2 border-blue-500 rounded-2xl shadow-xl">
-            <Layers className="w-10 h-10 text-blue-400" />
+          <div className="p-3 bg-slate-900 border-2 border-blue-500 rounded-xl shadow-xl">
+            <Layers className="w-7 h-7 text-blue-400" />
           </div>
           <p className="font-extrabold text-xs text-blue-300">DC Core Switch</p>
         </div>
@@ -434,10 +434,10 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
           <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800 shadow">
             192.168.1.2
           </span>
-          <div className={`p-3 rounded-2xl border-2 transition-all ${
+          <div className={`p-2.5 rounded-xl border-2 transition-all ${
             activeStep === 1 ? 'bg-purple-950 border-purple-400 scale-110 shadow-2xl shadow-purple-500/40' : 'bg-slate-900 border-purple-500/60'
           }`}>
-            <Server className="w-8 h-8 text-purple-400" />
+            <Server className="w-6 h-6 text-purple-400" />
           </div>
           <p className="font-extrabold text-[11px] text-purple-300">DHCP Server</p>
         </div>
@@ -447,10 +447,10 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
           <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800 shadow">
             192.168.1.10
           </span>
-          <div className={`p-3 rounded-2xl border-2 transition-all ${
+          <div className={`p-2.5 rounded-xl border-2 transition-all ${
             activeStep === 2 ? 'bg-purple-950 border-purple-400 scale-110 shadow-2xl shadow-purple-500/40' : 'bg-slate-900 border-purple-500/60'
           }`}>
-            <Server className="w-8 h-8 text-purple-400" />
+            <Server className="w-6 h-6 text-purple-400" />
           </div>
           <p className="font-extrabold text-[11px] text-purple-300">
             {ecosystem === 'windows' ? 'AD DC01 (Kerberos)' : 'FreeIPA LDAP DC'}
@@ -462,10 +462,10 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
           <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800 shadow">
             192.168.1.20
           </span>
-          <div className={`p-3 rounded-2xl border-2 transition-all ${
+          <div className={`p-2.5 rounded-xl border-2 transition-all ${
             activeStep === 3 ? 'bg-purple-950 border-purple-400 scale-110 shadow-2xl shadow-purple-500/40' : 'bg-slate-900 border-purple-500/60'
           }`}>
-            <Server className="w-8 h-8 text-purple-400" />
+            <Server className="w-6 h-6 text-purple-400" />
           </div>
           <p className="font-extrabold text-[11px] text-purple-300">
             {ecosystem === 'windows' ? 'Windows DNS Server' : 'BIND9 DNS Resolver'}
@@ -477,10 +477,10 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
           <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800 shadow">
             192.168.1.25
           </span>
-          <div className={`p-3 rounded-2xl border-2 transition-all ${
+          <div className={`p-2.5 rounded-xl border-2 transition-all ${
             activeStep === 4 ? 'bg-purple-950 border-purple-400 scale-110 shadow-2xl shadow-purple-500/40' : 'bg-slate-900 border-purple-500/60'
           }`}>
-            <Server className="w-8 h-8 text-purple-400" />
+            <Server className="w-6 h-6 text-purple-400" />
           </div>
           <p className="font-extrabold text-[11px] text-purple-300">
             {ecosystem === 'windows' ? 'Exchange Mail Server' : 'Postfix / Dovecot Mail'}
