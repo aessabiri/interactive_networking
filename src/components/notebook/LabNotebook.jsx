@@ -5,8 +5,7 @@ import {
   RotateCcw, 
   Search, 
   Check, 
-  Monitor,
-  AlertTriangle
+  Monitor
 } from 'lucide-react';
 
 export default function LabNotebook() {
@@ -21,8 +20,9 @@ export default function LabNotebook() {
   ]);
 
   const terminalEndRef = useRef(null);
+  const terminalWindowRef = useRef(null);
 
-  // Auto-scroll terminal
+  // Auto-scroll terminal log text
   useEffect(() => {
     terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [cliLogs]);
@@ -90,18 +90,16 @@ export default function LabNotebook() {
     { id: 'c50', os: 'linux', cat: 'System & Logs', cmd: 'uptime', desc: 'Display system uptime duration, logged in users, and 1/5/15 min load average.', out: ` 22:15:30 up 14 days,  3:42,  2 users,  load average: 0.12, 0.08, 0.05` }
   ];
 
-  // Unique Commands Mastered Count (Goal: 50)
+  // Internal 50-command Tracking (No Labels or Numbers in UI)
   const uniqueMasteredCount = Math.min(50, executedCmds.size);
   const completionPercentage = Math.round((uniqueMasteredCount / 50) * 100);
 
   // STRICT OS ISOLATION FILTERING FOR CARDS DIRECTORY
   const filteredTutorials = commandTutorials.filter(t => {
-    // Check OS Compatibility
     const isOsMatch = osMode === 'zsh' 
       ? (t.os === 'linux' || t.os === 'both')
       : (t.os === 'windows' || t.os === 'both');
     
-    // Check Search Query
     const isSearchMatch = searchQuery === '' ||
       t.cmd.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -110,14 +108,17 @@ export default function LabNotebook() {
     return isOsMatch && isSearchMatch;
   });
 
-  // Execute Command Logic with Strict OS Enforcement
-  const handleExecuteCommand = (rawCmd) => {
+  // Execute Command Logic with Auto-Scroll & OS Enforcement
+  const handleExecuteCommand = (rawCmd, shouldScroll = false) => {
     const input = rawCmd.trim();
     if (!input) return;
 
+    if (shouldScroll) {
+      terminalWindowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
     const firstWord = input.split(' ')[0].toLowerCase();
 
-    // Find if command exists in tutorial suite
     const matchedTut = commandTutorials.find(t => 
       t.cmd.toLowerCase() === input.toLowerCase() || 
       t.cmd.toLowerCase().startsWith(firstWord)
@@ -136,7 +137,6 @@ export default function LabNotebook() {
         : `Windows Command Prompt (CMD) Reference:\n- ipconfig /all : View Windows IP, MAC, Gateway, and DNS\n- tracert 8.8.8.8 : Trace router path\n- nslookup app.corp.com : Query DNS A records\n- netstat -ano : Active connections & PIDs\n- route print : Display IPv4 routing table\n- arp -a : Display ARP resolution table\n- dcdiag /test:DNS : Test AD Domain Controller DNS`;
       isSuccess = true;
     } else if (matchedTut) {
-      // STRICT OS VALIDATION CHECK
       const isTutAllowed = osMode === 'zsh' 
         ? (matchedTut.os === 'linux' || matchedTut.os === 'both')
         : (matchedTut.os === 'windows' || matchedTut.os === 'both');
@@ -148,7 +148,6 @@ export default function LabNotebook() {
           setExecutedCmds(prev => new Set(prev).add(matchedTut.id));
         }
       } else {
-        // OS REJECTION ERROR MESSAGES
         if (osMode === 'zsh') {
           outputText = `zsh: command not found: ${firstWord}\n[Zsh Notice: "${input}" is a Windows-only command. Switch to Windows CMD mode to execute it.]`;
         } else {
@@ -157,7 +156,6 @@ export default function LabNotebook() {
         isSuccess = false;
       }
     } else {
-      // Generic Command Execution in Native OS Mode
       if (osMode === 'zsh') {
         outputText = `zsh: command executed: ${input}\nType "help" to view 25+ native Linux CLI commands.`;
       } else {
@@ -186,17 +184,14 @@ export default function LabNotebook() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
-      {/* TOP CLEAN HEADER & 50 COMMANDS PROGRESS BAR */}
+      {/* TOP HEADER & UNLABELED DYNAMIC PROGRESS BAR */}
       <div className="p-6 bg-slate-900/90 rounded-3xl border border-slate-800 space-y-4 shadow-2xl font-mono">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-lg font-black text-slate-100 flex items-center gap-2">
               <Terminal className="w-5 h-5 text-cyan-400" />
-              <span>Isolated OS CLI Simulator & Command Master</span>
+              <span>Isolated OS CLI Simulator</span>
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Test isolated native IT system commands: Oh My Zsh (Linux) vs Windows Command Prompt (CMD).
-            </p>
           </div>
 
           {/* OS TERMINAL MODE SWITCHER */}
@@ -227,36 +222,43 @@ export default function LabNotebook() {
           </div>
         </div>
 
-        {/* 50 UNIQUE COMMANDS PROGRESS BAR */}
-        <div className="space-y-1.5 pt-2 border-t border-slate-800">
-          <div className="flex items-center justify-between text-xs font-bold font-mono">
-            <span className="text-slate-300">Command Mastery Progress:</span>
-            <span className="text-cyan-400 font-extrabold">{uniqueMasteredCount} / 50 Unique Commands Mastered ({completionPercentage}%)</span>
-          </div>
-          <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-800/80">
+        {/* UNLABELED PROGRESS BAR WITH DYNAMIC COLOR FILL DEPENDING ON LEVEL */}
+        <div className="pt-2 border-t border-slate-800">
+          <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-800/80 shadow-inner">
             <div 
               style={{ width: `${completionPercentage}%` }}
-              className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-emerald-400 transition-all duration-500 rounded-full"
+              className={`h-full transition-all duration-700 rounded-full shadow-lg ${
+                completionPercentage < 25
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-500'
+                  : completionPercentage < 50
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-500'
+                  : completionPercentage < 75
+                  ? 'bg-gradient-to-r from-amber-500 to-yellow-500'
+                  : 'bg-gradient-to-r from-emerald-400 to-teal-500'
+              }`}
             ></div>
           </div>
         </div>
       </div>
 
       {/* DUAL THEMED ISOLATED TERMINAL WINDOW STAGE */}
-      <div className={`transition-all duration-500 rounded-3xl overflow-hidden shadow-2xl font-mono ${
-        osMode === 'cmd' 
-          ? 'bg-black border-2 border-gray-800 text-gray-200' 
-          : 'glass-panel border border-slate-800 bg-slate-950/90 text-slate-100'
-      } ${
-        faintGlow ? 'ring-2 ring-emerald-500/50 shadow-[0_0_25px_rgba(16,185,129,0.25)]' : ''
-      }`}>
+      <div 
+        ref={terminalWindowRef}
+        className={`transition-all duration-500 rounded-3xl overflow-hidden shadow-2xl font-mono ${
+          osMode === 'cmd' 
+            ? 'bg-black border-2 border-gray-800 text-gray-200' 
+            : 'glass-panel border border-slate-800 bg-slate-950/90 text-slate-100'
+        } ${
+          faintGlow ? 'ring-2 ring-emerald-500/50 shadow-[0_0_25px_rgba(16,185,129,0.25)]' : ''
+        }`}
+      >
         
         {/* WINDOW HEADER BAR */}
         {osMode === 'cmd' ? (
           <div className="bg-gray-900 px-4 py-2 flex items-center justify-between border-b border-gray-800 select-none">
             <div className="flex items-center gap-2">
               <Monitor className="w-4 h-4 text-gray-400" />
-              <span className="text-xs font-bold text-gray-300">Command Prompt - C:\Windows\system32\cmd.exe (Windows Native Only)</span>
+              <span className="text-xs font-bold text-gray-300">Command Prompt - C:\Windows\system32\cmd.exe</span>
             </div>
             <div className="flex items-center gap-3 text-xs font-bold text-gray-400">
               <span>_</span>
@@ -272,7 +274,7 @@ export default function LabNotebook() {
                 <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
                 <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
               </div>
-              <span className="text-xs font-extrabold text-slate-300 ml-2">sysadmin@netpulse-box:~ (Oh My Zsh - Linux Native Only)</span>
+              <span className="text-xs font-extrabold text-slate-300 ml-2">sysadmin@netpulse-box:~ (zsh)</span>
             </div>
 
             <button
@@ -374,12 +376,11 @@ export default function LabNotebook() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="font-extrabold text-slate-100 text-sm flex items-center gap-2">
-              <span>{osMode === 'zsh' ? '🐧 Native Linux Commands Directory' : '🪟 Native Windows Commands Directory'}</span>
+              <span>{osMode === 'zsh' ? '🐧 Native Linux Commands' : '🪟 Native Windows Commands'}</span>
               <span className="px-2 py-0.5 rounded text-[10px] bg-slate-900 text-cyan-400 border border-slate-800 font-bold">
-                {filteredTutorials.length} Commands Available
+                {filteredTutorials.length} Commands
               </span>
             </h3>
-            <p className="text-xs text-slate-400">Click any card to test in active {osMode === 'zsh' ? 'Oh My Zsh' : 'Windows CMD'} terminal</p>
           </div>
 
           {/* Search Filter */}
@@ -413,12 +414,9 @@ export default function LabNotebook() {
                     <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-slate-900 text-cyan-400 border border-slate-800">
                       {tut.cat}
                     </span>
-                    {isDone && (
-                      <span className="text-emerald-400 flex items-center gap-1 text-[10px] font-extrabold">
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Mastered</span>
-                      </span>
-                    )}
+                    <span className="px-2 py-0.5 rounded text-[9px] font-extrabold bg-slate-950 text-slate-400 border border-slate-800">
+                      {tut.os === 'linux' ? '🐧 Linux' : tut.os === 'windows' ? '🪟 Windows' : '🌐 Cross-OS'}
+                    </span>
                   </div>
 
                   <p className="text-xs font-black text-slate-100 bg-slate-900/90 p-2 rounded-xl border border-slate-800 font-mono text-cyan-300 truncate">
@@ -429,7 +427,7 @@ export default function LabNotebook() {
                 </div>
 
                 <button
-                  onClick={() => handleExecuteCommand(tut.cmd)}
+                  onClick={() => handleExecuteCommand(tut.cmd, true)}
                   className={`w-full py-1.5 px-3 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     isDone
                       ? 'bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 border-emerald-600/80'
@@ -438,7 +436,7 @@ export default function LabNotebook() {
                       : 'bg-slate-900 hover:bg-slate-800 text-cyan-300 border-slate-700'
                   }`}
                 >
-                  <span>{isDone ? 'Re-Run Command' : 'Test Command'}</span>
+                  <span>{isDone ? 'Re-Run Command' : 'Execute Command'}</span>
                 </button>
               </div>
             );
