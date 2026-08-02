@@ -334,8 +334,8 @@ export default function DHCPModule({ appMode = 'clean' }) {
 
       {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
       <CleanWidget
-        title="DHCP Automatic IP Assignment Made Simple"
-        subtitle="Watch how your computer gets an IP address automatically from the Router/DHCP Server"
+        title="DHCP 4-Way DORA Handshake"
+        subtitle="Automatic IP Lease Negotiation (UDP Ports 67 & 68)"
         icon={Zap}
         ip="192.168.1.105 (Leased)"
         protocol="DHCP (UDP)"

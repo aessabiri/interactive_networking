@@ -400,10 +400,10 @@ export default function DNSModule({ appMode = 'clean' }) {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
-      {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
+      {/* TOP UNIFIED CONTROL WIDGET */}
       <CleanWidget
-        title="DNS Hostname Lookup Made Simple"
-        subtitle={`Translating website "${targetDomain}" into numerical IP address (${currDomain.resolvedIp})`}
+        title="DNS Domain Resolver"
+        subtitle="Translates domain names to IP addresses (UDP Port 53)"
         icon={Globe}
         ip={currDomain.resolvedIp}
         protocol="DNS (UDP)"

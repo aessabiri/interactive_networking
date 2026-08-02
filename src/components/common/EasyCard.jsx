@@ -52,7 +52,7 @@ export function CleanControlButton({
   );
 }
 
-// UNIFIED SUPER-COMPACT CLEAN MODE WIDGET (ZERO SCROLL, SINGLE CARD)
+// UNIFIED ULTRA-COMPACT CLEAN MODE WIDGET (SUPER COMPACT SINGLE-ROW BAR)
 export function CleanWidget({ 
   title, 
   subtitle, 
@@ -75,176 +75,113 @@ export function CleanWidget({
   setShowAnimation
 }) {
   return (
-    <div className="glass-panel p-4.5 rounded-3xl border border-emerald-500/30 bg-slate-900/95 space-y-3.5 shadow-2xl font-sans relative overflow-hidden">
+    <div className="glass-panel px-4 py-2.5 rounded-2xl border border-emerald-500/30 bg-slate-900/95 shadow-xl font-sans relative overflow-hidden flex flex-wrap items-center justify-between gap-3">
       
-      {/* BACKGROUND DECORATIVE GLOW */}
-      <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
-
-      {/* TOP ROW: TITLE & TOP-RIGHT CIRCULAR ICON-ONLY ACTION TOOLBAR */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
-        
-        {/* Module Title & Clean Mode Tag */}
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-inner">
-            <Icon className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-black uppercase bg-emerald-950 text-emerald-300 border border-emerald-600 shadow-sm">
-                🌱 Clean Mode
-              </span>
-              <h2 className="text-lg font-black text-slate-100 tracking-tight">{title}</h2>
-            </div>
-            <p className="text-xs text-slate-400 font-medium">{subtitle}</p>
-          </div>
+      {/* LEFT: ICON & TITLE */}
+      <div className="flex items-center gap-2.5">
+        <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
+          <Icon className="w-5 h-5" />
         </div>
-
-        {/* TOP-RIGHT CIRCULAR ICON-ONLY CONTROL BUTTONS (NO TEXT, JUST SLEEK CIRCULAR LOGOS & HOVER TOOLTIPS) */}
-        <div className="flex items-center gap-2 font-mono">
-          
-          {/* SPEED SELECTOR ICON BUTTON */}
-          {setSpeed && (
-            <button
-              onClick={() => {
-                const nextSpeed = speed === 0.25 ? 0.5 : speed === 0.5 ? 1 : 0.25;
-                setSpeed(nextSpeed);
-              }}
-              className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 hover:scale-110 active:scale-95 transition-all shadow cursor-pointer flex items-center justify-center relative font-mono text-[10px] font-black"
-              title={`Animation Speed: ${speed}x (Click to cycle speed 0.25x ➔ 0.5x ➔ 1x)`}
-            >
-              <Gauge className="w-4 h-4 text-amber-400" />
-            </button>
-          )}
-
-          {/* PLAY / PAUSE BUTTON */}
-          {onPlay && (
-            <button
-              onClick={onPlay}
-              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg border hover:scale-110 active:scale-95 ${
-                isPlaying
-                  ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-amber-500/30'
-                  : 'bg-gradient-to-tr from-cyan-500 to-blue-600 text-slate-950 border-cyan-300 shadow-cyan-500/30'
-              }`}
-              title={isPlaying ? 'Pause Simulation' : 'Start / Play Full Simulation'}
-            >
-              {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
-            </button>
-          )}
-
-          {/* NEXT STEP BUTTON */}
-          {onStep && (
-            <button
-              onClick={onStep}
-              disabled={isPlaying}
-              className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-slate-700 hover:scale-110 active:scale-95 transition-all shadow cursor-pointer flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-              title={stepNumber !== undefined && totalSteps ? `Next Step Forward (Step ${stepNumber + 1} of ${totalSteps})` : "Next Step Forward"}
-            >
-              <SkipForward className="w-4 h-4 fill-current" />
-            </button>
-          )}
-
-          {/* RESET BUTTON */}
-          {onReset && (
-            <button
-              onClick={onReset}
-              className="w-9 h-9 rounded-full bg-slate-800 hover:bg-rose-950/80 text-rose-400 hover:text-rose-200 border border-slate-700 hover:border-rose-700 hover:scale-110 active:scale-95 transition-all shadow cursor-pointer flex items-center justify-center"
-              title="Reset Simulation & Clear Cache"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          )}
-
-          {/* CANVAS ANIMATION HIDE/SHOW TOGGLE BUTTON */}
-          {setShowAnimation && (
-            <button
-              onClick={() => setShowAnimation(!showAnimation)}
-              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer shadow border hover:scale-110 active:scale-95 ${
-                showAnimation
-                  ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
-                  : 'bg-slate-800 text-slate-400 border-slate-700'
-              }`}
-              title={showAnimation ? 'Hide Canvas Animation' : 'Show Canvas Animation'}
-            >
-              <MonitorPlay className="w-4 h-4" />
-            </button>
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-black text-slate-100 tracking-tight leading-none">{title}</h2>
+            {status && (
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-700/80">
+                {status}
+              </span>
+            )}
+          </div>
+          {subtitle && (
+            <p className="text-[11px] text-slate-400 font-medium leading-tight mt-1 line-clamp-1 max-w-xl">{subtitle}</p>
           )}
         </div>
       </div>
-        <div className="flex flex-wrap items-center gap-2 font-mono">
-          {ip && (
-            <div className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-cyan-950 to-slate-900 text-cyan-300 border border-cyan-500/60 shadow-lg flex items-center gap-2 hover:border-cyan-400 transition-all cursor-default">
-              <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-400/40 shrink-0">
-                <Globe className="w-3 h-3 text-cyan-400" />
-              </div>
-              <div className="flex flex-col text-left leading-none">
-                <span className="text-[9px] text-slate-400 font-extrabold uppercase">IP Address</span>
-                <span className="text-xs font-black text-cyan-200 mt-0.5">{ip}</span>
-              </div>
-            </div>
-          )}
 
-          {protocol && (
-            <div className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-purple-950 to-slate-900 text-purple-300 border border-purple-500/60 shadow-lg flex items-center gap-2 hover:border-purple-400 transition-all cursor-default">
-              <div className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-400/40 shrink-0">
-                <Zap className="w-3 h-3 text-purple-400" />
-              </div>
-              <div className="flex flex-col text-left leading-none">
-                <span className="text-[9px] text-slate-400 font-extrabold uppercase">Protocol</span>
-                <span className="text-xs font-black text-purple-200 mt-0.5">{protocol}</span>
-              </div>
-            </div>
-          )}
+      {/* CENTER: INLINE METADATA BADGES */}
+      <div className="hidden lg:flex items-center gap-2 font-mono text-[11px]">
+        {protocol && (
+          <span className="px-2.5 py-1 rounded-lg bg-slate-950 text-purple-300 border border-purple-800/80 font-bold flex items-center gap-1.5">
+            <Zap className="w-3 h-3 text-purple-400" />
+            {protocol}
+          </span>
+        )}
+        {ip && (
+          <span className="px-2.5 py-1 rounded-lg bg-slate-950 text-cyan-300 border border-cyan-800/80 font-bold flex items-center gap-1.5">
+            <Globe className="w-3 h-3 text-cyan-400" />
+            {ip}
+          </span>
+        )}
+      </div>
 
-          {port !== undefined && port !== null && (
-            <div className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-950 to-slate-900 text-amber-300 border border-amber-500/60 shadow-lg flex items-center gap-2 hover:border-amber-400 transition-all cursor-default">
-              <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-400/40 shrink-0">
-                <Server className="w-3 h-3 text-amber-400" />
-              </div>
-              <div className="flex flex-col text-left leading-none">
-                <span className="text-[9px] text-slate-400 font-extrabold uppercase">Port</span>
-                <span className="text-xs font-black text-amber-200 mt-0.5">{port}</span>
-              </div>
-            </div>
-          )}
+      {/* RIGHT: CIRCULAR CONTROL BUTTONS */}
+      <div className="flex items-center gap-1.5 font-mono">
+        
+        {/* SPEED SELECTOR */}
+        {setSpeed && (
+          <button
+            onClick={() => {
+              const nextSpeed = speed === 0.25 ? 0.5 : speed === 0.5 ? 1 : 0.25;
+              setSpeed(nextSpeed);
+            }}
+            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 hover:scale-105 active:scale-95 transition-all shadow cursor-pointer flex items-center justify-center font-mono text-[10px] font-black"
+            title={`Speed: ${speed}x (Click to cycle 0.25x ➔ 0.5x ➔ 1x)`}
+          >
+            <Gauge className="w-3.5 h-3.5 text-amber-400" />
+          </button>
+        )}
 
-          {status && (
-            <div className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-emerald-950 to-slate-900 text-emerald-300 border border-emerald-500/60 shadow-lg flex items-center gap-2 hover:border-emerald-400 transition-all cursor-default">
-              <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-400/40 shrink-0">
-                <Shield className="w-3 h-3 text-emerald-400" />
-              </div>
-              <div className="flex flex-col text-left leading-none">
-                <span className="text-[9px] text-slate-400 font-extrabold uppercase">State Info</span>
-                <span className="text-xs font-black text-emerald-200 mt-0.5">{status}</span>
-              </div>
-            </div>
-          )}
+        {/* PLAY / PAUSE */}
+        {onPlay && (
+          <button
+            onClick={onPlay}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer shadow border hover:scale-105 active:scale-95 ${
+              isPlaying
+                ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-amber-500/30'
+                : 'bg-gradient-to-tr from-cyan-500 to-blue-600 text-slate-950 border-cyan-300 shadow-cyan-500/30'
+            }`}
+            title={isPlaying ? 'Pause' : 'Play'}
+          >
+            {isPlaying ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current ml-0.5" />}
+          </button>
+        )}
 
-        </div>
+        {/* NEXT STEP */}
+        {onStep && (
+          <button
+            onClick={onStep}
+            disabled={isPlaying}
+            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-slate-700 hover:scale-105 active:scale-95 transition-all shadow cursor-pointer flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+            title={stepNumber !== undefined && totalSteps ? `Next Step (${stepNumber + 1}/${totalSteps})` : "Next Step"}
+          >
+            <SkipForward className="w-3.5 h-3.5 fill-current" />
+          </button>
+        )}
 
-      {/* BOTTOM ROW: STAGE PILL & ACTION DESCRIPTION */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-2xl bg-slate-950/90 border border-slate-800/90 shadow-inner">
-        <div className="flex items-center gap-2.5">
-          {stepNumber !== undefined && stepNumber > 0 ? (
-            <span className="px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 flex items-center gap-1 border border-emerald-300 shrink-0">
-              <Sparkles className="w-3.5 h-3.5 fill-current" />
-              <span>Stage {stepNumber}/{totalSteps}</span>
-            </span>
-          ) : (
-            <span className="px-3 py-1 rounded-full bg-slate-800 text-emerald-300 font-bold text-xs shadow flex items-center gap-1 border border-slate-700 shrink-0">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Ready</span>
-            </span>
-          )}
+        {/* RESET */}
+        {onReset && (
+          <button
+            onClick={onReset}
+            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-rose-950/80 text-rose-400 border border-slate-700 hover:border-rose-700 hover:scale-105 active:scale-95 transition-all shadow cursor-pointer flex items-center justify-center"
+            title="Reset"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+        )}
 
-          <h3 className="text-sm font-black text-emerald-300 flex items-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>{actionTitle}</span>
-          </h3>
-        </div>
-
-        <p className="text-xs text-slate-300 font-medium leading-relaxed max-w-xl">
-          {actionDesc}
-        </p>
+        {/* CANVAS ANIMATION HIDE/SHOW TOGGLE */}
+        {setShowAnimation && (
+          <button
+            onClick={() => setShowAnimation(!showAnimation)}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer shadow border hover:scale-105 active:scale-95 ${
+              showAnimation
+                ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
+                : 'bg-slate-800 text-slate-400 border-slate-700'
+            }`}
+            title={showAnimation ? 'Hide Canvas' : 'Show Canvas'}
+          >
+            <MonitorPlay className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
     </div>
   );
