@@ -481,7 +481,7 @@ export default function ADModule({ appMode = 'clean' }) {
         </div>
 
         {/* ENLARGED TOPOLOGY STAGE (DEAD-CENTER SWITCH, PC-01 LEFT, DC01 RIGHT, FILESVR TOP-RIGHT, DUMMY TOP-LEFT) */}
-        <div className="py-6 px-4 relative min-h-[580px] bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden">
+        <div className={`py-6 px-4 relative bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden ${appMode !== 'detailed' && appMode !== 'expert' ? 'min-h-[520px]' : 'min-h-[660px]'}`}>
           
           {/* VISIBLE SVG NETWORK CABLE LINES */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
@@ -503,8 +503,8 @@ export default function ADModule({ appMode = 'clean' }) {
             <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-slate-900 text-slate-400 border border-slate-700 shadow">
               Workgroup PC (Not Domain Joined)
             </span>
-            <div className="p-4 rounded-2xl border-2 bg-slate-900 border-slate-700">
-              <Laptop className="w-10 h-10 text-slate-500" />
+            <div className="p-3 rounded-xl border-2 bg-slate-900 border-slate-700">
+              <Laptop className="w-7 h-7 text-slate-500" />
             </div>
             <div className="font-mono text-[10px]">
               <p className="font-bold text-slate-400">UNJOINED-PC-02</p>
@@ -519,10 +519,10 @@ export default function ADModule({ appMode = 'clean' }) {
             <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-purple-950 text-purple-300 border border-purple-700 shadow">
               TCP Port 445 (Microsoft SMB)
             </span>
-            <div className={`p-4 rounded-2xl border-2 transition-all ${
+            <div className={`p-3 rounded-xl border-2 transition-all ${
               activeStep === 4 ? 'bg-purple-950 border-purple-400 scale-110 shadow-2xl shadow-purple-500/30' : 'bg-slate-900 border-purple-500/60'
             }`}>
-              <Server className="w-10 h-10 text-purple-400" />
+              <Server className="w-7 h-7 text-purple-400" />
             </div>
             <div className="font-mono text-[10px]">
               <p className="font-bold text-purple-300">FILESVR01 (MEMBER SERVER)</p>
@@ -535,10 +535,10 @@ export default function ADModule({ appMode = 'clean' }) {
             <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-blue-950 text-blue-300 border border-blue-600 shadow-lg">
               CENTRAL L2 SWITCH
             </span>
-            <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
+            <div className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
               isPlaying ? 'bg-blue-900/90 border-blue-400 shadow-2xl shadow-blue-500/40 scale-110' : 'bg-blue-950/90 border-blue-500 text-blue-300'
             }`}>
-              <Layers className="w-14 h-14 text-blue-400" />
+              <Layers className="w-9 h-9 text-blue-400" />
             </div>
             <div className="text-center font-mono">
               <p className="text-xs font-extrabold text-blue-300">SWITCH</p>
@@ -551,14 +551,14 @@ export default function ADModule({ appMode = 'clean' }) {
             <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-cyan-950 text-cyan-300 border border-cyan-700 shadow">
               Kerberos Client ({username})
             </span>
-            <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
+            <div className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
               activeStep === 4
                 ? 'bg-emerald-950/90 border-emerald-400 shadow-2xl shadow-emerald-500/30 scale-110'
                 : activeStep >= 2
                 ? 'bg-purple-950/90 border-purple-400 shadow-2xl scale-105'
                 : 'bg-slate-900/90 border-cyan-500/60'
             }`}>
-              <Laptop className={`w-14 h-14 ${activeStep === 4 ? 'text-emerald-400' : 'text-cyan-400'}`} />
+              <Laptop className={`w-9 h-9 ${activeStep === 4 ? 'text-emerald-400' : 'text-cyan-400'}`} />
             </div>
             <div className="text-center font-mono space-y-1">
               <p className="text-sm font-extrabold text-cyan-300">LAPTOP-01</p>
@@ -576,12 +576,12 @@ export default function ADModule({ appMode = 'clean' }) {
             <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold bg-purple-950 text-purple-300 border border-purple-700 shadow">
               Port 88 (KDC / AS / TGS)
             </span>
-            <div className={`p-6 rounded-3xl border-4 transition-all duration-300 ${
+            <div className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
               activeStep === 1 || activeStep === 3
                 ? 'bg-purple-950/90 border-purple-400 shadow-2xl scale-105 animate-pulse'
-                : 'bg-slate-900/90 border-slate-700'
+                : 'bg-slate-900/90 border-purple-500/60'
             }`}>
-              <Server className="w-14 h-14 text-purple-400" />
+              <Server className="w-9 h-9 text-purple-400" />
             </div>
             <div className="text-center font-mono space-y-1">
               <p className="text-sm font-extrabold text-purple-300">DC01 (KDC DOMAIN CONTROLLER)</p>
