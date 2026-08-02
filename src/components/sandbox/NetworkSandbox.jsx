@@ -340,24 +340,84 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
     setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'EXPORT_CISCO', message: 'Exported Cisco IOS configuration script to cisco_ios_running_config.cfg.' }]);
   };
 
-  // Import Topology from JSON file
+  // Import Topology from JSON or Cisco IOS CLI Config (.json, .cfg, .txt, .ios)
   const handleImportTopology = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (event) => {
+      const content = event.target.result;
       try {
-        const parsed = JSON.parse(event.target.result);
+        // Try parsing NetPulse JSON first
+        const parsed = JSON.parse(content);
         if (parsed.nodes && parsed.links) {
           setNodes(parsed.nodes);
           setLinks(parsed.links);
-          setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'IMPORT', message: `Topology loaded (${parsed.nodes.length} devices, ${parsed.links.length} cables).` }]);
+          setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'IMPORT_JSON', message: `Topology imported from JSON (${parsed.nodes.length} devices, ${parsed.links.length} cables).` }]);
+          return;
         }
-      } catch (err) {
-        alert('Invalid topology JSON file format!');
+      } catch (jsonErr) {
+        // Fallback: Parse Cisco IOS CLI Config script (.cfg, .txt, .ios)
+        const lines = content.split('\n');
+        const importedNodes = [];
+        const importedLinks = [];
+        let currentDevice = null;
+        let xPos = 100;
+        let yPos = 160;
+
+        lines.forEach(line => {
+          const trimmed = line.trim();
+          if (trimmed.startsWith('hostname')) {
+            const name = trimmed.split(' ')[1] || 'CISCO-DEVICE';
+            const isSwitch = name.toLowerCase().includes('sw') || name.toLowerCase().includes('switch');
+            const isRouter = name.toLowerCase().includes('rt') || name.toLowerCase().includes('router');
+            const isFw = name.toLowerCase().includes('fw') || name.toLowerCase().includes('firewall');
+            const type = isSwitch ? 'switch' : isRouter ? 'router' : isFw ? 'firewall' : 'server';
+
+            currentDevice = {
+              id: `imported-${Date.now()}-${importedNodes.length}`,
+              name,
+              type,
+              x: xPos,
+              y: yPos,
+              ip: isSwitch ? 'N/A (L2)' : '192.168.1.1',
+              mac: '00:1A:2B:3C:4D:' + (10 + importedNodes.length),
+              os: isSwitch ? 'Cisco IOS L2 Switch' : isRouter ? 'Cisco IOS Router' : 'Palo Alto PAN-OS',
+              roles: isSwitch ? [] : isRouter ? ['nat'] : ['firewall'],
+              subnetMask: '255.255.255.0'
+            };
+            importedNodes.push(currentDevice);
+            xPos = (xPos + 220) % 800;
+            if (xPos < 120) yPos += 150;
+          } else if (currentDevice && trimmed.startsWith('ip address')) {
+            const parts = trimmed.split(' ');
+            if (parts.length >= 4) {
+              currentDevice.ip = parts[2];
+              currentDevice.subnetMask = parts[3];
+            }
+          }
+        });
+
+        if (importedNodes.length > 0) {
+          for (let i = 0; i < importedNodes.length - 1; i++) {
+            importedLinks.push({
+              id: `link-imported-${i}`,
+              from: importedNodes[i].id,
+              to: importedNodes[i + 1].id,
+              cableType: 'straight'
+            });
+          }
+          setNodes(importedNodes);
+          setLinks(importedLinks);
+          setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'IMPORT_CISCO', message: `Imported Cisco IOS Config (${importedNodes.length} devices auto-created).` }]);
+          return;
+        }
+
+        alert('Unable to parse file. Please upload a valid NetPulse JSON topology file (.json) or Cisco IOS configuration script (.cfg, .txt, .ios).');
       }
     };
     reader.readAsText(file);
+    e.target.value = '';
   };
 
   // Preset Template Loader
@@ -1011,9 +1071,9 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
               <FileCode className="w-3.5 h-3.5 text-purple-400" /> Export Cisco (.cfg)
             </button>
 
-            <label className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-amber-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer">
+            <label className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-amber-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer" title="Import NetPulse JSON topology (.json) or Cisco IOS running-config script (.cfg, .txt)">
               <Upload className="w-3.5 h-3.5" /> Import
-              <input type="file" accept=".json" onChange={handleImportTopology} className="hidden" />
+              <input type="file" accept=".json,.cfg,.txt,.ios" onChange={handleImportTopology} className="hidden" />
             </label>
 
             <select
