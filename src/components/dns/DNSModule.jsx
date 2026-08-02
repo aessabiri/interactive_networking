@@ -556,15 +556,15 @@ export default function DNSModule({ appMode = 'clean' }) {
           </svg>
 
           {/* PRIVATE LAN BOUNDARY CONTAINER */}
-          <div className="absolute left-[2%] top-[5%] w-[48%] h-[90%] border-2 border-dashed border-cyan-800/40 bg-cyan-950/20 rounded-3xl pointer-events-none p-3">
-            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/80 text-cyan-400 border border-cyan-800 shadow">
+          <div className="absolute left-[2%] top-[5%] w-[48%] h-[90%] border-2 border-dashed border-cyan-800/40 bg-cyan-950/20 rounded-3xl pointer-events-none">
+            <span className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/90 text-cyan-400 border border-cyan-800 shadow">
               PRIVATE SUBNET (192.168.1.0/24)
             </span>
           </div>
 
           {/* PUBLIC ISP / WAN BOUNDARY CONTAINER */}
-          <div className="absolute right-[2%] top-[5%] w-[48%] h-[90%] border-2 border-dashed border-amber-800/40 bg-amber-950/20 rounded-3xl pointer-events-none p-3 text-right">
-            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/80 text-amber-400 border border-amber-800 shadow">
+          <div className="absolute right-[2%] top-[5%] w-[48%] h-[90%] border-2 border-dashed border-amber-800/40 bg-amber-950/20 rounded-3xl pointer-events-none">
+            <span className="absolute bottom-3 right-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/90 text-amber-400 border border-amber-800 shadow">
               PUBLIC WAN & ISP INFRASTRUCTURE (203.0.113.0/24)
             </span>
           </div>

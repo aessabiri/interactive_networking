@@ -466,15 +466,15 @@ export default function LANModule({ appMode = 'clean' }) {
 
           {/* FAINT HIGHLIGHT NETWORK AREA CONTAINERS */}
           {/* Access Subnet A */}
-          <div className="absolute left-[3%] top-[4%] w-[44%] h-[92%] border-2 border-dashed border-cyan-800/30 bg-cyan-950/15 rounded-3xl pointer-events-none p-3">
-            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-800/80 shadow">
+          <div className="absolute left-[3%] top-[4%] w-[44%] h-[92%] border-2 border-dashed border-cyan-800/30 bg-cyan-950/15 rounded-3xl pointer-events-none">
+            <span className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/90 text-cyan-300 border border-cyan-800/80 shadow">
               ACCESS SUBNET A (192.168.1.0/24)
             </span>
           </div>
 
           {/* Target Subnet B */}
-          <div className="absolute right-[3%] top-[4%] w-[44%] h-[92%] border-2 border-dashed border-blue-800/30 bg-blue-950/15 rounded-3xl pointer-events-none p-3 text-right">
-            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-blue-950/80 text-blue-300 border border-blue-800/80 shadow">
+          <div className="absolute right-[3%] top-[4%] w-[44%] h-[92%] border-2 border-dashed border-blue-800/30 bg-blue-950/15 rounded-3xl pointer-events-none">
+            <span className="absolute bottom-3 right-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-blue-950/90 text-blue-300 border border-blue-800/80 shadow">
               DEFAULT GATEWAY & TARGET ZONE
             </span>
           </div>

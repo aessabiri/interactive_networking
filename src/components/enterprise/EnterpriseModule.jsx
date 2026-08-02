@@ -357,22 +357,22 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
 
         {/* FAINT HIGHLIGHT NETWORK AREA CONTAINERS */}
         {/* Office Floor Workstations Area */}
-        <div className="absolute left-[2%] top-[4%] w-[33%] h-[92%] border-2 border-dashed border-cyan-800/30 bg-cyan-950/15 rounded-3xl pointer-events-none p-3">
-          <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-800/80 shadow">
+        <div className="absolute left-[2%] top-[4%] w-[33%] h-[92%] border-2 border-dashed border-cyan-800/30 bg-cyan-950/15 rounded-3xl pointer-events-none">
+          <span className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/90 text-cyan-300 border border-cyan-800/80 shadow">
             OFFICE FLOOR 1 WORKSTATION ZONE
           </span>
         </div>
 
         {/* Core Routing & Switching Zone */}
-        <div className="absolute left-[37%] top-[4%] w-[26%] h-[92%] border-2 border-dashed border-amber-800/30 bg-amber-950/15 rounded-3xl pointer-events-none p-3 text-center">
-          <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-800/80 shadow">
+        <div className="absolute left-[37%] top-[4%] w-[26%] h-[92%] border-2 border-dashed border-amber-800/30 bg-amber-950/15 rounded-3xl pointer-events-none">
+          <span className="absolute bottom-3 left-1/2 transform -translate-x-1/2 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/90 text-amber-300 border border-amber-800/80 shadow">
             CORE ROUTING & FIREWALL ZONE
           </span>
         </div>
 
         {/* Data Center Server Racks Area */}
-        <div className="absolute right-[2%] top-[4%] w-[33%] h-[92%] border-2 border-dashed border-purple-800/30 bg-purple-950/15 rounded-3xl pointer-events-none p-3 text-right">
-          <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-950/80 text-purple-300 border border-purple-800/80 shadow">
+        <div className="absolute right-[2%] top-[4%] w-[33%] h-[92%] border-2 border-dashed border-purple-800/30 bg-purple-950/15 rounded-3xl pointer-events-none">
+          <span className="absolute bottom-3 right-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-950/90 text-purple-300 border border-purple-800/80 shadow">
             DATA CENTER SERVER RACKS ZONE
           </span>
         </div>

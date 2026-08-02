@@ -502,15 +502,15 @@ export default function ADModule({ appMode = 'clean' }) {
 
           {/* FAINT HIGHLIGHT NETWORK AREA CONTAINERS */}
           {/* Workstations Area */}
-          <div className="absolute left-[3%] top-[4%] w-[44%] h-[92%] border-2 border-dashed border-cyan-800/30 bg-cyan-950/15 rounded-3xl pointer-events-none p-3">
-            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-800/80 shadow">
+          <div className="absolute left-[3%] top-[4%] w-[44%] h-[92%] border-2 border-dashed border-cyan-800/30 bg-cyan-950/15 rounded-3xl pointer-events-none">
+            <span className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/90 text-cyan-300 border border-cyan-800/80 shadow">
               DOMAIN WORKSTATION ZONE (CORP.LOCAL)
             </span>
           </div>
 
           {/* Active Directory Infrastructure Area */}
-          <div className="absolute right-[3%] top-[4%] w-[44%] h-[92%] border-2 border-dashed border-purple-800/30 bg-purple-950/15 rounded-3xl pointer-events-none p-3 text-right">
-            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-950/80 text-purple-300 border border-purple-800/80 shadow">
+          <div className="absolute right-[3%] top-[4%] w-[44%] h-[92%] border-2 border-dashed border-purple-800/30 bg-purple-950/15 rounded-3xl pointer-events-none">
+            <span className="absolute bottom-3 right-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-950/90 text-purple-300 border border-purple-800/80 shadow">
               ACTIVE DIRECTORY DATA CENTER
             </span>
           </div>

@@ -177,37 +177,62 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
     };
 
     const target = servicePortMap[selectedService] || servicePortMap.https;
-    
-    // Evaluate against user-configured firewall rules top-to-bottom
+    let isAllowed = false;
     let matchedRule = null;
-    for (const r of fwRules) {
-      const protoMatch = r.protocol === 'ANY' || r.protocol === target.proto;
-      const portStr = target.port.toString();
-      const portMatch = r.port.includes('ANY') || r.port.includes(portStr) || (target.proto === 'ICMP' && r.protocol === 'ICMP');
-      if (protoMatch && portMatch) {
-        matchedRule = r;
-        break; // First matching rule wins (Top-to-Bottom ACL)
+
+    if (trafficDirection === 'inbound') {
+      // Unsolicited incoming WAN traffic to internal LAN client -> DROPPED by SPI default rule
+      for (const r of fwRules) {
+        const protoMatch = r.protocol === 'ANY' || r.protocol === target.proto;
+        const portStr = target.port.toString();
+        const portMatch = r.port.includes('ANY') || r.port.includes(portStr) || (target.proto === 'ICMP' && r.protocol === 'ICMP');
+        if (protoMatch && portMatch) {
+          matchedRule = r;
+          break;
+        }
       }
+      // Inbound traffic requires explicit ACCEPT rule matching ANY/WAN source, otherwise dropped by default
+      isAllowed = matchedRule ? matchedRule.action === 'ACCEPT' && (matchedRule.src.includes('ANY') || matchedRule.desc.toLowerCase().includes('inbound')) : false;
+      setFirewallAction(isAllowed ? 'ALLOW' : 'DROP');
+
+      setInspectionDetail({
+        srcIp: '203.0.113.88 (WAN Probe/Internet)',
+        dstIp: `192.168.1.105:${target.port || 'ICMP'} (Internal LAN PC)`,
+        service: `INBOUND ${target.name}`,
+        matchedRuleId: matchedRule ? `Rule #${matchedRule.id} (${matchedRule.desc})` : 'SPI DEFAULT INBOUND DROP RULE',
+        state: 'UNSOLICITED INBOUND (SYN)',
+        verdict: isAllowed ? 'PASSED (PORT FORWARD)' : 'BLOCKED BY FIREWALL (INBOUND DROP)'
+      });
+    } else {
+      // Outbound traffic initiated by internal client
+      for (const r of fwRules) {
+        const protoMatch = r.protocol === 'ANY' || r.protocol === target.proto;
+        const portStr = target.port.toString();
+        const portMatch = r.port.includes('ANY') || r.port.includes(portStr) || (target.proto === 'ICMP' && r.protocol === 'ICMP');
+        if (protoMatch && portMatch) {
+          matchedRule = r;
+          break;
+        }
+      }
+      isAllowed = matchedRule ? matchedRule.action === 'ACCEPT' : false;
+      setFirewallAction(isAllowed ? 'ALLOW' : 'DROP');
+
+      setInspectionDetail({
+        srcIp: '192.168.1.105:52310 (Internal LAN PC)',
+        dstIp: `${target.dst}:${target.port || 'ICMP'} (Public WAN)`,
+        service: `OUTBOUND ${target.name}`,
+        matchedRuleId: matchedRule ? `Rule #${matchedRule.id} (${matchedRule.desc})` : 'DEFAULT DROP RULE',
+        state: 'OUTBOUND NEW (TCP SYN)',
+        verdict: isAllowed ? 'PASSED (ACCEPT)' : 'BLOCKED BY FIREWALL (DROP)'
+      });
     }
-
-    const isAllowed = matchedRule ? matchedRule.action === 'ACCEPT' : false;
-    setFirewallAction(isAllowed ? 'ALLOW' : 'DROP');
-
-    setInspectionDetail({
-      srcIp: '192.168.1.105:52310',
-      dstIp: `${target.dst}:${target.port || 'ICMP'}`,
-      service: target.name,
-      matchedRuleId: matchedRule ? `Rule #${matchedRule.id} (${matchedRule.desc})` : 'DEFAULT DROP RULE',
-      state: 'NEW (TCP SYN)',
-      verdict: isAllowed ? 'PASSED (ACCEPT)' : 'BLOCKED (DROP)'
-    });
 
     setLogs(prev => [
       ...prev,
       {
         time: new Date().toLocaleTimeString(),
         tag: isAllowed ? 'FIREWALL_ACCEPT' : 'FIREWALL_DROP',
-        message: `Packet ${target.name} from 192.168.1.105 to ${target.dst}: Rule #${matchedRule ? matchedRule.id : 'DEF'} -> VERDICT: ${isAllowed ? 'ACCEPT 🟢' : 'DROP 🔴'}`
+        message: `${trafficDirection.toUpperCase()} Packet ${target.name}: Rule #${matchedRule ? matchedRule.id : 'SPI'} -> VERDICT: ${isAllowed ? 'ACCEPT 🟢' : 'DROP 🔴'}`
       }
     ]);
   };
@@ -301,12 +326,39 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
             })}
           </div>
 
-          {/* Traffic Service Selector & Add Rule Button (Only when Stateful Firewall active) */}
+          {/* Traffic Service Selector & Direction Toggle (Only when Stateful Firewall active) */}
           {activeSubTab === 'stateful' && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Traffic Flow Direction Toggle */}
+              <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-xl border border-slate-800">
+                <button
+                  onClick={() => { setTrafficDirection('inbound'); handleReset(); }}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${
+                    trafficDirection === 'inbound'
+                      ? 'bg-rose-600 text-white shadow'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                  title="Simulate unsolicited incoming traffic from WAN Internet to internal LAN client (Blocked by SPI)"
+                >
+                  📥 Inbound (WAN ➔ LAN)
+                </button>
+                <button
+                  onClick={() => { setTrafficDirection('outbound'); handleReset(); }}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${
+                    trafficDirection === 'outbound'
+                      ? 'bg-cyan-600 text-white shadow'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                  title="Simulate client initiated outbound traffic to WAN Internet (Evaluates ACL Rules)"
+                >
+                  📤 Outbound (LAN ➔ WAN)
+                </button>
+              </div>
+
+              {/* Service Dropdown */}
               <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">
                 <Send className="w-3.5 h-3.5 text-rose-400" />
-                <span className="text-slate-400 font-bold">Traffic Service:</span>
+                <span className="text-slate-400 font-bold">Service:</span>
                 <select
                   value={selectedService}
                   onChange={(e) => { setSelectedService(e.target.value); handleReset(); }}
@@ -374,22 +426,22 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
 
             {/* FAINT HIGHLIGHT AREA CONTAINERS */}
             {/* Left: Trusted Internal LAN */}
-            <div className="absolute left-[3%] top-[5%] w-[30%] h-[90%] border-2 border-dashed border-cyan-800/30 bg-cyan-950/15 rounded-3xl pointer-events-none p-3">
-              <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-800/80 shadow">
+            <div className="absolute left-[3%] top-[5%] w-[30%] h-[90%] border-2 border-dashed border-cyan-800/30 bg-cyan-950/15 rounded-3xl pointer-events-none">
+              <span className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/90 text-cyan-300 border border-cyan-800/80 shadow">
                 TRUSTED INTERNAL LAN (192.168.1.0/24)
               </span>
             </div>
 
             {/* Center: Firewall SPI Security DMZ */}
-            <div className="absolute left-[35%] top-[5%] w-[30%] h-[90%] border-2 border-dashed border-rose-800/30 bg-rose-950/15 rounded-3xl pointer-events-none p-3 text-center">
-              <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-rose-950/80 text-rose-300 border border-rose-800/80 shadow">
+            <div className="absolute left-[35%] top-[5%] w-[30%] h-[90%] border-2 border-dashed border-rose-800/30 bg-rose-950/15 rounded-3xl pointer-events-none">
+              <span className="absolute bottom-3 left-1/2 transform -translate-x-1/2 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-rose-950/90 text-rose-300 border border-rose-800/80 shadow">
                 FIREWALL INSPECTION DMZ
               </span>
             </div>
 
             {/* Right: Untrusted Public WAN */}
-            <div className="absolute right-[3%] top-[5%] w-[30%] h-[90%] border-2 border-dashed border-amber-800/30 bg-amber-950/15 rounded-3xl pointer-events-none p-3 text-right">
-              <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-800/80 shadow">
+            <div className="absolute right-[3%] top-[5%] w-[30%] h-[90%] border-2 border-dashed border-amber-800/30 bg-amber-950/15 rounded-3xl pointer-events-none">
+              <span className="absolute bottom-3 right-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/90 text-amber-300 border border-amber-800/80 shadow">
                 UNTRUSTED PUBLIC WAN (8.8.8.8)
               </span>
             </div>
@@ -436,9 +488,9 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
               <div
                 style={{
                   left: `${
-                    firewallAction === 'DROP' && packetProgress > 50
-                      ? 50
-                      : 15 + (packetProgress / 100) * 70
+                    trafficDirection === 'inbound'
+                      ? (firewallAction === 'DROP' && packetProgress > 50 ? 50 : 85 - (packetProgress / 100) * 70)
+                      : (firewallAction === 'DROP' && packetProgress > 50 ? 50 : 15 + (packetProgress / 100) * 70)
                   }%`,
                   top: '50%'
                 }}
@@ -452,11 +504,11 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
               >
                 {firewallAction === 'DROP' && packetProgress >= 50 ? (
                   <>
-                    <XCircle className="w-4 h-4" /> 🛑 DROPPED BY RULE
+                    <XCircle className="w-4 h-4" /> 🛑 BLOCKED BY SPI
                   </>
                 ) : (
                   <>
-                    <Zap className="w-4 h-4" /> {selectedService.toUpperCase()} Packet
+                    <Zap className="w-4 h-4" /> {trafficDirection === 'inbound' ? 'INBOUND' : 'OUTBOUND'} {selectedService.toUpperCase()}
                   </>
                 )}
               </div>

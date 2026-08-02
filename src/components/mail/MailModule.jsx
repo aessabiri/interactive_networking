@@ -704,22 +704,22 @@ export default function MailModule({ appMode = 'clean' }) {
         
         {/* NETWORK BOUNDARY CONTAINERS */}
         {/* Private Subnet A Container */}
-        <div className="absolute left-[2%] top-[4%] w-[32%] h-[92%] border-2 border-dashed border-amber-800/40 bg-amber-950/20 rounded-3xl pointer-events-none p-3">
-          <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/80 text-amber-400 border border-amber-800 shadow">
+        <div className="absolute left-[2%] top-[4%] w-[32%] h-[92%] border-2 border-dashed border-amber-800/40 bg-amber-950/20 rounded-3xl pointer-events-none">
+          <span className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/90 text-amber-400 border border-amber-800 shadow">
             SENDER SUBNET A (@{senderDomain})
           </span>
         </div>
 
         {/* Public WAN & ISP Transit Container */}
-        <div className="absolute left-[36%] top-[4%] w-[42%] h-[58%] border-2 border-dashed border-purple-800/40 bg-purple-950/20 rounded-3xl pointer-events-none p-3 text-center">
-          <span className="px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-950/90 text-purple-300 border border-purple-600 shadow">
+        <div className="absolute left-[36%] top-[4%] w-[42%] h-[58%] border-2 border-dashed border-purple-800/40 bg-purple-950/20 rounded-3xl pointer-events-none">
+          <span className="absolute top-3 left-1/2 transform -translate-x-1/2 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-950/90 text-purple-300 border border-purple-600 shadow">
             PUBLIC WAN & ISP BACKBONE (DNS MX: {domainMode === 'cross' ? `${recipientDomain} ➔ ${resolvedMxIp}` : 'Intra-Domain Direct'})
           </span>
         </div>
 
         {/* Private Subnet B Container */}
-        <div className="absolute right-[2%] top-[4%] w-[22%] h-[92%] border-2 border-dashed border-emerald-800/40 bg-emerald-950/20 rounded-3xl pointer-events-none p-3 text-right">
-          <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800 shadow">
+        <div className="absolute right-[2%] top-[4%] w-[22%] h-[92%] border-2 border-dashed border-emerald-800/40 bg-emerald-950/20 rounded-3xl pointer-events-none">
+          <span className="absolute bottom-3 right-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-950/90 text-emerald-400 border border-emerald-800 shadow">
             RECIPIENT SUBNET B (@{recipientDomain})
           </span>
         </div>
