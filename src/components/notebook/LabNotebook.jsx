@@ -19,12 +19,13 @@ export default function LabNotebook() {
     { type: 'sys', text: 'Each CLI terminal mode strictly accepts its native operating system commands.' }
   ]);
 
-  const terminalEndRef = useRef(null);
-  const terminalWindowRef = useRef(null);
+  const logsContainerRef = useRef(null);
 
-  // Auto-scroll terminal log text
+  // Scroll internal terminal box ONLY (No page viewport auto-scrolling)
   useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (logsContainerRef.current) {
+      logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight;
+    }
   }, [cliLogs]);
 
   // 50 Essential Command Tutorials Suite (Strictly Isolated by OS)
@@ -108,14 +109,10 @@ export default function LabNotebook() {
     return isOsMatch && isSearchMatch;
   });
 
-  // Execute Command Logic with Auto-Scroll & OS Enforcement
-  const handleExecuteCommand = (rawCmd, shouldScroll = false) => {
+  // Execute Command Logic (NO Viewport Auto-Scrolling)
+  const handleExecuteCommand = (rawCmd) => {
     const input = rawCmd.trim();
     if (!input) return;
-
-    if (shouldScroll) {
-      terminalWindowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
 
     const firstWord = input.split(' ')[0].toLowerCase();
 
@@ -243,7 +240,6 @@ export default function LabNotebook() {
 
       {/* DUAL THEMED ISOLATED TERMINAL WINDOW STAGE */}
       <div 
-        ref={terminalWindowRef}
         className={`transition-all duration-500 rounded-3xl overflow-hidden shadow-2xl font-mono ${
           osMode === 'cmd' 
             ? 'bg-black border-2 border-gray-800 text-gray-200' 
@@ -287,10 +283,13 @@ export default function LabNotebook() {
           </div>
         )}
 
-        {/* TERMINAL OUTPUT AREA */}
-        <div className={`p-5 min-h-[340px] max-h-[460px] overflow-y-auto space-y-2 text-xs font-mono select-text scrollbar-thin ${
-          osMode === 'cmd' ? 'bg-black text-gray-200' : 'bg-slate-950/95 text-slate-200'
-        }`}>
+        {/* TERMINAL OUTPUT AREA (NO PAGE-LEVEL AUTO-SCROLL) */}
+        <div 
+          ref={logsContainerRef}
+          className={`p-5 min-h-[340px] max-h-[460px] overflow-y-auto space-y-2 text-xs font-mono select-text scrollbar-thin ${
+            osMode === 'cmd' ? 'bg-black text-gray-200' : 'bg-slate-950/95 text-slate-200'
+          }`}
+        >
           {osMode === 'cmd' && (
             <div className="space-y-0.5 mb-3 text-gray-400">
               <p>Microsoft Windows [Version 10.0.19045.3803]</p>
@@ -325,7 +324,6 @@ export default function LabNotebook() {
               )}
             </div>
           ))}
-          <div ref={terminalEndRef} />
         </div>
 
         {/* TERMINAL INPUT FORM */}
@@ -427,7 +425,7 @@ export default function LabNotebook() {
                 </div>
 
                 <button
-                  onClick={() => handleExecuteCommand(tut.cmd, true)}
+                  onClick={() => handleExecuteCommand(tut.cmd)}
                   className={`w-full py-1.5 px-3 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     isDone
                       ? 'bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 border-emerald-600/80'
