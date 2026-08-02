@@ -504,220 +504,184 @@ export default function MailModule({ appMode = 'clean' }) {
 
   const animPos = getPacketPos();
 
+  // Active state lighting logic for architecture components (MUA, MSA, MTA, MDA, MRA)
+  const isMUAActive = activeStep === 1 || activeStep === 4;
+  const isMSAActive = activeStep === 1;
+  const isMTAActive = activeStep === 1 || activeStep === 2 || activeStep === 3;
+  const isMDAActive = activeStep === 4;
+  const isMRAActive = activeStep === 4;
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
-      {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
-      <CleanWidget
-        title="Mail Server Routing Made Simple"
-        subtitle={`Sending email from ${senderEmail} to ${recipientEmail}`}
-        icon={Mail}
-        ip={recipientDomain}
-        protocol="SMTP / IMAP / POP3"
-        port="Port 587 / 25 / 993"
-        status={domainMode === 'cross' ? 'Cross-Domain MX Routing' : 'Intra-Domain Direct Delivery'}
-        actionTitle={currentMeta.title}
-        actionDesc={currentMeta.subtitle}
-        stepNumber={activeStep}
-        totalSteps={totalSteps}
-        isPlaying={isPlaying}
-        onPlay={handlePlayFull}
-        onStep={handleStepForward}
-        onReset={handleReset}
-        speed={speed}
-        setSpeed={setSpeed}
-        showAnimation={showAnimation}
-        setShowAnimation={setShowAnimation}
-      />
+      {/* TOP UNIFIED CONTROL & MAIL CONFIGURATION CARD */}
+      <div className="glass-panel p-4 rounded-3xl border border-slate-800 space-y-3 shadow-2xl bg-slate-900/90 font-mono text-xs">
+        <CleanWidget
+          title="Enterprise Mail Architecture"
+          subtitle={`Sending email from ${senderEmail} to ${recipientEmail}`}
+          icon={Mail}
+          ip={recipientDomain}
+          protocol="SMTP / IMAP / POP3"
+          port="Port 587 / 25 / 993"
+          status={domainMode === 'cross' ? 'Cross-Domain MX Routing' : 'Intra-Domain Direct Delivery'}
+          actionTitle={currentMeta.title}
+          actionDesc={currentMeta.subtitle}
+          stepNumber={activeStep}
+          totalSteps={totalSteps}
+          isPlaying={isPlaying}
+          onPlay={handlePlayFull}
+          onStep={handleStepForward}
+          onReset={handleReset}
+          speed={speed}
+          setSpeed={setSpeed}
+          showAnimation={showAnimation}
+          setShowAnimation={setShowAnimation}
+        />
 
-      {/* FLOATING MODAL POPUP FOR MAIL PAYLOAD INSPECTOR (DETAILED MODE ONLY) */}
-      {(appMode === 'detailed' || appMode === 'expert') && modalPayloadStep && activeModalData && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="glass-panel max-w-2xl w-full p-7 rounded-3xl border border-slate-700 shadow-2xl space-y-6 bg-slate-900/95 relative text-slate-100 max-h-[90vh] overflow-y-auto font-mono">
-            
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                  <Mail className="w-8 h-8" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-black text-slate-100 tracking-tight">{activeModalData.stepName} Payload</h3>
-                  <p className="text-xs text-amber-400 font-bold">{activeModalData.protocol}</p>
-                </div>
-              </div>
+        {/* COMBINED MAIL CONFIGURATION CONTROLS */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/80 text-[11px]">
+          {/* Domain Routing Mode */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-400 font-bold">Mail Domain Mode:</span>
+            <div className="flex items-center bg-slate-950 p-0.5 rounded-xl border border-slate-800">
               <button
-                onClick={() => setModalPayloadStep(null)}
-                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 cursor-pointer"
+                onClick={() => { setDomainMode('intra'); handleReset(); }}
+                className={`px-2.5 py-1 rounded-lg font-extrabold transition-all cursor-pointer ${
+                  domainMode === 'intra' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
+                }`}
               >
-                <X className="w-5 h-5" />
+                🏢 Same Domain (@dts.local)
               </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="space-y-4 text-xs">
-              
-              {/* Architecture Components Banner */}
-              <div className="p-4 bg-amber-950/60 rounded-2xl border border-amber-700/60 space-y-1">
-                <span className="text-xs text-amber-400 font-bold uppercase tracking-wider block">Active Mail Architecture Components:</span>
-                <p className="text-sm font-black text-amber-200">{activeModalData.archComponents}</p>
-              </div>
-
-              {/* Network Stack Headers */}
-              <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-                <span className="text-cyan-400 font-extrabold text-sm block border-b border-slate-800 pb-1">Network Stack Headers:</span>
-                <p><span className="text-slate-500 font-bold">Ethernet (L2):</span> <span className="text-slate-200">{activeModalData.l2Header}</span></p>
-                <p><span className="text-slate-500 font-bold">IPv4 (L3):</span> <span className="text-cyan-300 font-bold">{activeModalData.l3Header}</span></p>
-                <p><span className="text-slate-500 font-bold">Transport Layer (L4):</span> <span className="text-amber-300 font-bold">{activeModalData.l4Header}</span></p>
-              </div>
-
-              {/* Protocol Handshake */}
-              <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-                <span className="text-amber-400 font-extrabold text-sm block border-b border-slate-800 pb-1">Protocol Handshake Commands / DNS Resolution:</span>
-                <p className="text-slate-200 font-bold bg-slate-900 p-2.5 rounded-xl border border-slate-800 leading-relaxed">
-                  {activeModalData.cmdHandshake}
-                </p>
-              </div>
-
-              {/* Email Headers & Body Payload */}
-              <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-                <span className="text-emerald-400 font-extrabold text-sm block border-b border-slate-800 pb-1">Raw RFC 5322 Email Data / DNS Payload:</span>
-                <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1 font-mono text-[11px] text-slate-300">
-                  {activeModalData.dataBody.map((line, idx) => (
-                    <p key={idx} className={line.startsWith('Subject:') ? 'text-cyan-300 font-bold' : line.startsWith('Hello') || line.startsWith('Result:') ? 'text-amber-300 font-bold pt-2' : ''}>
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex justify-end pt-2 border-t border-slate-800">
               <button
-                onClick={() => setModalPayloadStep(null)}
-                className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-all cursor-pointer shadow-lg shadow-amber-500/20"
+                onClick={() => { setDomainMode('cross'); handleReset(); }}
+                className={`px-2.5 py-1 rounded-lg font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                  domainMode === 'cross' ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-purple-600 text-slate-950 font-black shadow' : 'text-slate-400 hover:text-slate-200'
+                }`}
               >
-                Close Inspector
+                <Globe className="w-3 h-3" />
+                <span>🌐 Cross-Domain (DNS MX)</span>
               </button>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* TOP BAR: DOMAIN ROUTING TOGGLE (SAME DOMAIN VS CROSS-DOMAIN), SERVER STACK & RETRIEVAL PROTOCOL */}
-      <div className="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-wrap items-center justify-between gap-4 shadow-2xl bg-slate-900/90 font-mono text-xs">
-        
-        {/* Group 1: Domain Routing Scenario Toggle (INTRA vs INTER DOMAIN WITH DNS MX STEP) */}
-        <div className="flex items-center gap-2">
-          <span className="text-slate-400 font-bold">Mail Domain Mode:</span>
-          <div className="flex items-center bg-slate-950 p-1 rounded-2xl border border-slate-800">
-            <button
-              onClick={() => { setDomainMode('intra'); handleReset(); }}
-              className={`px-3 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
-                domainMode === 'intra'
-                  ? 'bg-purple-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <span>🏢 Same Domain (@dts.local)</span>
-            </button>
-
-            <button
-              onClick={() => { setDomainMode('cross'); handleReset(); }}
-              className={`px-3 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
-                domainMode === 'cross'
-                  ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-purple-600 text-slate-950 font-black shadow-md'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5" />
-              <span>🌐 Cross-Domain (@dts-herford.de ➔ ISP DNS MX ➔ @company-partner.com)</span>
-            </button>
+          {/* Server Stack */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-400 font-bold">Stack:</span>
+            <div className="flex items-center bg-slate-950 p-0.5 rounded-xl border border-slate-800">
+              <button
+                onClick={() => setServerStack('exchange')}
+                className={`px-2 py-0.5 rounded-lg font-extrabold transition-all cursor-pointer ${
+                  serverStack === 'exchange' ? 'bg-blue-600 text-white' : 'text-slate-400'
+                }`}
+              >
+                🪟 Exchange
+              </button>
+              <button
+                onClick={() => setServerStack('postfix_dovecot')}
+                className={`px-2 py-0.5 rounded-lg font-extrabold transition-all cursor-pointer ${
+                  serverStack === 'postfix_dovecot' ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
+                }`}
+              >
+                🐧 Linux Stack
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Group 2: Server Architecture Toggle */}
-        <div className="flex items-center gap-2">
-          <span className="text-slate-400 font-bold">Stack:</span>
-          <div className="flex items-center bg-slate-950 p-1 rounded-2xl border border-slate-800">
-            <button
-              onClick={() => setServerStack('exchange')}
-              className={`px-2.5 py-1 rounded-xl font-extrabold transition-all cursor-pointer ${
-                serverStack === 'exchange' ? 'bg-blue-600 text-white' : 'text-slate-400'
-              }`}
+          {/* Retrieval Protocol Mode */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-400 font-bold">Retrieval:</span>
+            <select
+              value={mailProtocol}
+              onChange={(e) => setMailProtocol(e.target.value)}
+              className="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-cyan-300 font-bold focus:outline-none cursor-pointer text-[11px]"
             >
-              🪟 Exchange 2019
-            </button>
-            <button
-              onClick={() => setServerStack('postfix_dovecot')}
-              className={`px-2.5 py-1 rounded-xl font-extrabold transition-all cursor-pointer ${
-                serverStack === 'postfix_dovecot' ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
-              }`}
-            >
-              🐧 Linux Stack
-            </button>
+              <option value="smtp_imap">IMAP4 (Port 993 IMAPS Sync)</option>
+              <option value="smtp_pop3">POP3 (Port 995 POP3S Download)</option>
+            </select>
           </div>
-        </div>
-
-        {/* Group 3: Retrieval Protocol Mode */}
-        <div className="flex items-center gap-2">
-          <select
-            value={mailProtocol}
-            onChange={(e) => setMailProtocol(e.target.value)}
-            className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-cyan-300 font-bold focus:outline-none cursor-pointer"
-          >
-            <option value="smtp_imap">IMAP4 (Port 993 IMAPS - MRA Sync)</option>
-            <option value="smtp_pop3">POP3 (Port 995 POP3S - MUA Download)</option>
-          </select>
         </div>
       </div>
 
-      {/* PROMINENT MAIL ARCHITECTURE COMPONENTS (MUA, MSA, MTA, MDA, MRA) CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 font-mono text-xs">
-        <div className="p-3 bg-slate-900/90 rounded-2xl border border-cyan-500/40 space-y-1">
-          <div className="flex items-center gap-1.5 text-cyan-400 font-extrabold">
-            <Laptop className="w-4 h-4" />
-            <span>MUA</span>
+      {/* COMPACT STAGE LIGHTING CHIPS FOR ARCHITECTURE AGENTS (MUA, MSA, MTA, MDA, MRA) */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 font-mono text-[11px]">
+        {/* MUA Chip */}
+        <div className={`px-3 py-2 rounded-xl border flex items-center justify-between transition-all duration-300 ${
+          isMUAActive
+            ? 'bg-cyan-950/90 border-cyan-400 text-cyan-300 shadow-lg shadow-cyan-500/30 scale-105 animate-pulse font-extrabold'
+            : 'bg-slate-900/60 border-slate-800/80 text-slate-400 opacity-60'
+        }`}>
+          <div className="flex items-center gap-2">
+            <Laptop className={`w-4 h-4 ${isMUAActive ? 'text-cyan-300' : 'text-slate-500'}`} />
+            <div>
+              <p className="font-black text-xs">MUA</p>
+              <p className="text-[9px] text-slate-400">User Agent</p>
+            </div>
           </div>
-          <p className="text-[11px] font-bold text-slate-100">Mail User Agent</p>
-          <p className="text-[10px] text-slate-400 leading-tight">Client app (Outlook, Thunderbird, Webmail) to compose & read email.</p>
+          {isMUAActive && <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />}
         </div>
 
-        <div className="p-3 bg-slate-900/90 rounded-2xl border border-amber-500/40 space-y-1">
-          <div className="flex items-center gap-1.5 text-amber-400 font-extrabold">
-            <Send className="w-4 h-4" />
-            <span>MSA</span>
+        {/* MSA Chip */}
+        <div className={`px-3 py-2 rounded-xl border flex items-center justify-between transition-all duration-300 ${
+          isMSAActive
+            ? 'bg-amber-950/90 border-amber-400 text-amber-300 shadow-lg shadow-amber-500/30 scale-105 animate-pulse font-extrabold'
+            : 'bg-slate-900/60 border-slate-800/80 text-slate-400 opacity-60'
+        }`}>
+          <div className="flex items-center gap-2">
+            <Send className={`w-4 h-4 ${isMSAActive ? 'text-amber-300' : 'text-slate-500'}`} />
+            <div>
+              <p className="font-black text-xs">MSA</p>
+              <p className="text-[9px] text-slate-400">Port 587 Auth</p>
+            </div>
           </div>
-          <p className="text-[11px] font-bold text-slate-100">Mail Submission Agent</p>
-          <p className="text-[10px] text-slate-400 leading-tight">Accepts mail on Port 587, authenticates user & signs DKIM/SPF.</p>
+          {isMSAActive && <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />}
         </div>
 
-        <div className="p-3 bg-slate-900/90 rounded-2xl border border-blue-500/40 space-y-1">
-          <div className="flex items-center gap-1.5 text-blue-400 font-extrabold">
-            <Server className="w-4 h-4" />
-            <span>MTA</span>
+        {/* MTA Chip */}
+        <div className={`px-3 py-2 rounded-xl border flex items-center justify-between transition-all duration-300 ${
+          isMTAActive
+            ? 'bg-blue-950/90 border-blue-400 text-blue-300 shadow-lg shadow-blue-500/30 scale-105 animate-pulse font-extrabold'
+            : 'bg-slate-900/60 border-slate-800/80 text-slate-400 opacity-60'
+        }`}>
+          <div className="flex items-center gap-2">
+            <Server className={`w-4 h-4 ${isMTAActive ? 'text-blue-300' : 'text-slate-500'}`} />
+            <div>
+              <p className="font-black text-xs">MTA</p>
+              <p className="text-[9px] text-slate-400">Port 25 Relay</p>
+            </div>
           </div>
-          <p className="text-[11px] font-bold text-slate-100">Mail Transfer Agent</p>
-          <p className="text-[10px] text-slate-400 leading-tight">Relays email across Internet on Port 25 via DNS MX lookup (Postfix/Exchange).</p>
+          {isMTAActive && <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping" />}
         </div>
 
-        <div className="p-3 bg-slate-900/90 rounded-2xl border border-purple-500/40 space-y-1">
-          <div className="flex items-center gap-1.5 text-purple-400 font-extrabold">
-            <Inbox className="w-4 h-4" />
-            <span>MDA</span>
+        {/* MDA Chip */}
+        <div className={`px-3 py-2 rounded-xl border flex items-center justify-between transition-all duration-300 ${
+          isMDAActive
+            ? 'bg-purple-950/90 border-purple-400 text-purple-300 shadow-lg shadow-purple-500/30 scale-105 animate-pulse font-extrabold'
+            : 'bg-slate-900/60 border-slate-800/80 text-slate-400 opacity-60'
+        }`}>
+          <div className="flex items-center gap-2">
+            <Inbox className={`w-4 h-4 ${isMDAActive ? 'text-purple-300' : 'text-slate-500'}`} />
+            <div>
+              <p className="font-black text-xs">MDA</p>
+              <p className="text-[9px] text-slate-400">Local Delivery</p>
+            </div>
           </div>
-          <p className="text-[11px] font-bold text-slate-100">Mail Delivery Agent</p>
-          <p className="text-[10px] text-slate-400 leading-tight">Delivers incoming mail to local mailbox storage.</p>
+          {isMDAActive && <span className="w-2 h-2 rounded-full bg-purple-400 animate-ping" />}
         </div>
 
-        <div className="p-3 bg-slate-900/90 rounded-2xl border border-emerald-500/40 space-y-1">
-          <div className="flex items-center gap-1.5 text-emerald-400 font-extrabold">
-            <RefreshCw className="w-4 h-4" />
-            <span>MRA</span>
+        {/* MRA Chip */}
+        <div className={`px-3 py-2 rounded-xl border flex items-center justify-between transition-all duration-300 ${
+          isMRAActive
+            ? 'bg-emerald-950/90 border-emerald-400 text-emerald-300 shadow-lg shadow-emerald-500/30 scale-105 animate-pulse font-extrabold'
+            : 'bg-slate-900/60 border-slate-800/80 text-slate-400 opacity-60'
+        }`}>
+          <div className="flex items-center gap-2">
+            <RefreshCw className={`w-4 h-4 ${isMRAActive ? 'text-emerald-300' : 'text-slate-500'}`} />
+            <div>
+              <p className="font-black text-xs">MRA</p>
+              <p className="text-[9px] text-slate-400">IMAP/POP3 Sync</p>
+            </div>
           </div>
-          <p className="text-[11px] font-bold text-slate-100">Mail Retrieval Agent</p>
-          <p className="text-[10px] text-slate-400 leading-tight">Serves mailbox to recipient MUA via IMAP4 (Port 993) or POP3 (Port 995).</p>
+          {isMRAActive && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />}
         </div>
       </div>
 
