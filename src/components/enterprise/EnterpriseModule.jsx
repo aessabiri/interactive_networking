@@ -325,32 +325,32 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
         
         {/* NETWORK CABLES SVG OVERLAY */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
-          {/* Laptop-A (12%,65%) -> Floor Switch (45%,65%) */}
+          {/* Laptop-A (12%,65%) -> Floor Switch (45%,65%) - Straight UTP Ethernet */}
           <line x1="12%" y1="65%" x2="45%" y2="65%" stroke="#06b6d4" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" />
           
-          {/* PC-B (28%,65%) -> Floor Switch (45%,65%) */}
-          <line x1="28%" y1="65%" x2="45%" y2="65%" stroke="#3b82f6" strokeWidth="3" strokeDasharray="6 4" />
+          {/* PC-B (28%,65%) -> Floor Switch (45%,65%) - Straight UTP Ethernet */}
+          <line x1="28%" y1="65%" x2="45%" y2="65%" stroke="#06b6d4" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" />
 
-          {/* Printer (20%,32%) -> Floor Switch (45%,65%) */}
-          <line x1="20%" y1="32%" x2="45%" y2="65%" stroke="#10b981" strokeWidth="3" strokeDasharray="6 4" />
+          {/* Printer (20%,32%) -> Floor Switch (45%,65%) - Peripheral Cable */}
+          <line x1="20%" y1="32%" x2="45%" y2="65%" stroke="#10b981" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" />
 
-          {/* Floor Switch (45%,65%) -> Core Router (45%,42%) */}
+          {/* Floor Switch (45%,65%) -> Core Router (45%,42%) - Router Trunk */}
           <line x1="45%" y1="65%" x2="45%" y2="42%" stroke="#f59e0b" strokeWidth="5" />
 
-          {/* Core Router (45%,42%) -> Data Center Switch (72%,42%) */}
+          {/* Core Router (45%,42%) -> Data Center Switch (72%,42%) - Router Trunk */}
           <line x1="45%" y1="42%" x2="72%" y2="42%" stroke="#f59e0b" strokeWidth="5" strokeDasharray="8 6" className="animate-wire-dash" />
 
-          {/* DC Switch (72%,42%) -> DHCP Server (85%,25%) */}
-          <line x1="72%" y1="42%" x2="85%" y2="25%" stroke="#f59e0b" strokeWidth="3" strokeDasharray="6 4" />
+          {/* DC Switch (72%,42%) -> DHCP Server (85%,25%) - Fiber Backbone */}
+          <line x1="72%" y1="42%" x2="85%" y2="25%" stroke="#a855f7" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" />
 
-          {/* DC Switch (72%,42%) -> Domain DC (85%,45%) */}
-          <line x1="72%" y1="42%" x2="85%" y2="45%" stroke="#a855f7" strokeWidth="3" strokeDasharray="6 4" />
+          {/* DC Switch (72%,42%) -> Domain DC (85%,45%) - Fiber Backbone */}
+          <line x1="72%" y1="42%" x2="85%" y2="45%" stroke="#a855f7" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" />
 
-          {/* DC Switch (72%,42%) -> DNS Server (85%,65%) */}
-          <line x1="72%" y1="42%" x2="85%" y2="65%" stroke="#06b6d4" strokeWidth="3" strokeDasharray="6 4" />
+          {/* DC Switch (72%,42%) -> DNS Server (85%,65%) - Fiber Backbone */}
+          <line x1="72%" y1="42%" x2="85%" y2="65%" stroke="#a855f7" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" />
 
-          {/* DC Switch (72%,42%) -> Mail Server (85%,85%) */}
-          <line x1="72%" y1="42%" x2="85%" y2="85%" stroke="#6366f1" strokeWidth="3" strokeDasharray="6 4" />
+          {/* DC Switch (72%,42%) -> Mail Server (85%,85%) - Fiber Backbone */}
+          <line x1="72%" y1="42%" x2="85%" y2="85%" stroke="#a855f7" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" />
         </svg>
 
         {/* TOPOLOGY NODES */}
@@ -364,19 +364,19 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
           <div className="p-4 bg-slate-900 border-2 border-cyan-500 rounded-2xl shadow-xl">
             <Laptop className="w-10 h-10 text-cyan-400" />
           </div>
-          <p className="font-extrabold text-xs text-slate-100">Laptop-A (Sales)</p>
+          <p className="font-extrabold text-xs text-cyan-300">Laptop-A (Sales)</p>
           <p className="text-[10px] text-slate-400">MAC: 00:1A:2B:3C:4D:01</p>
         </div>
 
         {/* 2. PC-B (HR) */}
         <div className="absolute left-[28%] top-[65%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 font-mono text-center z-10">
-          <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-blue-950 text-blue-300 border border-blue-800 shadow">
+          <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-800 shadow">
             192.168.1.106
           </span>
-          <div className="p-4 bg-slate-900 border-2 border-blue-500 rounded-2xl shadow-xl">
-            <Laptop className="w-10 h-10 text-blue-400" />
+          <div className="p-4 bg-slate-900 border-2 border-cyan-500 rounded-2xl shadow-xl">
+            <Laptop className="w-10 h-10 text-cyan-400" />
           </div>
-          <p className="font-extrabold text-xs text-slate-100">PC-B (HR Dept)</p>
+          <p className="font-extrabold text-xs text-cyan-300">PC-B (HR Dept)</p>
           <p className="text-[10px] text-slate-400">MAC: 00:1A:2B:3C:4D:02</p>
         </div>
 
@@ -386,23 +386,23 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
             192.168.1.50
           </span>
           <div className={`p-4 rounded-2xl border-2 transition-all ${
-            activeStep === 5 ? 'bg-emerald-950 border-emerald-400 scale-110 shadow-2xl shadow-emerald-500/40' : 'bg-slate-900 border-slate-700'
+            activeStep === 5 ? 'bg-emerald-950 border-emerald-400 scale-110 shadow-2xl shadow-emerald-500/40' : 'bg-slate-900 border-emerald-500/60'
           }`}>
             <Printer className="w-10 h-10 text-emerald-400" />
           </div>
-          <p className="font-extrabold text-xs text-slate-100">Office Printer</p>
+          <p className="font-extrabold text-xs text-emerald-300">Office Printer</p>
           <p className="text-[10px] text-slate-400">LPR / RAW Print Server</p>
         </div>
 
         {/* 4. Floor-1 L2 Access Switch */}
         <div className="absolute left-[45%] top-[65%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 font-mono text-center z-10">
-          <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-slate-900 text-slate-300 border border-slate-700 shadow">
+          <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-950 text-blue-300 border border-blue-800 shadow">
             Floor-1 Switch (L2)
           </span>
-          <div className="p-5 bg-slate-900 border-2 border-slate-600 rounded-3xl shadow-xl">
-            <Layers className="w-12 h-12 text-slate-300" />
+          <div className="p-5 bg-slate-900 border-2 border-blue-500 rounded-3xl shadow-xl">
+            <Layers className="w-12 h-12 text-blue-400" />
           </div>
-          <p className="font-extrabold text-xs text-slate-200">Floor-1 Access Switch</p>
+          <p className="font-extrabold text-xs text-blue-300">Floor-1 Access Switch</p>
         </div>
 
         {/* CORE ROUTING ZONE */}
@@ -411,7 +411,7 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
           <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-950 text-amber-300 border border-amber-700 shadow">
             Gateway: 192.168.1.1
           </span>
-          <div className="p-5 bg-amber-950/80 border-2 border-amber-500 rounded-3xl shadow-2xl">
+          <div className="p-5 bg-slate-900 border-2 border-amber-500 rounded-3xl shadow-2xl">
             <Router className="w-12 h-12 text-amber-400 animate-pulse" />
           </div>
           <p className="font-extrabold text-xs text-amber-300">Core Router & Firewall</p>
@@ -420,26 +420,26 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
         {/* DATA CENTER SERVER RACK ZONE */}
         {/* 6. Data Center Switch */}
         <div className="absolute left-[72%] top-[42%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 font-mono text-center z-10">
-          <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800 shadow">
+          <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-950 text-blue-300 border border-blue-800 shadow">
             Data Center Core Switch
           </span>
-          <div className="p-4 bg-slate-900 border-2 border-purple-600 rounded-2xl shadow-xl">
-            <Layers className="w-10 h-10 text-purple-400" />
+          <div className="p-4 bg-slate-900 border-2 border-blue-500 rounded-2xl shadow-xl">
+            <Layers className="w-10 h-10 text-blue-400" />
           </div>
-          <p className="font-extrabold text-xs text-purple-300">DC Core Switch</p>
+          <p className="font-extrabold text-xs text-blue-300">DC Core Switch</p>
         </div>
 
         {/* 7. DHCP Server */}
         <div className="absolute left-[85%] top-[25%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 font-mono text-center z-10">
-          <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-amber-950 text-amber-300 border border-amber-800 shadow">
+          <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800 shadow">
             192.168.1.2
           </span>
           <div className={`p-3 rounded-2xl border-2 transition-all ${
-            activeStep === 1 ? 'bg-amber-950 border-amber-400 scale-110 shadow-2xl shadow-amber-500/40' : 'bg-slate-900 border-slate-700'
+            activeStep === 1 ? 'bg-purple-950 border-purple-400 scale-110 shadow-2xl shadow-purple-500/40' : 'bg-slate-900 border-purple-500/60'
           }`}>
-            <Zap className="w-8 h-8 text-amber-400" />
+            <Server className="w-8 h-8 text-purple-400" />
           </div>
-          <p className="font-extrabold text-[11px] text-amber-300">DHCP Server</p>
+          <p className="font-extrabold text-[11px] text-purple-300">DHCP Server</p>
         </div>
 
         {/* 8. Active Directory / FreeIPA DC */}
@@ -448,9 +448,9 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
             192.168.1.10
           </span>
           <div className={`p-3 rounded-2xl border-2 transition-all ${
-            activeStep === 2 ? 'bg-purple-950 border-purple-400 scale-110 shadow-2xl shadow-purple-500/40' : 'bg-slate-900 border-slate-700'
+            activeStep === 2 ? 'bg-purple-950 border-purple-400 scale-110 shadow-2xl shadow-purple-500/40' : 'bg-slate-900 border-purple-500/60'
           }`}>
-            <ShieldCheck className="w-8 h-8 text-purple-400" />
+            <Server className="w-8 h-8 text-purple-400" />
           </div>
           <p className="font-extrabold text-[11px] text-purple-300">
             {ecosystem === 'windows' ? 'AD DC01 (Kerberos)' : 'FreeIPA LDAP DC'}
@@ -459,30 +459,30 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
 
         {/* 9. Corporate DNS Server */}
         <div className="absolute left-[85%] top-[65%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 font-mono text-center z-10">
-          <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-800 shadow">
+          <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800 shadow">
             192.168.1.20
           </span>
           <div className={`p-3 rounded-2xl border-2 transition-all ${
-            activeStep === 3 ? 'bg-cyan-950 border-cyan-400 scale-110 shadow-2xl shadow-cyan-500/40' : 'bg-slate-900 border-slate-700'
+            activeStep === 3 ? 'bg-purple-950 border-purple-400 scale-110 shadow-2xl shadow-purple-500/40' : 'bg-slate-900 border-purple-500/60'
           }`}>
-            <Globe className="w-8 h-8 text-cyan-400" />
+            <Server className="w-8 h-8 text-purple-400" />
           </div>
-          <p className="font-extrabold text-[11px] text-cyan-300">
+          <p className="font-extrabold text-[11px] text-purple-300">
             {ecosystem === 'windows' ? 'Windows DNS Server' : 'BIND9 DNS Resolver'}
           </p>
         </div>
 
         {/* 10. Corporate Mail Server */}
         <div className="absolute left-[85%] top-[85%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 font-mono text-center z-10">
-          <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-indigo-950 text-indigo-300 border border-indigo-800 shadow">
+          <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800 shadow">
             192.168.1.25
           </span>
           <div className={`p-3 rounded-2xl border-2 transition-all ${
-            activeStep === 4 ? 'bg-indigo-950 border-indigo-400 scale-110 shadow-2xl shadow-indigo-500/40' : 'bg-slate-900 border-slate-700'
+            activeStep === 4 ? 'bg-purple-950 border-purple-400 scale-110 shadow-2xl shadow-purple-500/40' : 'bg-slate-900 border-purple-500/60'
           }`}>
-            <Mail className="w-8 h-8 text-indigo-400" />
+            <Server className="w-8 h-8 text-purple-400" />
           </div>
-          <p className="font-extrabold text-[11px] text-indigo-300">
+          <p className="font-extrabold text-[11px] text-purple-300">
             {ecosystem === 'windows' ? 'Exchange Mail Server' : 'Postfix / Dovecot Mail'}
           </p>
         </div>
