@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Network, Laptop, Server, Router, ShieldCheck, Globe, Play, Square, Trash2, Plus, Zap, Gauge, CheckCircle2, Settings, Cpu, FileCode, Terminal, X, Radio, HardDrive, Mail, Layers, Activity, Printer, Wifi, Database, Download, Upload, FileJson, Sparkles } from 'lucide-react';
+import { Network, Laptop, Server, Router, ShieldCheck, Globe, Play, Square, Trash2, Plus, Zap, Gauge, CheckCircle2, Settings, Cpu, FileCode, Terminal, X, Radio, HardDrive, Mail, Layers, Activity, Printer, Wifi, Database, Download, Upload, FileJson, Sparkles, RotateCcw } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
 
@@ -420,9 +420,44 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
     e.target.value = '';
   };
 
+  // Reset Canvas State
+  const handleResetCanvas = () => {
+    if (nodes.length > 0 && !window.confirm('Are you sure you want to reset and clear all devices from the canvas?')) {
+      return;
+    }
+    setNodes([]);
+    setLinks([]);
+    setSelectedNodeId(null);
+    setEditingServerId(null);
+    setDisconnectModalNodeId(null);
+    setLivePacketData(null);
+    setIsSimulating(false);
+    if (simTimerRef.current) clearInterval(simTimerRef.current);
+    setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'RESET', message: 'Canvas reset to clean empty workspace state.' }]);
+  };
+
   // Preset Template Loader
   const handleLoadTemplate = (templateKey) => {
     const templates = {
+      standard_lan: {
+        nodes: [
+          { id: 'pc1', name: 'SALES-LAPTOP-01', type: 'laptop', x: 80, y: 120, ip: '192.168.1.105', mac: '00:50:56:A1:B2:C1', os: 'Windows 11 Pro', roles: [], subnetMask: '255.255.255.0', vlan: '10 (SALES)', gateway: '192.168.1.1' },
+          { id: 'pc2', name: 'HR-DESKTOP-02', type: 'desktop', x: 80, y: 260, ip: '192.168.1.106', mac: '00:50:56:A1:B2:C2', os: 'Windows 11 Pro', roles: [], subnetMask: '255.255.255.0', vlan: '20 (HR)', gateway: '192.168.1.1' },
+          { id: 'prn1', name: 'NETWORK-PRINTER', type: 'printer', x: 80, y: 400, ip: '192.168.1.50', mac: '00:11:22:33:44:55', os: 'LPR Print Firmware', roles: [], subnetMask: '255.255.255.0', gateway: '192.168.1.1' },
+          { id: 'sw1', name: 'FLOOR-1-SWITCH', type: 'switch', x: 340, y: 260, ip: 'N/A (L2)', mac: '00:11:22:00:11:22', os: 'Cisco Catalyst L2', roles: [], vlan: 'TRUNK' },
+          { id: 'srv1', name: 'DC01-AD-SERVER', type: 'server', x: 600, y: 120, ip: '192.168.1.10', mac: '00:0C:29:8E:7F:11', os: 'Windows Server 2022', roles: ['dhcp', 'ad', 'dns'], subnetMask: '255.255.255.0', gateway: '192.168.1.1' },
+          { id: 'r1', name: 'CORE-ROUTER-GW', type: 'router', x: 600, y: 360, ip: '192.168.1.1', mac: '00:00:0C:07:AC:01', os: 'Cisco IOS RouterOS', roles: ['nat'], subnetMask: '255.255.255.0' },
+          { id: 'isp1', name: 'INTERNET-ISP 🌐', type: 'cloud', x: 840, y: 360, ip: '8.8.8.8 (WAN)', mac: '00:FE:88:99:AA:BB', os: 'Public WAN ISP', roles: [] }
+        ],
+        links: [
+          { id: 'l1', from: 'pc1', to: 'sw1', cableType: 'straight' },
+          { id: 'l2', from: 'pc2', to: 'sw1', cableType: 'straight' },
+          { id: 'l3', from: 'prn1', to: 'sw1', cableType: 'straight' },
+          { id: 'l4', from: 'sw1', to: 'srv1', cableType: 'straight' },
+          { id: 'l5', from: 'sw1', to: 'r1', cableType: 'straight' },
+          { id: 'l6', from: 'r1', to: 'isp1', cableType: 'straight' }
+        ]
+      },
       corporate: {
         nodes: [
           { id: 'lap1', name: 'WORKSTATION-01', type: 'laptop', x: 80, y: 160, ip: '192.168.1.105', mac: '00:50:56:A1:B2:C1', os: 'Windows 11 Pro', roles: [], subnetMask: '255.255.255.0', vlan: '10 (DATA)', gateway: '192.168.1.1' },
@@ -453,6 +488,24 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
           { id: 'link4', from: 'fw1', to: 'isp1', cableType: 'straight' }
         ]
       },
+      hybrid_wan: {
+        nodes: [
+          { id: 'b_pc', name: 'BRANCH-USER', type: 'laptop', x: 60, y: 220, ip: '10.10.1.105', mac: '00:50:56:44:55:66', os: 'Windows 11 Pro', roles: [], subnetMask: '255.255.255.0', gateway: '10.10.1.1' },
+          { id: 'b_sdwan', name: 'BRANCH-SDWAN-EDGE', type: 'router', x: 260, y: 220, ip: '10.10.1.1', mac: '00:11:22:44:55:00', os: 'Cisco SD-WAN VEdge', roles: ['nat'], subnetMask: '255.255.255.0' },
+          { id: 'isp_pri', name: 'PRIMARY-FIBER-WAN 🌐', type: 'cloud', x: 500, y: 120, ip: '198.51.100.1', mac: '00:FE:88:11:22:33', os: 'Primary Fiber ISP Provider', roles: [] },
+          { id: 'isp_sec', name: 'BACKUP-5G-LTE 🌐', type: 'cloud', x: 500, y: 320, ip: '203.0.113.50', mac: '00:FE:88:44:55:66', os: 'Secondary 5G Cellular ISP', roles: [] },
+          { id: 'hq_edge', name: 'HQ-SDWAN-HUB', type: 'router', x: 740, y: 220, ip: '172.16.1.1', mac: '00:11:22:77:88:99', os: 'Cisco SD-WAN C8000', roles: ['nat'], subnetMask: '255.255.0.0' },
+          { id: 'hq_app', name: 'HQ-DATACENTER-APP', type: 'server', x: 940, y: 220, ip: '172.16.1.10', mac: '00:0C:29:99:88:77', os: 'Linux Enterprise Server', roles: ['http', 'db'], subnetMask: '255.255.0.0', gateway: '172.16.1.1' }
+        ],
+        links: [
+          { id: 'hl1', from: 'b_pc', to: 'b_sdwan', cableType: 'straight' },
+          { id: 'hl2', from: 'b_sdwan', to: 'isp_pri', cableType: 'fiber' },
+          { id: 'hl3', from: 'b_sdwan', to: 'isp_sec', cableType: 'serial' },
+          { id: 'hl4', from: 'isp_pri', to: 'hq_edge', cableType: 'fiber' },
+          { id: 'hl5', from: 'isp_sec', to: 'hq_edge', cableType: 'serial' },
+          { id: 'hl6', from: 'hq_edge', to: 'hq_app', cableType: 'straight' }
+        ]
+      },
       vpn: {
         nodes: [
           { id: 'pc1', name: 'BRANCH-PC', type: 'laptop', x: 80, y: 200, ip: '192.168.10.50', mac: '00:50:56:77:88:99', os: 'Windows 11 Pro', roles: [], subnetMask: '255.255.255.0', vlan: '100', gateway: '192.168.10.1' },
@@ -466,6 +519,25 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
           { id: 'l2', from: 'r_branch', to: 'isp1', cableType: 'fiber' },
           { id: 'l3', from: 'isp1', to: 'r_hq', cableType: 'fiber' },
           { id: 'l4', from: 'r_hq', to: 'hq_srv', cableType: 'straight' }
+        ]
+      },
+      enterprise_ha: {
+        nodes: [
+          { id: 'user1', name: 'CORP-PC-01', type: 'laptop', x: 80, y: 220, ip: '10.20.1.100', mac: '00:50:56:99:00:11', os: 'Windows 11 Enterprise', roles: [], subnetMask: '255.255.255.0', gateway: '10.20.1.1' },
+          { id: 'sw_pri', name: 'CORE-SW-01 (HA)', type: 'switch', x: 300, y: 120, ip: 'N/A (L2/L3)', mac: '00:11:22:AA:BB:01', os: 'Cisco Catalyst 9500', roles: [], vlan: 'TRUNK' },
+          { id: 'sw_sec', name: 'CORE-SW-02 (HA)', type: 'switch', x: 300, y: 320, ip: 'N/A (L2/L3)', mac: '00:11:22:AA:BB:02', os: 'Cisco Catalyst 9500', roles: [], vlan: 'TRUNK' },
+          { id: 'fw_pri', name: 'PA-NGFW-ACTIVE', type: 'firewall', x: 580, y: 120, ip: '10.20.1.1', mac: '00:90:0B:AA:BB:01', os: 'Palo Alto PAN-OS Active', roles: ['firewall'], subnetMask: '255.255.255.0' },
+          { id: 'fw_sec', name: 'PA-NGFW-STANDBY', type: 'firewall', x: 580, y: 320, ip: '10.20.1.2', mac: '00:90:0B:AA:BB:02', os: 'Palo Alto PAN-OS Passive', roles: ['firewall'], subnetMask: '255.255.255.0' },
+          { id: 'hq_db', name: 'DATACENTER-SQL-CLUSTER', type: 'server', x: 860, y: 220, ip: '10.20.1.50', mac: '00:0C:29:CC:DD:EE', os: 'SQL Server HA Cluster', roles: ['db', 'ad'], subnetMask: '255.255.255.0', gateway: '10.20.1.1' }
+        ],
+        links: [
+          { id: 'hal1', from: 'user1', to: 'sw_pri', cableType: 'straight' },
+          { id: 'hal2', from: 'user1', to: 'sw_sec', cableType: 'straight' },
+          { id: 'hal3', from: 'sw_pri', to: 'sw_sec', cableType: 'trunk' },
+          { id: 'hal4', from: 'sw_pri', to: 'fw_pri', cableType: 'straight' },
+          { id: 'hal5', from: 'sw_sec', to: 'fw_sec', cableType: 'straight' },
+          { id: 'hal6', from: 'fw_pri', to: 'hq_db', cableType: 'straight' },
+          { id: 'hal7', from: 'fw_sec', to: 'hq_db', cableType: 'straight' }
         ]
       }
     };
@@ -1076,15 +1148,31 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
               <input type="file" accept=".json,.cfg,.txt,.ios" onChange={handleImportTopology} className="hidden" />
             </label>
 
+            <button
+              onClick={handleResetCanvas}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-rose-950 text-rose-300 hover:text-rose-200 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-rose-700 transition-colors cursor-pointer"
+              title="Clear all devices and cables from canvas"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-rose-400" /> Reset Canvas
+            </button>
+
             <select
-              onChange={(e) => handleLoadTemplate(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value) {
+                  handleLoadTemplate(e.target.value);
+                  e.target.value = "";
+                }
+              }}
               defaultValue=""
               className="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs font-bold text-emerald-300 focus:outline-none focus:border-emerald-500 cursor-pointer"
             >
               <option value="" disabled>Load Preset Template...</option>
-              <option value="corporate">🏢 Corporate HQ & ISP</option>
-              <option value="dmz">🛡️ DMZ Firewall Architecture</option>
-              <option value="vpn">🔒 Site-to-Site IPsec VPN</option>
+              <option value="standard_lan">🏢 Standard Enterprise Office LAN</option>
+              <option value="corporate">🌐 Corporate HQ & Server Rack</option>
+              <option value="dmz">🛡️ DMZ Palo Alto NGFW Architecture</option>
+              <option value="hybrid_wan">🛰️ Hybrid SD-WAN & Dual ISP WAN</option>
+              <option value="vpn">🔒 Site-to-Site IPsec VPN Branch</option>
+              <option value="enterprise_ha">⚡ High-Availability (HA) Core Campus</option>
             </select>
           </div>
         </div>
