@@ -649,29 +649,7 @@ export default function LabNotebook() {
       {/* CATEGORIES TAB FILTER & TUTORIAL CARDS DIRECTORY */}
       <div className="space-y-4 font-mono">
         
-        {/* CATEGORIES PILLS FILTER BAR */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          {categoriesList.map(cat => {
-            const IconComp = cat.icon;
-            const isSelected = selectedCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 border ${
-                  isSelected
-                    ? 'bg-cyan-950 text-cyan-300 border-cyan-500 shadow-md'
-                    : 'bg-slate-900/80 text-slate-400 hover:text-slate-200 border-slate-800'
-                }`}
-              >
-                <IconComp className="w-3.5 h-3.5" />
-                <span>{cat.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* SEARCH AND TITLE BAR */}
+        {/* SEARCH AND COMPACT CATEGORY FILTER BAR */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="font-extrabold text-slate-100 text-sm flex items-center gap-2">
@@ -682,16 +660,31 @@ export default function LabNotebook() {
             </h3>
           </div>
 
-          {/* Search Filter */}
-          <div className="relative w-full sm:w-72">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={`Search ${osMode === 'bash' ? 'Linux' : 'Windows'} commands...`}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
-            />
+          <div className="flex flex-wrap items-center gap-2">
+            {/* COMPACT CATEGORY DROPDOWN FILTER */}
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs font-bold text-cyan-300 focus:outline-none focus:border-cyan-500 cursor-pointer shadow-inner"
+            >
+              {categoriesList.map(cat => (
+                <option key={cat.id} value={cat.id} className="bg-slate-900 text-slate-200">
+                  {cat.label}
+                </option>
+              ))}
+            </select>
+
+            {/* SEARCH INPUT FILTER */}
+            <div className="relative w-full sm:w-56">
+              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={`Search ${osMode === 'bash' ? 'Linux' : 'Windows'} commands...`}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono shadow-inner"
+              />
+            </div>
           </div>
         </div>
 
