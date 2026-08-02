@@ -284,6 +284,62 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
     setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'EXPORT', message: 'Topology exported to netpulse_topology.json.' }]);
   };
 
+  // Export Cisco IOS Running-Config Script (.cfg)
+  const handleExportCiscoConfig = () => {
+    let script = `! ==========================================\n`;
+    script += `! NETPULSE LAB - CISCO IOS RUNNING CONFIGURATION\n`;
+    script += `! Generated on: ${new Date().toLocaleString()}\n`;
+    script += `! ==========================================\n\n`;
+
+    nodes.forEach(node => {
+      script += `! ------------------------------------------\n`;
+      script += `! DEVICE: ${node.name} (${node.type.toUpperCase()})\n`;
+      script += `! OS: ${node.os}\n`;
+      script += `! ------------------------------------------\n`;
+      script += `hostname ${node.name.replace(/[^a-zA-Z0-9_-]/g, '_')}\n!\n`;
+
+      if (node.type === 'switch') {
+        script += `vlan 10\n name MANAGEMENT\n!\n`;
+        script += `vlan 20\n name DATA_USERS\n!\n`;
+        const connected = links.filter(l => l.from === node.id || l.to === node.id);
+        connected.forEach((link, idx) => {
+          const otherId = link.from === node.id ? link.to : link.from;
+          const otherNode = nodes.find(n => n.id === otherId);
+          script += `interface GigabitEthernet0/${idx + 1}\n`;
+          script += ` description Link to ${otherNode ? otherNode.name : 'Device'}\n`;
+          script += ` switchport mode ${link.cableType === 'trunk' ? 'trunk' : 'access'}\n`;
+          script += ` no shutdown\n!\n`;
+        });
+      } else if (node.type === 'router' || node.type === 'firewall') {
+        script += `interface GigabitEthernet0/0\n`;
+        script += ` description LAN Gateway\n`;
+        script += ` ip address ${node.ip !== 'N/A (L2)' ? node.ip : '192.168.1.1'} ${node.subnetMask || '255.255.255.0'}\n`;
+        script += ` no shutdown\n!\n`;
+        if (node.roles?.includes('nat')) {
+          script += `ip nat inside source list 1 interface GigabitEthernet0/1 overload\n!\n`;
+        }
+      } else if (node.type === 'server') {
+        script += `! Server IP Address: ${node.ip}\n`;
+        if (node.roles?.includes('dhcp')) {
+          script += `ip dhcp pool CORPORATE_LAN\n`;
+          script += ` network 192.168.1.0 255.255.255.0\n`;
+          script += ` default-router 192.168.1.1\n`;
+          script += ` dns-server 192.168.1.10\n!\n`;
+        }
+      }
+      script += `\n`;
+    });
+
+    const blob = new Blob([script], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'cisco_ios_running_config.cfg';
+    a.click();
+    URL.revokeObjectURL(url);
+    setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'EXPORT_CISCO', message: 'Exported Cisco IOS configuration script to cisco_ios_running_config.cfg.' }]);
+  };
+
   // Import Topology from JSON file
   const handleImportTopology = (e) => {
     const file = e.target.files[0];
@@ -944,7 +1000,15 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
               className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-cyan-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer"
               title="Download current topology layout as JSON file"
             >
-              <Download className="w-3.5 h-3.5" /> Export
+              <Download className="w-3.5 h-3.5" /> Export JSON
+            </button>
+
+            <button
+              onClick={handleExportCiscoConfig}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-purple-950 text-purple-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-purple-700 transition-colors cursor-pointer"
+              title="Generate & download Cisco IOS CLI running-config script (.cfg)"
+            >
+              <FileCode className="w-3.5 h-3.5 text-purple-400" /> Export Cisco (.cfg)
             </button>
 
             <label className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-amber-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer">
