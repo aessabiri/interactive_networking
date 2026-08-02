@@ -1,243 +1,107 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Terminal, 
-  Award, 
-  Zap, 
   Send, 
+  RotateCcw, 
+  Search, 
   CheckCircle2, 
-  ShieldCheck, 
-  Cpu, 
-  Globe, 
-  Layers, 
-  Activity, 
-  Sparkles, 
-  HelpCircle, 
-  ChevronRight, 
-  RotateCcw,
-  BookOpen,
-  Lock,
-  Radio
+  Check, 
+  Copy, 
+  Sliders,
+  Monitor
 } from 'lucide-react';
 
 export default function LabNotebook() {
-  const [osMode, setOsMode] = useState('linux'); // 'linux' or 'windows'
+  const [osMode, setOsMode] = useState('zsh'); // 'zsh' (Linux Oh My Zsh) or 'cmd' (Windows CMD)
   const [commandInput, setCommandInput] = useState('');
-  const [xp, setXp] = useState(0);
   const [executedCmds, setExecutedCmds] = useState(new Set());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [faintGlow, setFaintGlow] = useState(false);
   const [cliLogs, setCliLogs] = useState([
-    { type: 'sys', text: 'Welcome to the NetPulse Linux & Windows CLI Terminal Simulator & Tutor!' },
-    { type: 'sys', text: 'Type any command or click a tutorial card below to test commands, earn XP, and level up!' },
-    { type: 'sys', text: 'Type "help" or "commands" for quick reference.\n' }
+    { type: 'sys', text: 'Oh My Zsh & Windows CMD Interactive Terminal Loaded.' },
+    { type: 'sys', text: 'Type any command or click a tutorial card below to test commands and master all 50 unique CLI tools.' }
   ]);
 
   const terminalEndRef = useRef(null);
 
-  // Auto-scroll terminal to bottom when new log arrives
+  // Auto-scroll terminal
   useEffect(() => {
     terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [cliLogs]);
 
-  // Gamification Ranks (Levels 1 to 10)
-  const ranks = [
-    { level: 1, title: 'Junior IT Helpdesk', reqXp: 0, badge: '🌱 Trainee' },
-    { level: 2, title: 'Network Support Tech', reqXp: 100, badge: '🔌 Cable Master' },
-    { level: 3, title: 'Junior System Admin', reqXp: 250, badge: '💻 CLI Apprentice' },
-    { level: 4, title: 'Linux Systems Engineer', reqXp: 450, badge: '🐧 Bash Specialist' },
-    { level: 5, title: 'Network Security Admin', reqXp: 700, badge: '🛡️ Firewall Defender' },
-    { level: 6, title: 'Senior Infrastructure Architect', reqXp: 1000, badge: '📡 Routing Wizard' },
-    { level: 7, title: 'SOC Incident Responder', reqXp: 1350, badge: '🛸 Threat Hunter' },
-    { level: 8, title: 'Enterprise DevOps Specialist', reqXp: 1750, badge: '⚡ Automation Ninja' },
-    { level: 9, title: 'Cloud & SDN Engineer', reqXp: 2200, badge: '☁️ Cloud Master' },
-    { level: 10, title: 'Principal Architect & Kernel Master', reqXp: 2750, badge: '👑 Kernel Legend' }
-  ];
-
-  // Calculate Current Level
-  let currentRank = ranks[0];
-  for (let i = ranks.length - 1; i >= 0; i--) {
-    if (xp >= ranks[i].reqXp) {
-      currentRank = ranks[i];
-      break;
-    }
-  }
-
-  const nextRank = ranks.find(r => r.level === currentRank.level + 1) || currentRank;
-  const xpForNext = nextRank.reqXp - currentRank.reqXp;
-  const currentProgressXp = xp - currentRank.reqXp;
-  const progressPercent = Math.min(100, Math.max(0, (currentProgressXp / (xpForNext || 1)) * 100));
-
-  // Useful Command Tutorials List
+  // 50 Essential Command Tutorials Suite
   const commandTutorials = [
-    {
-      id: 'ip_a',
-      os: 'linux',
-      category: '1. Network Interfaces & Addressing',
-      cmd: 'ip a',
-      altCmd: 'ip addr / ifconfig',
-      desc: 'Displays all local network interfaces (eth0, lo), MAC addresses, and assigned IPv4/IPv6 addresses.',
-      xp: 50,
-      output: `1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default 
-    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-    inet 127.0.0.1/8 scope host lo
-       valid_lft forever preferred_lft forever
-2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default 
-    link/ether 00:1a:2b:3c:4d:01 brd ff:ff:ff:ff:ff:ff
-    inet 192.168.1.105/24 brd 192.168.1.255 scope global dynamic eth0
-       valid_lft 86340sec preferred_lft 86340sec`
-    },
-    {
-      id: 'ipconfig_all',
-      os: 'windows',
-      category: '1. Network Interfaces & Addressing',
-      cmd: 'ipconfig /all',
-      altCmd: 'Get-NetIPAddress',
-      desc: 'Displays complete Windows IP configuration including MAC address, Gateway, DHCP Server, and DNS Servers.',
-      xp: 50,
-      output: `Windows IP Configuration
+    // 1-10: Network Interfaces & IP Configuration
+    { id: 'c1', os: 'linux', cat: 'Network Interfaces', cmd: 'ip a', desc: 'Display all Linux network interfaces (eth0, lo), MACs, and assigned IPv4/IPv6 addresses.', out: `1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default \n    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00\n    inet 127.0.0.1/8 scope host lo\n2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default \n    link/ether 00:1a:2b:3c:4d:01 brd ff:ff:ff:ff:ff:ff\n    inet 192.168.1.105/24 brd 192.168.1.255 scope global dynamic eth0` },
+    { id: 'c2', os: 'windows', cat: 'Network Interfaces', cmd: 'ipconfig /all', desc: 'Display full Windows IP configuration including MAC, Default Gateway, DHCP, and DNS Servers.', out: `Windows IP Configuration\n\n   Host Name . . . . . . . . . . . . : WS-SALES-LAP105\n   Primary Dns Suffix  . . . . . . . : corp.com\n   Physical Address. . . . . . . . . : 00-1A-2B-3C-4D-01\n   IPv4 Address. . . . . . . . . . . : 192.168.1.105(Preferred)\n   Subnet Mask . . . . . . . . . . . : 255.255.255.0\n   Default Gateway . . . . . . . . . : 192.168.1.254\n   DNS Servers . . . . . . . . . . . : 192.168.1.20` },
+    { id: 'c3', os: 'linux', cat: 'Network Interfaces', cmd: 'ip link', desc: 'Display L2 Ethernet link layer status and MAC addresses without IP details.', out: `1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000\n    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00\n2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000\n    link/ether 00:1a:2b:3c:4d:01 brd ff:ff:ff:ff:ff:ff` },
+    { id: 'c4', os: 'linux', cat: 'Network Interfaces', cmd: 'hostname -I', desc: 'Display host machine IP addresses in concise single-line format.', out: `192.168.1.105 172.17.0.1` },
+    { id: 'c5', os: 'windows', cat: 'Network Interfaces', cmd: 'getmac /v', desc: 'Display detailed physical MAC addresses and network adapter transport names in Windows.', out: `Connection Name Network Adapter Physical Address    Transport Name\n=============== =============== =================== =========================================\nEthernet        Intel i219-V    00-1A-2B-3C-4D-01   \\Device\\Tcpip_{A1B2C3D4-E5F6-7890-1234}` },
+    { id: 'c6', os: 'windows', cat: 'Network Interfaces', cmd: 'ipconfig /renew', desc: 'Trigger Windows DHCP client to send DHCP REQUEST and renew IP lease.', out: `DHCP DISCOVER broadcast sent...\nDHCP OFFER received from 192.168.1.10\nDHCP REQUEST sent...\nDHCP ACK received. IPv4 Address renewed: 192.168.1.105` },
+    { id: 'c7', os: 'windows', cat: 'Network Interfaces', cmd: 'ipconfig /flushdns', desc: 'Clear and reset contents of Windows DNS client resolver cache.', out: `Successfully flushed the DNS Resolver Cache.` },
+    { id: 'c8', os: 'linux', cat: 'Network Interfaces', cmd: 'cat /etc/resolv.conf', desc: 'Inspect configured Linux DNS nameserver resolvers and search domains.', out: `# Generated by NetworkManager\nnameserver 192.168.1.20\nsearch corp.com` },
+    { id: 'c9', os: 'linux', cat: 'Network Interfaces', cmd: 'cat /etc/network/interfaces', desc: 'Inspect static Linux network interface configuration definitions.', out: `# primary network interface\nauto eth0\niface eth0 inet static\n    address 192.168.1.105\n    netmask 255.255.255.0\n    gateway 192.168.1.254` },
+    { id: 'c10', os: 'windows', cat: 'Network Interfaces', cmd: 'netsh interface ipv4 show config', desc: 'Display detailed IP address configuration for all interfaces via Netsh.', out: `Configuration for interface "Ethernet"\n    DHCP enabled:                         Yes\n    IP Address:                           192.168.1.105\n    Subnet Prefix:                        192.168.1.0/24 (mask 255.255.255.0)\n    Default Gateway:                      192.168.1.254\n    InterfaceMetric:                      25\n    DNS servers configured through DHCP:  192.168.1.20` },
 
-   Host Name . . . . . . . . . . . . : WS-SALES-LAP105
-   Primary Dns Suffix  . . . . . . . : corp.com
-   Node Type . . . . . . . . . . . . : Hybrid
-   IP Routing Enabled. . . . . . . . : No
+    // 11-20: ICMP Connectivity & Path Tracing
+    { id: 'c11', os: 'linux', cat: 'ICMP & Path Tracing', cmd: 'ping -c 4 8.8.8.8', desc: 'Send 4 ICMP Echo Requests to test internet connectivity and packet loss.', out: `PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.\n64 bytes from 8.8.8.8: icmp_seq=1 ttl=118 time=14.2 ms\n64 bytes from 8.8.8.8: icmp_seq=2 ttl=118 time=13.8 ms\n64 bytes from 8.8.8.8: icmp_seq=3 ttl=118 time=14.1 ms\n64 bytes from 8.8.8.8: icmp_seq=4 ttl=118 time=13.9 ms\n\n--- 8.8.8.8 ping statistics ---\n4 packets transmitted, 4 received, 0% packet loss, time 3004ms` },
+    { id: 'c12', os: 'windows', cat: 'ICMP & Path Tracing', cmd: 'ping 192.168.1.254', desc: 'Send ICMP Echo Requests to test local default gateway reachability.', out: `Pinging 192.168.1.254 with 32 bytes of data:\nReply from 192.168.1.254: bytes=32 time=1ms TTL=64\nReply from 192.168.1.254: bytes=32 time=1ms TTL=64\nReply from 192.168.1.254: bytes=32 time=1ms TTL=64\n\nPing statistics for 192.168.1.254:\n    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)` },
+    { id: 'c13', os: 'linux', cat: 'ICMP & Path Tracing', cmd: 'traceroute 8.8.8.8', desc: 'Trace hop-by-hop router path across network using incrementing TTL.', out: `traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets\n 1  192.168.1.254 (192.168.1.254)  1.104 ms  0.985 ms  0.912 ms [Dist Router]\n 2  192.168.1.1 (192.168.1.1)  2.410 ms  2.320 ms  2.250 ms [Palo Alto Edge]\n 3  203.0.113.1 (203.0.113.1)  8.740 ms  8.650 ms  8.590 ms [ISP Gateway]\n 4  dns.google (8.8.8.8)  14.050 ms  13.920 ms  13.880 ms` },
+    { id: 'c14', os: 'windows', cat: 'ICMP & Path Tracing', cmd: 'tracert 8.8.8.8', desc: 'Trace router path in Windows displaying round-trip delay per hop.', out: `Tracing route to dns.google [8.8.8.8]\nover a maximum of 30 hops:\n\n  1    1 ms    1 ms    1 ms  192.168.1.254\n  2    2 ms    2 ms    2 ms  192.168.1.1\n  3    8 ms    8 ms    8 ms  203.0.113.1\n  4   14 ms   13 ms   14 ms  8.8.8.8\n\nTrace complete.` },
+    { id: 'c15', os: 'windows', cat: 'ICMP & Path Tracing', cmd: 'pathping 8.8.8.8', desc: 'Combines ping and tracert to measure packet loss per intermediate router.', out: `Tracing route to dns.google [8.8.8.8] over a maximum of 30 hops...\nComputing statistics for 100 seconds...\n            Source to Here   This Node/Link\nHop  RTT    Lost/Sent = Pct  Lost/Sent = Pct  Address\n  0                                           WS-LAP105 [192.168.1.105]\n  1    1ms     0/ 100 =  0%     0/ 100 =  0%  192.168.1.254\n  2    2ms     0/ 100 =  0%     0/ 100 =  0%  192.168.1.1\n  3   14ms     0/ 100 =  0%     0/ 100 =  0%  8.8.8.8` },
+    { id: 'c16', os: 'linux', cat: 'ICMP & Path Tracing', cmd: 'ip route', desc: 'Display Linux kernel routing table entries and default gateway.', out: `default via 192.168.1.254 dev eth0 proto dhcp src 192.168.1.105 metric 100 \n192.168.1.0/24 dev eth0 proto kernel scope link src 192.168.1.105 metric 100` },
+    { id: 'c17', os: 'windows', cat: 'ICMP & Path Tracing', cmd: 'route print', desc: 'Display Windows IPv4 routing table, gateway metrics, and interface list.', out: `IPv4 Route Table\n===========================================================================\nActive Routes:\nNetwork Destination        Netmask          Gateway       Interface  Metric\n          0.0.0.0          0.0.0.0    192.168.1.254   192.168.1.105      25\n        127.0.0.0        255.0.0.0        On-link         127.0.0.1     331\n      192.168.1.0    255.255.255.0        On-link     192.168.1.105     281` },
+    { id: 'c18', os: 'linux', cat: 'ICMP & Path Tracing', cmd: 'route -n', desc: 'Display Linux kernel routing table with numeric IP addresses (no DNS lookup delay).', out: `Kernel IP routing table\nDestination     Gateway         Genmask         Flags Metric Ref    Use Iface\n0.0.0.0         192.168.1.254   0.0.0.0         UG    100    0        0 eth0\n192.168.1.0     0.0.0.0         255.255.255.0   U     100    0        0 eth0` },
+    { id: 'c19', os: 'windows', cat: 'ICMP & Path Tracing', cmd: 'route add 10.0.0.0 mask 255.0.0.0 192.168.1.254', desc: 'Add static IPv4 route entry to Windows kernel routing table.', out: `OK!` },
+    { id: 'c20', os: 'linux', cat: 'ICMP & Path Tracing', cmd: 'ip route add 10.0.0.0/8 via 192.168.1.254', desc: 'Add static route entry in Linux kernel routing table.', out: `Command completed successfully.` },
 
-Ethernet adapter Local Area Connection:
-   Connection-specific DNS Suffix  . : corp.com
-   Description . . . . . . . . . . . : Intel(R) Ethernet Connection i219-V
-   Physical Address. . . . . . . . . : 00-1A-2B-3C-4D-01
-   DHCP Enabled. . . . . . . . . . . : Yes
-   IPv4 Address. . . . . . . . . . . : 192.168.1.105(Preferred) 
-   Subnet Mask . . . . . . . . . . . : 255.255.255.0
-   Default Gateway . . . . . . . . . : 192.168.1.254
-   DHCP Server . . . . . . . . . . . : 192.168.1.10
-   DNS Servers . . . . . . . . . . . : 192.168.1.20`
-    },
-    {
-      id: 'ping_icmp',
-      os: 'both',
-      category: '2. ICMP Connectivity & Path Testing',
-      cmd: 'ping -c 4 8.8.8.8',
-      altCmd: 'ping 192.168.1.254',
-      desc: 'Sends ICMP Echo Requests to test end-to-end network reachability and measure round-trip latency.',
-      xp: 40,
-      output: `PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
-64 bytes from 8.8.8.8: icmp_seq=1 ttl=118 time=14.2 ms
-64 bytes from 8.8.8.8: icmp_seq=2 ttl=118 time=13.8 ms
-64 bytes from 8.8.8.8: icmp_seq=3 ttl=118 time=14.1 ms
-64 bytes from 8.8.8.8: icmp_seq=4 ttl=118 time=13.9 ms
+    // 21-30: DNS Resolution & Domain Inspection
+    { id: 'c21', os: 'both', cat: 'DNS & Domains', cmd: 'nslookup app.corp.com', desc: 'Query DNS server for IPv4 address (A Record) of app.corp.com.', out: `Server:  corp-dns.corp.com\nAddress:  192.168.1.20\n\nName:    app.corp.com\nAddress:  192.168.1.25` },
+    { id: 'c22', os: 'linux', cat: 'DNS & Domains', cmd: 'dig +short app.corp.com', desc: 'Perform concise DNS lookup returning only answered IP address.', out: `192.168.1.25` },
+    { id: 'c23', os: 'linux', cat: 'DNS & Domains', cmd: 'dig ANY corp.com', desc: 'Query all available DNS record types (A, MX, NS, SOA, TXT) for domain.', out: `; <<>> DiG 9.18.18 <<>> ANY corp.com\n;; ANSWER SECTION:\ncorp.com.		3600	IN	A	192.168.1.25\ncorp.com.		3600	IN	NS	ns1.corp.com.\ncorp.com.		3600	IN	MX	10 mail.corp.com.` },
+    { id: 'c24', os: 'both', cat: 'DNS & Domains', cmd: 'nslookup -type=MX corp.com', desc: 'Query DNS Mail Exchange (MX) records for corporate email routing.', out: `Server:  corp-dns.corp.com\nAddress:  192.168.1.20\n\ncorp.com  MX preference = 10, mail exchanger = mail.corp.com` },
+    { id: 'c25', os: 'linux', cat: 'DNS & Domains', cmd: 'host -t AAAA google.com', desc: 'Perform DNS lookup specifically for IPv6 address (AAAA Record).', out: `google.com has IPv6 address 2a00:1450:4001:830::200e` },
+    { id: 'c26', os: 'linux', cat: 'DNS & Domains', cmd: 'dig -x 192.168.1.25', desc: 'Perform Reverse DNS (PTR) lookup to resolve IP back to hostname.', out: `;; ANSWER SECTION:\n25.1.168.192.in-addr.arpa. 3600 IN PTR app.corp.com.` },
+    { id: 'c27', os: 'windows', cat: 'DNS & Domains', cmd: 'dcdiag /test:DNS', desc: 'Run Active Directory Domain Controller diagnostic tests for DNS health.', out: `Directory Server Diagnosis\n\nPerforming initial setup:\n   Testing server: Default-First-Site-Name\\DC01\n   Starting test: DNS\n      DNS Tests passed on DC01.corp.com.` },
+    { id: 'c28', os: 'windows', cat: 'DNS & Domains', cmd: 'nltest /dsgetdc:corp.com', desc: 'Locate Active Directory Domain Controller via DNS SRV records.', out: `DC: \\\\DC01.corp.com\nAddress: \\\\192.168.1.15\nDom Guid: a1b2c3d4-e5f6-7890-1234-56789abcdef0\nDom Name: corp.com\nThe command completed successfully` },
+    { id: 'c29', os: 'both', cat: 'DNS & Domains', cmd: 'nslookup 192.168.1.10', desc: 'Perform reverse DNS lookup for DHCP server IP address.', out: `Server:  corp-dns.corp.com\nAddress:  192.168.1.20\n\nName:    dhcp01.corp.com\nAddress:  192.168.1.10` },
+    { id: 'c30', os: 'windows', cat: 'DNS & Domains', cmd: 'klist', desc: 'Display cached Kerberos TGT and Service Tickets in LSA cache.', out: `Cached Tickets: (1)\n\n[0] Client: sales.user @ CORP.COM\n    Server: krbtgt/CORP.COM @ CORP.COM\n    KerbTicket Encryption Type: AES-256-CTS-HMAC-SHA1-96\n    End Time: 8/3/2026 07:00:00` },
 
---- 8.8.8.8 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3004ms
-rtt min/avg/max/mdev = 13.841/14.002/14.210/0.134 ms`
-    },
-    {
-      id: 'traceroute',
-      os: 'both',
-      category: '2. ICMP Connectivity & Path Testing',
-      cmd: 'traceroute 8.8.8.8',
-      altCmd: 'tracert 8.8.8.8 (Windows)',
-      desc: 'Traces the hop-by-hop router path across the internet using incrementing IP TTL (Time To Live).',
-      xp: 60,
-      output: `traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
- 1  192.168.1.254 (192.168.1.254)  1.104 ms  0.985 ms  0.912 ms [Dist Core Router]
- 2  192.168.1.1 (192.168.1.1)  2.410 ms  2.320 ms  2.250 ms [Palo Alto NGFW Edge]
- 3  203.0.113.1 (203.0.113.1)  8.740 ms  8.650 ms  8.590 ms [ISP Gateway]
- 4  72.14.215.85 (72.14.215.85)  13.410 ms  13.320 ms  13.290 ms [Backbone Edge]
- 5  dns.google (8.8.8.8)  14.050 ms  13.920 ms  13.880 ms [Target DNS Server]`
-    },
-    {
-      id: 'nslookup',
-      os: 'both',
-      category: '3. DNS Resolver & Query Inspection',
-      cmd: 'nslookup app.corp.com',
-      altCmd: 'dig +short app.corp.com',
-      desc: 'Queries DNS servers for A, AAAA, MX, or SRV resource records to verify domain hostname resolution.',
-      xp: 50,
-      output: `Server:  corp-dns.corp.com
-Address:  192.168.1.20
+    // 31-40: Ports, Sockets & Firewalls
+    { id: 'c31', os: 'linux', cat: 'Ports & Firewalls', cmd: 'netstat -tulpn', desc: 'Display listening TCP/UDP sockets, port numbers, and process PIDs in Linux.', out: `Active Internet connections (only servers)\nProto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name\ntcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      1042/nginx\ntcp        0      0 192.168.1.30:5432       0.0.0.0:*               LISTEN      1450/postgres` },
+    { id: 'c32', os: 'linux', cat: 'Ports & Firewalls', cmd: 'ss -tulpn', desc: 'Modern high-speed socket statistics utility replacing netstat in Linux.', out: `Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:Port Process\ntcp   LISTEN 0      128          0.0.0.0:80         0.0.0.0:*     users:(("nginx",pid=1042,fd=6))\ntcp   LISTEN 0      128     192.168.1.30:5432       0.0.0.0:*     users:(("postgres",pid=1450,fd=5))` },
+    { id: 'c33', os: 'windows', cat: 'Ports & Firewalls', cmd: 'netstat -ano', desc: 'Display active Windows network connections, listening ports, and PIDs.', out: `Active Connections\n\n  Proto  Local Address          Foreign Address        State           PID\n  TCP    0.0.0.0:80             0.0.0.0:0              LISTENING       1042\n  TCP    192.168.1.105:54321    192.168.1.25:443       ESTABLISHED     4812` },
+    { id: 'c34', os: 'both', cat: 'Ports & Firewalls', cmd: 'arp -a', desc: 'Display ARP resolution table mapping IP addresses to physical MACs.', out: `Interface: 192.168.1.105\n  Internet Address      Physical Address      Type\n  192.168.1.10          00-50-56-00-00-10     dynamic\n  192.168.1.15          00-50-56-00-00-15     dynamic\n  192.168.1.254         00-00-0c-07-ac-fe     dynamic` },
+    { id: 'c35', os: 'linux', cat: 'Ports & Firewalls', cmd: 'ip neighbor', desc: 'Display Linux kernel ARP / neighbor cache table.', out: `192.168.1.10 dev eth0 lladdr 00:50:56:00:00:10 REACHABLE\n192.168.1.254 dev eth0 lladdr 00:00:0c:07:ac:fe REACHABLE` },
+    { id: 'c36', os: 'linux', cat: 'Ports & Firewalls', cmd: 'sudo iptables -L -n -v', desc: 'Display active Linux iptables firewall rules and packet counters.', out: `Chain INPUT (policy ACCEPT 1420 packets, 112KB)\n pkts bytes target     prot opt in     out     source               destination         \n    0     0 DROP       all  --  *      *       198.51.100.77        0.0.0.0/0           \n\nChain FORWARD (policy ACCEPT 0 packets, 0B)\nChain OUTPUT (policy ACCEPT 1205 packets, 98KB)` },
+    { id: 'c37', os: 'linux', cat: 'Ports & Firewalls', cmd: 'sudo ufw status verbose', desc: 'Display Uncomplicated Firewall (UFW) status and active rules in Ubuntu.', out: `Status: active\nLogging: on (low)\nDefault: deny (incoming), allow (outgoing), disabled (routed)\n\nTo                         Action      From\n--                         ------      ----\n80/tcp (HTTP)              ALLOW IN    Anywhere\n443/tcp (HTTPS)            ALLOW IN    Anywhere` },
+    { id: 'c38', os: 'windows', cat: 'Ports & Firewalls', cmd: 'netsh advfirewall show allprofiles', desc: 'Display status of Domain, Private, and Public Windows Firewall profiles.', out: `Domain Profile Settings:\nState                                 ON\nFirewall Policy                       BlockInbound,AllowOutbound\n\nPrivate Profile Settings:\nState                                 ON\nFirewall Policy                       BlockInbound,AllowOutbound` },
+    { id: 'c39', os: 'linux', cat: 'Ports & Firewalls', cmd: 'nc -zv 192.168.1.25 443', desc: 'Test if TCP port 443 is open on web server using Netcat.', out: `Connection to 192.168.1.25 443 port [tcp/https] succeeded!` },
+    { id: 'c40', os: 'linux', cat: 'Ports & Firewalls', cmd: 'sudo nmap -sS -p 80,443 192.168.1.25', desc: 'Perform TCP SYN stealth port scan on web server using Nmap.', out: `Starting Nmap 7.94 ( https://nmap.org )\nNmap scan report for 192.168.1.25\nHost is up (0.00042s latency).\n\nPORT    STATE SERVICE\n80/tcp  open  http\n443/tcp open  https` },
 
-Name:    app.corp.com
-Address:  192.168.1.25`
-    },
-    {
-      id: 'netstat_ports',
-      os: 'both',
-      category: '4. Active Ports, Sockets & Firewalls',
-      cmd: 'netstat -tulpn',
-      altCmd: 'ss -tulpn (Linux) / netstat -ano (Windows)',
-      desc: 'Lists active listening TCP/UDP sockets, associated port numbers, and bound process IDs (PID).',
-      xp: 60,
-      output: `Active Internet connections (only servers)
-Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
-tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      1042/nginx: master  
-tcp        0      0 0.0.0.0:443             0.0.0.0:*               LISTEN      1042/nginx: master  
-tcp        0      0 192.168.1.15:88         0.0.0.0:*               LISTEN      892/krb5kdc         
-tcp        0      0 192.168.1.30:5432       0.0.0.0:*               LISTEN      1450/postgres       
-udp        0      0 0.0.0.0:53              0.0.0.0:*                           780/named (BIND9)`
-    },
-    {
-      id: 'arp_cache',
-      os: 'both',
-      category: '4. Active Ports, Sockets & Firewalls',
-      cmd: 'arp -a',
-      altCmd: 'ip neighbor (Linux)',
-      desc: 'Displays local Address Resolution Protocol (ARP) table mapping IP addresses to physical MAC addresses.',
-      xp: 40,
-      output: `Interface: 192.168.1.105 --- 0x2
-  Internet Address      Physical Address      Type
-  192.168.1.10          00-50-56-00-00-10     dynamic [DHCP Server]
-  192.168.1.15          00-50-56-00-00-15     dynamic [AD DC01 KDC]
-  192.168.1.20          00-50-56-00-00-20     dynamic [DNS Server]
-  192.168.1.50          00-11-22-33-44-55     dynamic [Laser Printer]
-  192.168.1.254         00-00-0c-07-ac-fe     dynamic [Default Gateway]`
-    },
-    {
-      id: 'systemctl',
-      os: 'linux',
-      category: '5. System Control, Logs & Sniffing',
-      cmd: 'systemctl status nginx',
-      altCmd: 'service nginx status',
-      desc: 'Controls systemd services (start, stop, restart, status) to manage web servers, DNS, and database daemons.',
-      xp: 50,
-      output: `● nginx.service - A high performance web server and a reverse proxy server
-     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
-     Active: active (running) since Sun 2026-08-02 21:00:15 CEST; 1h 10min ago
-       Docs: man:nginx(8)
-   Main PID: 1042 (nginx)
-      Tasks: 4 (limit: 9452)
-     Memory: 18.4M
-        CPU: 142ms
-     CGroup: /system.slice/nginx.service
-             ├─1042 nginx: master process /usr/sbin/nginx -g daemon on; master_process on;
-             └─1043 nginx: worker process`
-    },
-    {
-      id: 'tail_logs',
-      os: 'linux',
-      category: '5. System Control, Logs & Sniffing',
-      cmd: 'tail -n 20 /var/log/syslog',
-      altCmd: 'journalctl -f -u nginx',
-      desc: 'Monitors real-time system and application log streams to debug authentication failures or network drops.',
-      xp: 50,
-      output: `Aug 02 22:10:01 netpulse-box systemd[1]: Starting Daily apt upgrade and clean activities...
-Aug 02 22:10:05 netpulse-box krb5kdc[892]: AS_REQ (6 etypes {18 17 20 19 16 23}) 192.168.1.105: ISSUE: authtime 1785680000, sales.user@CORP.COM for krbtgt/CORP.COM@CORP.COM
-Aug 02 22:10:12 netpulse-box named[780]: client @0x7f8a 192.168.1.105#54321 (app.corp.com): query: app.corp.com IN A +E(0)K (192.168.1.20)
-Aug 02 22:10:18 netpulse-box kernel: [ 1420.512] Palo Alto NGFW SPI: Dynamic Session Matched (ALLOW TCP 192.168.1.105:41050 -> 192.168.1.25:443)`
-    },
-    {
-      id: 'tcpdump',
-      os: 'linux',
-      category: '5. System Control, Logs & Sniffing',
-      cmd: 'sudo tcpdump -i eth0 -n port 80',
-      altCmd: 'tshark -i eth0',
-      desc: 'Command-line packet analyzer for capturing and inspecting live network traffic frames on interface eth0.',
-      xp: 70,
-      output: `tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-listening on eth0, link-type EN10MB (Ethernet), capture size 262144 bytes
-22:12:05.104921 IP 192.168.1.105.51234 > 192.168.1.25.80: Flags [S], seq 3891049512, win 64240, length 0
-22:12:05.105189 IP 192.168.1.25.80 > 192.168.1.105.51234: Flags [S.], seq 1049512389, ack 3891049513, win 65535, length 0
-22:12:05.105310 IP 192.168.1.105.51234 > 192.168.1.25.80: Flags [.], ack 1, win 502, length 0 [TCP 3-Way Handshake Established]
-22:12:05.105950 IP 192.168.1.105.51234 > 192.168.1.25.80: Flags [P.], seq 1:125, ack 1, win 502: HTTP: GET /api/v1/customers HTTP/1.1`
-    }
+    // 41-50: System Daemons, Logs & Traffic Sniffing
+    { id: 'c41', os: 'linux', cat: 'System & Logs', cmd: 'systemctl status nginx', desc: 'Display detailed systemd service status for Nginx web daemon.', out: `● nginx.service - A high performance web server\n     Loaded: loaded (/lib/systemd/system/nginx.service; enabled)\n     Active: active (running) since Sun 2026-08-02 21:00:15 CEST; 1h 10min ago` },
+    { id: 'c42', os: 'linux', cat: 'System & Logs', cmd: 'tail -n 20 /var/log/syslog', desc: 'View last 20 lines of Linux system event log.', out: `Aug 02 22:10:05 netpulse-box krb5kdc[892]: AS_REQ 192.168.1.105: ISSUE: sales.user@CORP.COM\nAug 02 22:10:12 netpulse-box named[780]: query: app.corp.com IN A +E(0)K` },
+    { id: 'c43', os: 'linux', cat: 'System & Logs', cmd: 'sudo tcpdump -i eth0 -n port 80', desc: 'Sniff live HTTP network packet frames on interface eth0.', out: `listening on eth0, capture size 262144 bytes\n22:12:05 IP 192.168.1.105.51234 > 192.168.1.25.80: Flags [S], seq 3891049512, win 64240\n22:12:05 IP 192.168.1.25.80 > 192.168.1.105.51234: Flags [S.], seq 1049512389, ack 3891049513` },
+    { id: 'c44', os: 'linux', cat: 'System & Logs', cmd: 'curl -I https://app.corp.com', desc: 'Fetch HTTP response headers (Status Code, Server, TLS details) via cURL.', out: `HTTP/2 200 \nserver: nginx/1.24.0\ndate: Sun, 02 Aug 2026 22:15:00 GMT\ncontent-type: text/html; charset=UTF-8\nstrict-transport-security: max-age=31536000` },
+    { id: 'c45', os: 'linux', cat: 'System & Logs', cmd: 'ssh sysadmin@192.168.1.15', desc: 'Initiate encrypted Secure Shell (SSH) session to remote server.', out: `The authenticity of host '192.168.1.15 (192.168.1.15)' can't be established.\nED25519 key fingerprint is SHA256:x7f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5.\nConnected to DC01.corp.com.` },
+    { id: 'c46', os: 'windows', cat: 'System & Logs', cmd: 'tasklist /v', desc: 'Display all running Windows processes with memory usage and window titles.', out: `Image Name                   PID Session Name        Session#    Mem Usage Status          User Name\n========================= ====== ================ ======== ============ ============= =====================\ncmd.exe                     4812 Console                 1      4,892 K Running       WS-LAP105\\SysAdmin` },
+    { id: 'c47', os: 'windows', cat: 'System & Logs', cmd: 'systeminfo', desc: 'Display operating system build, hotfixes, memory, and hardware details.', out: `Host Name:                 WS-SALES-LAP105\nOS Name:                   Microsoft Windows 10 Pro\nOS Version:                10.0.19045 N/A Build 19045\nSystem Manufacturer:       DELL Inc.\nSystem Type:               x64-based PC\nDomain:                    corp.com` },
+    { id: 'c48', os: 'linux', cat: 'System & Logs', cmd: 'df -h', desc: 'Display Linux disk file system storage usage in human-readable format.', out: `Filesystem      Size  Used Avail Use% Mounted on\n/dev/sda1        50G   12G   36G  25% /\ntmpfs           3.9G     0  3.9G   0% /dev/shm` },
+    { id: 'c49', os: 'linux', cat: 'System & Logs', cmd: 'free -m', desc: 'Display total, used, and available RAM memory in megabytes.', out: `               total        used        free      shared  buff/cache   available\nMem:            7942        1840        4210         128        1892        5680\nSwap:           2048           0        2048` },
+    { id: 'c50', os: 'linux', cat: 'System & Logs', cmd: 'uptime', desc: 'Display system uptime duration, logged in users, and 1/5/15 min load average.', out: ` 22:15:30 up 14 days,  3:42,  2 users,  load average: 0.12, 0.08, 0.05` }
   ];
+
+  // Unique Commands Mastered Count (Goal: 50)
+  const uniqueMasteredCount = Math.min(50, executedCmds.size);
+  const completionPercentage = Math.round((uniqueMasteredCount / 50) * 100);
+
+  // Filter commands by search query
+  const filteredTutorials = commandTutorials.filter(t => 
+    t.cmd.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    t.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    t.cat.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Execute Command Logic
   const handleExecuteCommand = (rawCmd) => {
@@ -250,46 +114,49 @@ listening on eth0, link-type EN10MB (Ethernet), capture size 262144 bytes
     );
 
     let outputText = '';
-    let gainedXp = 0;
+    let isSuccess = false;
 
-    if (input.toLowerCase() === 'clear') {
+    if (input.toLowerCase() === 'clear' || input.toLowerCase() === 'cls') {
       setCliLogs([]);
       setCommandInput('');
       return;
-    } else if (input.toLowerCase() === 'help' || input.toLowerCase() === 'commands') {
-      outputText = `NetPulse Command Reference & Tutor:
-- ip a / ipconfig /all : Show network interface IP addresses & MACs
-- ping -c 4 8.8.8.8 : Test ICMP connectivity & round-trip latency
-- traceroute 8.8.8.8 : Trace hop-by-hop router paths
+    } else if (input.toLowerCase() === 'help') {
+      outputText = `Available Quick Reference:
+- ip a / ipconfig /all : View interface IP addresses & MACs
+- ping 8.8.8.8 : Test ICMP connectivity
+- traceroute 8.8.8.8 / tracert : Trace hop-by-hop router paths
 - nslookup app.corp.com : Perform DNS hostname resolution
-- netstat -tulpn : Show listening TCP/UDP ports & socket PIDs
+- netstat -tulpn / netstat -ano : View active ports & sockets
 - arp -a : Display Address Resolution Protocol MAC cache
-- systemctl status nginx : Check systemd service status
-- tail -n 20 /var/log/syslog : Inspect live log events
-- sudo tcpdump -i eth0 -n port 80 : Sniff live network packet frames
-- clear : Clear terminal screen`;
+- systemctl status nginx : View systemd daemon status
+- tail -n 20 /var/log/syslog : Inspect live log lines
+- clear / cls : Clear terminal screen`;
+      isSuccess = true;
     } else if (matchedTut) {
-      outputText = matchedTut.output;
+      outputText = matchedTut.out;
+      isSuccess = true;
       if (!executedCmds.has(matchedTut.id)) {
-        gainedXp = matchedTut.xp;
         setExecutedCmds(prev => new Set(prev).add(matchedTut.id));
-        setXp(prev => prev + gainedXp);
       }
     } else {
-      outputText = osMode === 'linux'
-        ? `bash: ${input}: command executed successfully (Default Mock Output).\nType "help" to view full tutorial command suite.`
-        : `C:\\Users\\SysAdmin> ${input} executed successfully.\nType "help" to view Windows command tutorials.`;
+      outputText = osMode === 'zsh'
+        ? `zsh: command executed: ${input}\nType "help" to view 50 unique command suite.`
+        : `C:\\Users\\SysAdmin> ${input} executed.\nType "help" to view Windows command list.`;
+      isSuccess = true;
       if (!executedCmds.has(input)) {
-        gainedXp = 25;
         setExecutedCmds(prev => new Set(prev).add(input));
-        setXp(prev => prev + 25);
       }
+    }
+
+    if (isSuccess) {
+      setFaintGlow(true);
+      setTimeout(() => setFaintGlow(false), 800);
     }
 
     setCliLogs(prev => [
       ...prev,
-      { type: 'cmd', text: `${osMode === 'linux' ? 'sysadmin@netpulse-box:~$ ' : 'C:\\Users\\SysAdmin> '}${input}` },
-      { type: 'res', text: outputText, xpGained: gainedXp }
+      { type: 'cmd', text: osMode === 'zsh' ? `➜  netpulse-box git:(main) ✗ ${input}` : `C:\\Users\\SysAdmin> ${input}` },
+      { type: 'res', text: outputText }
     ]);
 
     setCommandInput('');
@@ -298,111 +165,136 @@ listening on eth0, link-type EN10MB (Ethernet), capture size 262144 bytes
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
       
-      {/* TOP GAMIFIED PROGRESS & LEVEL HEADER BAR */}
+      {/* TOP CLEAN HEADER & 50 COMMANDS PROGRESS BAR */}
       <div className="p-6 bg-slate-900/90 rounded-3xl border border-slate-800 space-y-4 shadow-2xl font-mono">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-purple-600 shadow-xl shadow-cyan-500/20 text-white">
-              <Award className="w-8 h-8" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-cyan-950 text-cyan-300 border border-cyan-700">
-                  LEVEL {currentRank.level}
-                </span>
-                <span className="text-base font-black text-slate-100">{currentRank.title}</span>
-              </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Badge Title: <span className="text-amber-400 font-extrabold">{currentRank.badge}</span>
-              </p>
-            </div>
+          <div>
+            <h1 className="text-lg font-black text-slate-100 flex items-center gap-2">
+              <Terminal className="w-5 h-5 text-cyan-400" />
+              <span>Oh My Zsh & Windows CMD Terminal Simulator</span>
+            </h1>
+            <p className="text-xs text-slate-400 mt-1">
+              Master 50 essential networking, security, and sysadmin commands across Linux & Windows CLI.
+            </p>
           </div>
 
-          {/* XP STATS & OS TERMINAL SELECTOR */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="px-4 py-2 bg-slate-950 rounded-2xl border border-slate-800 text-right">
-              <p className="text-[10px] text-slate-400 font-bold uppercase">Total Command XP</p>
-              <p className="text-lg font-black text-emerald-400">{xp} XP</p>
-            </div>
+          {/* OS TERMINAL MODE SWITCHER */}
+          <div className="flex items-center bg-slate-950 p-1 rounded-2xl border border-slate-800 shrink-0">
+            <button
+              onClick={() => setOsMode('zsh')}
+              className={`px-4 py-2 rounded-xl font-extrabold transition-all cursor-pointer text-xs flex items-center gap-2 ${
+                osMode === 'zsh'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md font-black'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Terminal className="w-4 h-4" />
+              <span>🐧 Oh My Zsh (Linux)</span>
+            </button>
 
-            {/* OS Mode Switcher */}
-            <div className="flex items-center bg-slate-950 p-1 rounded-2xl border border-slate-800">
-              <button
-                onClick={() => setOsMode('linux')}
-                className={`px-3.5 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer text-xs flex items-center gap-1.5 ${
-                  osMode === 'linux'
-                    ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                🐧 Linux Terminal (Bash)
-              </button>
-              <button
-                onClick={() => setOsMode('windows')}
-                className={`px-3.5 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer text-xs flex items-center gap-1.5 ${
-                  osMode === 'windows'
-                    ? 'bg-cyan-500 text-slate-950 shadow-md font-black'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                🪟 Windows (CMD / PowerShell)
-              </button>
-            </div>
+            <button
+              onClick={() => setOsMode('cmd')}
+              className={`px-4 py-2 rounded-xl font-extrabold transition-all cursor-pointer text-xs flex items-center gap-2 ${
+                osMode === 'cmd'
+                  ? 'bg-black text-white border border-gray-700 shadow-md font-black'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Monitor className="w-4 h-4" />
+              <span>🪟 Windows CMD (Classic)</span>
+            </button>
           </div>
         </div>
 
-        {/* LEVEL XP PROGRESS BAR */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs font-bold">
-            <span className="text-slate-400">Progress to Level {nextRank.level} ({nextRank.title}):</span>
-            <span className="text-cyan-400">{xp} / {nextRank.reqXp} XP ({Math.round(progressPercent)}%)</span>
+        {/* 50 UNIQUE COMMANDS PROGRESS BAR */}
+        <div className="space-y-1.5 pt-2 border-t border-slate-800">
+          <div className="flex items-center justify-between text-xs font-bold font-mono">
+            <span className="text-slate-300">Command Mastery Progress:</span>
+            <span className="text-cyan-400 font-extrabold">{uniqueMasteredCount} / 50 Unique Commands ({completionPercentage}%)</span>
           </div>
-          <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+          <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-800/80">
             <div 
-              style={{ width: `${progressPercent}%` }}
+              style={{ width: `${completionPercentage}%` }}
               className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-emerald-400 transition-all duration-500 rounded-full"
             ></div>
           </div>
         </div>
       </div>
 
-      {/* DUAL TERMINAL SIMULATOR STAGE */}
-      <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-4 shadow-2xl bg-slate-950/90 font-mono">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex items-center gap-2">
-            <Terminal className="w-5 h-5 text-cyan-400" />
-            <h3 className="font-extrabold text-slate-100 text-sm">
-              {osMode === 'linux' ? 'Linux Bash Terminal (sysadmin@netpulse-box:~)' : 'Windows Command Prompt (C:\\Users\\SysAdmin>)'}
-            </h3>
+      {/* DUAL THEMED TERMINAL WINDOW STAGE */}
+      <div className={`transition-all duration-500 rounded-3xl overflow-hidden shadow-2xl font-mono ${
+        osMode === 'cmd' 
+          ? 'bg-black border-2 border-gray-800 text-gray-200' 
+          : 'glass-panel border border-slate-800 bg-slate-950/90 text-slate-100'
+      } ${
+        faintGlow ? 'ring-2 ring-emerald-500/50 shadow-[0_0_25px_rgba(16,185,129,0.25)]' : ''
+      }`}>
+        
+        {/* WINDOW HEADER BAR */}
+        {osMode === 'cmd' ? (
+          <div className="bg-gray-900 px-4 py-2 flex items-center justify-between border-b border-gray-800 select-none">
+            <div className="flex items-center gap-2">
+              <Monitor className="w-4 h-4 text-gray-400" />
+              <span className="text-xs font-bold text-gray-300">Command Prompt - C:\Windows\system32\cmd.exe</span>
+            </div>
+            <div className="flex items-center gap-3 text-xs font-bold text-gray-400">
+              <span>_</span>
+              <span>□</span>
+              <span className="hover:text-red-400 cursor-pointer">✕</span>
+            </div>
           </div>
-          <button
-            onClick={() => setCliLogs([])}
-            className="px-3 py-1 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 cursor-pointer flex items-center gap-1.5"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Clear Screen</span>
-          </button>
-        </div>
+        ) : (
+          <div className="bg-slate-900/90 px-4 py-3 flex items-center justify-between border-b border-slate-800 select-none">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block"></span>
+                <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
+                <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
+              </div>
+              <span className="text-xs font-extrabold text-slate-300 ml-2">sysadmin@netpulse-box:~ (zsh)</span>
+            </div>
 
-        {/* TERMINAL LOG DISPLAY STAGE */}
-        <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800/80 min-h-[300px] max-h-[420px] overflow-y-auto space-y-2 text-xs font-mono select-text shadow-inner scrollbar-thin">
+            <button
+              onClick={() => setCliLogs([])}
+              className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 cursor-pointer flex items-center gap-1"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Clear Terminal</span>
+            </button>
+          </div>
+        )}
+
+        {/* TERMINAL OUTPUT AREA */}
+        <div className={`p-5 min-h-[340px] max-h-[460px] overflow-y-auto space-y-2 text-xs font-mono select-text scrollbar-thin ${
+          osMode === 'cmd' ? 'bg-black text-gray-200' : 'bg-slate-950/95 text-slate-200'
+        }`}>
+          {osMode === 'cmd' && (
+            <div className="space-y-0.5 mb-3 text-gray-400">
+              <p>Microsoft Windows [Version 10.0.19045.3803]</p>
+              <p>(c) Microsoft Corporation. All rights reserved.</p>
+            </div>
+          )}
+
           {cliLogs.map((log, idx) => (
             <div key={idx} className="space-y-1">
               {log.type === 'sys' && (
-                <p className="text-slate-400 italic">{log.text}</p>
+                <p className={osMode === 'cmd' ? 'text-gray-400' : 'text-slate-400 italic'}>{log.text}</p>
               )}
               {log.type === 'cmd' && (
-                <p className="text-cyan-300 font-extrabold">{log.text}</p>
-              )}
-              {log.type === 'res' && (
-                <div className="space-y-1">
-                  <pre className="text-emerald-300 font-mono whitespace-pre-wrap leading-relaxed">{log.text}</pre>
-                  {log.xpGained > 0 && (
-                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] bg-amber-950 text-amber-300 border border-amber-800 font-extrabold animate-pulse">
-                      + {log.xpGained} XP GAINED!
-                    </span>
+                <div className="font-extrabold flex items-center gap-1.5">
+                  {osMode === 'zsh' ? (
+                    <p className="text-cyan-300">
+                      <span className="text-emerald-400">➜</span> <span className="text-cyan-400">netpulse-box</span> <span className="text-amber-400">git:(main)</span> <span className="text-purple-400">✗</span> {log.text.replace('➜  netpulse-box git:(main) ✗ ', '')}
+                    </p>
+                  ) : (
+                    <p className="text-gray-200">{log.text}</p>
                   )}
                 </div>
+              )}
+              {log.type === 'res' && (
+                <pre className={`font-mono whitespace-pre-wrap leading-relaxed ${
+                  osMode === 'cmd' ? 'text-gray-300' : 'text-emerald-300'
+                }`}>{log.text}</pre>
               )}
             </div>
           ))}
@@ -415,79 +307,108 @@ listening on eth0, link-type EN10MB (Ethernet), capture size 262144 bytes
             e.preventDefault();
             handleExecuteCommand(commandInput);
           }}
-          className="flex items-center gap-2"
+          className={`p-3 border-t flex items-center gap-2 ${
+            osMode === 'cmd' ? 'bg-black border-gray-800' : 'bg-slate-900/90 border-slate-800'
+          }`}
         >
-          <span className="text-cyan-400 font-black text-sm shrink-0">
-            {osMode === 'linux' ? 'sysadmin@netpulse-box:~$ ' : 'C:\\Users\\SysAdmin> '}
-          </span>
+          {osMode === 'zsh' ? (
+            <span className="text-emerald-400 font-black text-xs shrink-0 flex items-center gap-1">
+              <span className="text-emerald-400">➜</span>
+              <span className="text-cyan-400 font-bold">~</span>
+            </span>
+          ) : (
+            <span className="text-gray-200 font-bold text-xs shrink-0">C:\Users\SysAdmin&gt;</span>
+          )}
+
           <input
             type="text"
             value={commandInput}
             onChange={(e) => setCommandInput(e.target.value)}
-            placeholder='Type command here (e.g. "ip a", "ping 8.8.8.8", "nslookup app.corp.com")...'
-            className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-100 focus:outline-none focus:border-cyan-500 font-mono shadow-inner"
+            placeholder={osMode === 'zsh' ? 'type zsh command (e.g. "ip a", "ping 8.8.8.8", "nslookup app.corp.com")...' : 'type cmd command (e.g. "ipconfig /all", "tracert 8.8.8.8", "arp -a")...'}
+            className={`flex-1 bg-transparent px-3 py-2 text-xs font-bold focus:outline-none font-mono ${
+              osMode === 'cmd' ? 'text-gray-100' : 'text-slate-100'
+            }`}
           />
+
           <button
             type="submit"
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs shadow-lg transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+            className={`px-4 py-2 rounded-xl font-extrabold text-xs transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+              osMode === 'cmd'
+                ? 'bg-gray-800 hover:bg-gray-700 text-white border border-gray-600'
+                : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 shadow-md font-black'
+            }`}
           >
-            <Send className="w-4 h-4 fill-current" />
-            <span>Run ⚡</span>
+            <Send className="w-3.5 h-3.5 fill-current" />
+            <span>Run</span>
           </button>
         </form>
       </div>
 
-      {/* ESSENTIAL COMMAND TUTORIALS & LEVEL-UP QUESTS */}
+      {/* 50 TUTORIAL COMMAND CARDS DIRECTORY WITH SEARCH FILTER */}
       <div className="space-y-4 font-mono">
-        <div className="flex items-center justify-between">
-          <h3 className="font-extrabold text-slate-100 text-sm flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-cyan-400" />
-            <span>Essential Networking & Sysadmin Command Tutorials:</span>
-          </h3>
-          <span className="text-xs text-slate-400">Click any card to execute command & earn XP</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 className="font-extrabold text-slate-100 text-sm">
+              50 Unique Command Tutorials Directory
+            </h3>
+            <p className="text-xs text-slate-400">Click any command card to test in terminal</p>
+          </div>
+
+          {/* Search Filter */}
+          <div className="relative w-full sm:w-72">
+            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search 50 commands (e.g. ping, ip, dns)..."
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+            />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-          {commandTutorials.map((tut) => {
-            const isCompleted = executedCmds.has(tut.id);
+        {/* COMMAND CARDS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {filteredTutorials.map((tut) => {
+            const isDone = executedCmds.has(tut.id);
             return (
               <div
                 key={tut.id}
-                className={`p-4 rounded-2xl border transition-all space-y-2.5 flex flex-col justify-between ${
-                  isCompleted
-                    ? 'bg-slate-900/90 border-emerald-500/80 shadow-lg'
-                    : 'bg-slate-950/90 border-slate-800 hover:border-slate-700'
+                className={`p-3.5 rounded-2xl border transition-all space-y-2 flex flex-col justify-between ${
+                  isDone
+                    ? 'bg-slate-900/90 border-emerald-500/80 shadow-md ring-1 ring-emerald-500/30'
+                    : 'bg-slate-950/90 border-slate-800/90 hover:border-slate-700'
                 }`}
               >
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-900 text-cyan-400 border border-slate-800">
-                      {tut.category}
+                    <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-slate-900 text-cyan-400 border border-slate-800">
+                      {tut.cat}
                     </span>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black ${
-                      isCompleted ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-amber-950 text-amber-300 border border-amber-800'
-                    }`}>
-                      {isCompleted ? '✓ Completed' : `+${tut.xp} XP`}
-                    </span>
+                    {isDone && (
+                      <span className="text-emerald-400 flex items-center gap-1 text-[10px] font-extrabold">
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Mastered</span>
+                      </span>
+                    )}
                   </div>
 
-                  <p className="text-sm font-black text-slate-100 bg-slate-900/90 p-2 rounded-xl border border-slate-800 font-mono text-cyan-300">
+                  <p className="text-xs font-black text-slate-100 bg-slate-900/90 p-2 rounded-xl border border-slate-800 font-mono text-cyan-300 truncate">
                     {tut.cmd}
                   </p>
 
-                  <p className="text-xs text-slate-300 leading-relaxed font-sans">{tut.desc}</p>
+                  <p className="text-[11px] text-slate-400 leading-relaxed font-sans line-clamp-2">{tut.desc}</p>
                 </div>
 
                 <button
                   onClick={() => handleExecuteCommand(tut.cmd)}
-                  className={`w-full py-2 px-3 rounded-xl text-xs font-black border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    isCompleted
-                      ? 'bg-emerald-950/70 hover:bg-emerald-900/70 text-emerald-300 border-emerald-500/80'
-                      : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 border-cyan-400 shadow-md'
+                  className={`w-full py-1.5 px-3 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    isDone
+                      ? 'bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 border-emerald-600/80'
+                      : 'bg-slate-900 hover:bg-slate-800 text-cyan-300 border-slate-700'
                   }`}
                 >
-                  <Zap className="w-4 h-4 fill-current" />
-                  <span>{isCompleted ? 'Re-Run Command ⚡' : 'Execute Command (+XP) ⚡'}</span>
+                  <span>{isDone ? 'Re-Run Command' : 'Test Command'}</span>
                 </button>
               </div>
             );
