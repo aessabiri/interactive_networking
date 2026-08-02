@@ -9,24 +9,33 @@ import {
 } from 'lucide-react';
 
 export default function LabNotebook() {
-  const [osMode, setOsMode] = useState('zsh'); // 'zsh' (Linux Oh My Zsh) or 'cmd' (Windows CMD)
+  const [osMode, setOsMode] = useState('bash'); // 'bash' (Linux Bash) or 'cmd' (Windows CMD)
   const [commandInput, setCommandInput] = useState('');
   const [executedCmds, setExecutedCmds] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [faintGlow, setFaintGlow] = useState(false);
-  const [cliLogs, setCliLogs] = useState([
-    { type: 'sys', text: 'Oh My Zsh & Windows CMD Isolated Terminal Environment.' },
-    { type: 'sys', text: 'Each CLI terminal mode strictly accepts its native operating system commands.' }
+
+  // SEPARATE ISOLATED TERMINAL LOGS FOR LINUX BASH VS WINDOWS CMD
+  const [linuxLogs, setLinuxLogs] = useState([
+    { type: 'sys', text: 'GNU Bash Interactive Terminal Environment (sysadmin@netpulse-box:~).' },
+    { type: 'sys', text: 'Strictly accepts native Linux IT system and networking commands.' }
+  ]);
+
+  const [windowsLogs, setWindowsLogs] = useState([
+    { type: 'sys', text: 'Microsoft Windows Command Prompt [Version 10.0.19045.3803].' },
+    { type: 'sys', text: 'Strictly accepts native Windows IT system and networking commands.' }
   ]);
 
   const logsContainerRef = useRef(null);
 
-  // Scroll internal terminal box ONLY (No page viewport auto-scrolling)
+  const activeLogs = osMode === 'bash' ? linuxLogs : windowsLogs;
+
+  // Scroll internal terminal box ONLY when active logs update
   useEffect(() => {
     if (logsContainerRef.current) {
       logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight;
     }
-  }, [cliLogs]);
+  }, [linuxLogs, windowsLogs, osMode]);
 
   // 50 Essential Command Tutorials Suite (Strictly Isolated by OS)
   const commandTutorials = [
@@ -91,13 +100,13 @@ export default function LabNotebook() {
     { id: 'c50', os: 'linux', cat: 'System & Logs', cmd: 'uptime', desc: 'Display system uptime duration, logged in users, and 1/5/15 min load average.', out: ` 22:15:30 up 14 days,  3:42,  2 users,  load average: 0.12, 0.08, 0.05` }
   ];
 
-  // Internal 50-command Tracking (No Labels or Numbers in UI)
+  // Internal 50-command Tracking
   const uniqueMasteredCount = Math.min(50, executedCmds.size);
   const completionPercentage = Math.round((uniqueMasteredCount / 50) * 100);
 
   // STRICT OS ISOLATION FILTERING FOR CARDS DIRECTORY
   const filteredTutorials = commandTutorials.filter(t => {
-    const isOsMatch = osMode === 'zsh' 
+    const isOsMatch = osMode === 'bash' 
       ? (t.os === 'linux' || t.os === 'both')
       : (t.os === 'windows' || t.os === 'both');
     
@@ -109,7 +118,16 @@ export default function LabNotebook() {
     return isOsMatch && isSearchMatch;
   });
 
-  // Execute Command Logic (NO Viewport Auto-Scrolling)
+  // Clear current active OS terminal log
+  const handleClearTerminal = () => {
+    if (osMode === 'bash') {
+      setLinuxLogs([]);
+    } else {
+      setWindowsLogs([]);
+    }
+  };
+
+  // Execute Command Logic (Independent OS Terminal Logs & No Page Auto-Scroll)
   const handleExecuteCommand = (rawCmd) => {
     const input = rawCmd.trim();
     if (!input) return;
@@ -125,16 +143,16 @@ export default function LabNotebook() {
     let isSuccess = false;
 
     if (input.toLowerCase() === 'clear' || input.toLowerCase() === 'cls') {
-      setCliLogs([]);
+      handleClearTerminal();
       setCommandInput('');
       return;
     } else if (input.toLowerCase() === 'help') {
-      outputText = osMode === 'zsh' 
-        ? `Oh My Zsh (Linux) Command Reference:\n- ip a : View network interface IPv4/IPv6 addresses\n- traceroute 8.8.8.8 : Trace hop-by-hop router path\n- dig +short app.corp.com : DNS lookup\n- ss -tulpn : Active listening sockets & PIDs\n- systemctl status nginx : View systemd daemon status\n- tail -n 20 /var/log/syslog : Inspect live log lines\n- sudo tcpdump -i eth0 -n port 80 : Packet sniffing`
+      outputText = osMode === 'bash' 
+        ? `Linux Bash Command Reference:\n- ip a : View network interface IPv4/IPv6 addresses\n- traceroute 8.8.8.8 : Trace hop-by-hop router path\n- dig +short app.corp.com : DNS lookup\n- ss -tulpn : Active listening sockets & PIDs\n- systemctl status nginx : View systemd daemon status\n- tail -n 20 /var/log/syslog : Inspect live log lines\n- sudo tcpdump -i eth0 -n port 80 : Packet sniffing`
         : `Windows Command Prompt (CMD) Reference:\n- ipconfig /all : View Windows IP, MAC, Gateway, and DNS\n- tracert 8.8.8.8 : Trace router path\n- nslookup app.corp.com : Query DNS A records\n- netstat -ano : Active connections & PIDs\n- route print : Display IPv4 routing table\n- arp -a : Display ARP resolution table\n- dcdiag /test:DNS : Test AD Domain Controller DNS`;
       isSuccess = true;
     } else if (matchedTut) {
-      const isTutAllowed = osMode === 'zsh' 
+      const isTutAllowed = osMode === 'bash' 
         ? (matchedTut.os === 'linux' || matchedTut.os === 'both')
         : (matchedTut.os === 'windows' || matchedTut.os === 'both');
 
@@ -145,18 +163,18 @@ export default function LabNotebook() {
           setExecutedCmds(prev => new Set(prev).add(matchedTut.id));
         }
       } else {
-        if (osMode === 'zsh') {
-          outputText = `zsh: command not found: ${firstWord}\n[Zsh Notice: "${input}" is a Windows-only command. Switch to Windows CMD mode to execute it.]`;
+        if (osMode === 'bash') {
+          outputText = `bash: ${firstWord}: command not found\n[Bash Notice: "${input}" is a Windows CMD command. Switch to Windows CMD mode to execute it.]`;
         } else {
-          outputText = `'${firstWord}' is not recognized as an internal or external command, operable program or batch file.\n[CMD Notice: "${input}" is a Linux-only command. Switch to Oh My Zsh (Linux) mode to execute it.]`;
+          outputText = `'${firstWord}' is not recognized as an internal or external command, operable program or batch file.\n[CMD Notice: "${input}" is a Linux Bash command. Switch to Linux Bash mode to execute it.]`;
         }
         isSuccess = false;
       }
     } else {
-      if (osMode === 'zsh') {
-        outputText = `zsh: command executed: ${input}\nType "help" to view 25+ native Linux CLI commands.`;
+      if (osMode === 'bash') {
+        outputText = `bash: command executed: ${input}\nType "help" to view native Linux Bash commands.`;
       } else {
-        outputText = `C:\\Users\\SysAdmin> ${input} executed.\nType "help" to view 25+ native Windows CMD commands.`;
+        outputText = `C:\\Users\\SysAdmin> ${input} executed.\nType "help" to view native Windows CMD commands.`;
       }
       isSuccess = true;
       if (!executedCmds.has(input)) {
@@ -169,11 +187,27 @@ export default function LabNotebook() {
       setTimeout(() => setFaintGlow(false), 800);
     }
 
-    setCliLogs(prev => [
-      ...prev,
-      { type: 'cmd', text: osMode === 'zsh' ? `➜  netpulse-box git:(main) ✗ ${input}` : `C:\\Users\\SysAdmin> ${input}` },
-      { type: 'res', text: outputText, isError: !isSuccess }
-    ]);
+    const newLogItem = { 
+      type: 'cmd', 
+      text: osMode === 'bash' ? `sysadmin@netpulse-box:~$ ${input}` : `C:\\Users\\SysAdmin> ${input}`,
+      resText: outputText,
+      isError: !isSuccess
+    };
+
+    // Update ONLY the active OS log state so logs are 100% isolated!
+    if (osMode === 'bash') {
+      setLinuxLogs(prev => [
+        ...prev,
+        { type: 'cmd', text: `sysadmin@netpulse-box:~$ ${input}` },
+        { type: 'res', text: outputText, isError: !isSuccess }
+      ]);
+    } else {
+      setWindowsLogs(prev => [
+        ...prev,
+        { type: 'cmd', text: `C:\\Users\\SysAdmin> ${input}` },
+        { type: 'res', text: outputText, isError: !isSuccess }
+      ]);
+    }
 
     setCommandInput('');
   };
@@ -194,15 +228,15 @@ export default function LabNotebook() {
           {/* OS TERMINAL MODE SWITCHER */}
           <div className="flex items-center bg-slate-950 p-1 rounded-2xl border border-slate-800 shrink-0">
             <button
-              onClick={() => setOsMode('zsh')}
+              onClick={() => setOsMode('bash')}
               className={`px-4 py-2 rounded-xl font-extrabold transition-all cursor-pointer text-xs flex items-center gap-2 ${
-                osMode === 'zsh'
+                osMode === 'bash'
                   ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md font-black'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               <Terminal className="w-4 h-4" />
-              <span>🐧 Oh My Zsh (Linux Only)</span>
+              <span>🐧 Linux (Bash)</span>
             </button>
 
             <button
@@ -214,7 +248,7 @@ export default function LabNotebook() {
               }`}
             >
               <Monitor className="w-4 h-4" />
-              <span>🪟 Windows CMD (Windows Only)</span>
+              <span>🪟 Windows (CMD)</span>
             </button>
           </div>
         </div>
@@ -270,11 +304,11 @@ export default function LabNotebook() {
                 <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
                 <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
               </div>
-              <span className="text-xs font-extrabold text-slate-300 ml-2">sysadmin@netpulse-box:~ (zsh)</span>
+              <span className="text-xs font-extrabold text-slate-300 ml-2">sysadmin@netpulse-box:~ (bash)</span>
             </div>
 
             <button
-              onClick={() => setCliLogs([])}
+              onClick={handleClearTerminal}
               className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 cursor-pointer flex items-center gap-1"
             >
               <RotateCcw className="w-3 h-3" />
@@ -283,7 +317,7 @@ export default function LabNotebook() {
           </div>
         )}
 
-        {/* TERMINAL OUTPUT AREA (NO PAGE-LEVEL AUTO-SCROLL) */}
+        {/* TERMINAL OUTPUT AREA (NO PAGE AUTO-SCROLL & ISOLATED LOGS) */}
         <div 
           ref={logsContainerRef}
           className={`p-5 min-h-[340px] max-h-[460px] overflow-y-auto space-y-2 text-xs font-mono select-text scrollbar-thin ${
@@ -297,16 +331,16 @@ export default function LabNotebook() {
             </div>
           )}
 
-          {cliLogs.map((log, idx) => (
+          {activeLogs.map((log, idx) => (
             <div key={idx} className="space-y-1">
               {log.type === 'sys' && (
                 <p className={osMode === 'cmd' ? 'text-gray-400' : 'text-slate-400 italic'}>{log.text}</p>
               )}
               {log.type === 'cmd' && (
                 <div className="font-extrabold flex items-center gap-1.5">
-                  {osMode === 'zsh' ? (
+                  {osMode === 'bash' ? (
                     <p className="text-cyan-300">
-                      <span className="text-emerald-400">➜</span> <span className="text-cyan-400">netpulse-box</span> <span className="text-amber-400">git:(main)</span> <span className="text-purple-400">✗</span> {log.text.replace('➜  netpulse-box git:(main) ✗ ', '')}
+                      <span className="text-emerald-400">sysadmin@netpulse-box:~$</span> {log.text.replace('sysadmin@netpulse-box:~$ ', '')}
                     </p>
                   ) : (
                     <p className="text-gray-200">{log.text}</p>
@@ -336,10 +370,9 @@ export default function LabNotebook() {
             osMode === 'cmd' ? 'bg-black border-gray-800' : 'bg-slate-900/90 border-slate-800'
           }`}
         >
-          {osMode === 'zsh' ? (
-            <span className="text-emerald-400 font-black text-xs shrink-0 flex items-center gap-1">
-              <span className="text-emerald-400">➜</span>
-              <span className="text-cyan-400 font-bold">~</span>
+          {osMode === 'bash' ? (
+            <span className="text-emerald-400 font-black text-xs shrink-0 flex items-center gap-1 font-mono">
+              sysadmin@netpulse-box:~$
             </span>
           ) : (
             <span className="text-gray-200 font-bold text-xs shrink-0">C:\Users\SysAdmin&gt;</span>
@@ -349,7 +382,7 @@ export default function LabNotebook() {
             type="text"
             value={commandInput}
             onChange={(e) => setCommandInput(e.target.value)}
-            placeholder={osMode === 'zsh' ? 'type Linux command (e.g. "ip a", "ping -c 4 8.8.8.8", "ss -tulpn")...' : 'type Windows command (e.g. "ipconfig /all", "tracert 8.8.8.8", "route print")...'}
+            placeholder={osMode === 'bash' ? 'type Linux Bash command (e.g. "ip a", "ping -c 4 8.8.8.8", "ss -tulpn")...' : 'type Windows CMD command (e.g. "ipconfig /all", "tracert 8.8.8.8", "route print")...'}
             className={`flex-1 bg-transparent px-3 py-2 text-xs font-bold focus:outline-none font-mono ${
               osMode === 'cmd' ? 'text-gray-100' : 'text-slate-100'
             }`}
@@ -374,7 +407,7 @@ export default function LabNotebook() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="font-extrabold text-slate-100 text-sm flex items-center gap-2">
-              <span>{osMode === 'zsh' ? '🐧 Native Linux Commands' : '🪟 Native Windows Commands'}</span>
+              <span>{osMode === 'bash' ? '🐧 Native Linux Commands' : '🪟 Native Windows Commands'}</span>
               <span className="px-2 py-0.5 rounded text-[10px] bg-slate-900 text-cyan-400 border border-slate-800 font-bold">
                 {filteredTutorials.length} Commands
               </span>
@@ -388,7 +421,7 @@ export default function LabNotebook() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={`Search ${osMode === 'zsh' ? 'Linux' : 'Windows'} commands...`}
+              placeholder={`Search ${osMode === 'bash' ? 'Linux' : 'Windows'} commands...`}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
             />
           </div>
