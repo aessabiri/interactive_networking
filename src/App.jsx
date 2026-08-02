@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Navbar from './components/Navbar';
+import EnterpriseModule from './components/enterprise/EnterpriseModule';
 import DHCPModule from './components/dhcp/DHCPModule';
 import DNSModule from './components/dns/DNSModule';
 import ADModule from './components/active-directory/ADModule';
@@ -10,7 +11,7 @@ import NetworkSandbox from './components/sandbox/NetworkSandbox';
 import LabNotebook from './components/notebook/LabNotebook';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('dhcp');
+  const [activeTab, setActiveTab] = useState('enterprise');
   const [appMode, setAppMode] = useState('clean'); // 'clean' or 'detailed'
 
   return (
@@ -20,6 +21,7 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+        {activeTab === 'enterprise' && <EnterpriseModule appMode={appMode} />}
         {activeTab === 'dhcp' && <DHCPModule appMode={appMode} />}
         {activeTab === 'dns' && <DNSModule appMode={appMode} />}
         {activeTab === 'ad' && <ADModule appMode={appMode} />}
