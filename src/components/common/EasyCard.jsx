@@ -166,23 +166,7 @@ export function CleanWidget({
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
-        )}
-
-        {/* CANVAS ANIMATION HIDE/SHOW TOGGLE */}
-        {setShowAnimation && (
-          <button
-            onClick={() => setShowAnimation(!showAnimation)}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer shadow border hover:scale-105 active:scale-95 ${
-              showAnimation
-                ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
-                : 'bg-slate-800 text-slate-400 border-slate-700'
-            }`}
-            title={showAnimation ? 'Hide Canvas' : 'Show Canvas'}
-          >
-            <MonitorPlay className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </div>
+        )}      </div>
     </div>
   );
 }

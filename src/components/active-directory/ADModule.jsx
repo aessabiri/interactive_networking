@@ -606,61 +606,60 @@ export default function ADModule({ appMode = 'clean' }) {
           )}
         </div>
 
-        {/* LIVE PACKET & KERBEROS TICKET VIEWER */}
-        <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-            <div className="flex items-center gap-2 text-purple-400 font-extrabold text-xs">
-              <Activity className="w-4 h-4 text-purple-400 animate-pulse" />
-              <span>LIVE PACKET & KERBEROS TICKET VIEWER</span>
+        {/* LIVE PACKET & KERBEROS TICKET VIEWER (DETAILED MODE ONLY) */}
+        {(appMode === 'detailed' || appMode === 'expert') && (
+          <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+              <div className="flex items-center gap-2 text-purple-400 font-extrabold text-xs">
+                <Activity className="w-4 h-4 text-purple-400 animate-pulse" />
+                <span>LIVE PACKET & KERBEROS TICKET VIEWER</span>
+              </div>
+              <span className="text-slate-400 text-[10px] font-bold">
+                {packetPos ? packetPos.label : 'Waiting for Kerberos Handshake'}
+              </span>
             </div>
-            <span className="text-slate-400 text-[10px] font-bold">
-              {packetPos ? packetPos.label : 'Waiting for Kerberos Handshake'}
-            </span>
+
+            {currentPayload ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Column 1: Network Headers */}
+                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
+                  <div className="flex items-center justify-between text-purple-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                    <span>Kerberos Message & Realm:</span>
+                    <span className="text-amber-400">{currentPayload.stepName}</span>
+                  </div>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">Protocol:</span> <span className="text-purple-300 font-bold">{currentPayload.protocol}</span>
+                  </p>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">Client Principal:</span> <span className="text-cyan-300 font-bold">{currentPayload.clientPrincipal}</span>
+                  </p>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">Layer 3 (IPv4):</span> <span className="text-blue-300 font-bold">{currentPayload.l3Header}</span>
+                  </p>
+                </div>
+
+                {/* Column 2: Ticket Payload Fields */}
+                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
+                  <div className="flex items-center justify-between text-cyan-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                    <span>Encryption & Service Principal:</span>
+                    <span className="text-slate-400 text-[10px]">{currentPayload.encryptionType}</span>
+                  </div>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">Target SPN:</span> <span className="text-amber-300 font-bold">{currentPayload.servicePrincipal}</span>
+                  </p>
+                  <p className="text-slate-300 text-[11px]">
+                    <span className="text-slate-500 font-bold">Key Ticket Info:</span> <span className="text-emerald-300 font-bold">{currentPayload.ticketDetails[0]}</span>
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
+                <p className="font-bold">No active Kerberos packet in flight.</p>
+                <p className="text-[10px]">Click "Next Step" or "Start Kerberos Login" to observe real-time Kerberos ticket generation.</p>
+              </div>
+            )}
           </div>
-
-          {currentPayload ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* Column 1: Network Headers */}
-              <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
-                <div className="flex items-center justify-between text-purple-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
-                  <span>Protocol Stack Headers:</span>
-                  <span className="text-amber-400">{currentPayload.stepName}</span>
-                </div>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Ethernet (L2):</span> {currentPayload.l2Header}
-                </p>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">IPv4 (L3):</span> <span className="text-purple-300 font-bold">{currentPayload.l3Header}</span>
-                </p>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Kerberos (L4):</span> <span className="text-emerald-300 font-bold">{currentPayload.l4Header}</span>
-                </p>
-              </div>
-
-              {/* Column 2: Kerberos Ticket Payload */}
-              <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
-                <div className="flex items-center justify-between text-amber-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
-                  <span>Kerberos Principals & Ticket Data:</span>
-                  <span className="text-slate-400 text-[10px]">{currentPayload.encryptionType}</span>
-                </div>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Client Principal:</span> <span className="text-purple-300 font-bold">{currentPayload.clientPrincipal}</span>
-                </p>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Target SPN:</span> <span className="text-amber-300 font-bold">{currentPayload.servicePrincipal}</span>
-                </p>
-                <p className="text-slate-300 text-[11px]">
-                  <span className="text-slate-500 font-bold">Key Ticket Info:</span> <span className="text-emerald-300 font-bold">{currentPayload.ticketDetails[0]}</span>
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
-              <p className="font-bold">No active Kerberos packet in flight.</p>
-              <p className="text-[10px]">Click "Next Step" or "Start Kerberos Login" to observe real-time Kerberos ticket generation.</p>
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
       {/* WINDOWS CLI CHEATSHEET & TICKET INSPECTOR BUTTONS */}
