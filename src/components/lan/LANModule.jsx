@@ -718,10 +718,9 @@ export default function LANModule({ appMode = 'clean' }) {
         </div>
       </div>
 
-      {/* CAM TABLE SUMMARY & LOGS (DETAILED MODE ONLY) */}
-      {(appMode === 'detailed' || appMode === 'expert') && (
-        <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
+      {/* CAM TABLE SUMMARY & LOGS */}
+      <SlideOutInspector title="Technical Deep Dive & Switch CAM / ARP Table Logs">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
             
             {/* LEFT: SWITCH CAM TABLE & HOST ARP TABLE */}
             <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
@@ -780,7 +779,6 @@ export default function LANModule({ appMode = 'clean' }) {
             <TerminalLog logs={logs} onClear={() => setLogs([])} />
           </div>
         </SlideOutInspector>
-      )}
     </div>
   );
 }

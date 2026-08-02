@@ -912,36 +912,34 @@ export default function MailModule({ appMode = 'clean' }) {
         )}
       </div>
 
-      {/* STEP INSPECTION CARDS & LOGS (DETAILED MODE ONLY) */}
-      {(appMode === 'detailed' || appMode === 'expert') && (
-        <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 font-mono">
-              {(domainMode === 'cross' ? [1, 2, 3, 4] : [1, 2, 3]).map((stepNum) => {
-                const meta = stepMeta[stepNum];
-                return (
-                  <div key={stepNum} className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 flex flex-col justify-between">
-                    <div className="space-y-1 text-xs">
-                      <span className="text-amber-400 font-bold">{meta.title.split(':')[0]}</span>
-                      <p className="text-slate-300 text-[11px] leading-relaxed">{meta.subtitle}</p>
-                    </div>
-
-                    <button
-                      onClick={() => setModalPayloadStep(stepNum)}
-                      className="w-full py-2 px-3 rounded-xl text-xs font-extrabold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <FileCode className="w-4 h-4" />
-                      <span>Inspect Mail Payload & Headers 🔍</span>
-                    </button>
+      {/* STEP INSPECTION CARDS & LOGS */}
+      <SlideOutInspector title="Technical Deep Dive & Mail Server Protocol Logs">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 font-mono">
+            {(domainMode === 'cross' ? [1, 2, 3, 4] : [1, 2, 3]).map((stepNum) => {
+              const meta = stepMeta[stepNum];
+              return (
+                <div key={stepNum} className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 flex flex-col justify-between">
+                  <div className="space-y-1 text-xs">
+                    <span className="text-amber-400 font-bold">{meta.title.split(':')[0]}</span>
+                    <p className="text-slate-300 text-[11px] leading-relaxed">{meta.subtitle}</p>
                   </div>
-                );
-              })}
-            </div>
 
-            <TerminalLog logs={logs} onClear={() => setLogs([])} />
+                  <button
+                    onClick={() => setModalPayloadStep(stepNum)}
+                    className="w-full py-2 px-3 rounded-xl text-xs font-extrabold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <FileCode className="w-4 h-4" />
+                    <span>Inspect Mail Payload & Headers 🔍</span>
+                  </button>
+                </div>
+              );
+            })}
           </div>
-        </SlideOutInspector>
-      )}
+
+          <TerminalLog logs={logs} onClear={() => setLogs([])} />
+        </div>
+      </SlideOutInspector>
     </div>
   );
 }

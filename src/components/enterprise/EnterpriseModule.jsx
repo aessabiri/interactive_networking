@@ -630,12 +630,10 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
         )}
       </div>
 
-      {/* TERMINAL EVENT LOGS (DETAILED MODE ONLY) */}
-      {(appMode === 'detailed' || appMode === 'expert') && (
-        <SlideOutInspector title="Slide Out Technical Deep Dive & Enterprise Wire Logs">
-          <TerminalLog logs={logs} onClear={() => setLogs([])} />
-        </SlideOutInspector>
-      )}
+      {/* TERMINAL EVENT LOGS */}
+      <SlideOutInspector title="Technical Deep Dive & Enterprise Wire Logs">
+        <TerminalLog logs={logs} onClear={() => setLogs([])} />
+      </SlideOutInspector>
     </div>
   );
 }

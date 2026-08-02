@@ -754,9 +754,8 @@ export default function DHCPModule({ appMode = 'clean' }) {
         )}
       </div>
 
-      {/* TECHNICAL INSPECTOR & EVENT LOGS (DETAILED MODE ONLY) */}
-      {(appMode === 'detailed' || appMode === 'expert') && (
-        <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
+      {/* TECHNICAL INSPECTOR & EVENT LOGS */}
+      <SlideOutInspector title="Technical Deep Dive & DHCP Protocol Logs">
         <div className="space-y-4">
           
           {/* OS CLI COMMANDS & PACKET PAYLOAD INSPECTOR */}
@@ -860,7 +859,6 @@ export default function DHCPModule({ appMode = 'clean' }) {
           <TerminalLog logs={logs} onClear={() => setLogs([])} />
         </div>
       </SlideOutInspector>
-      )}
     </div>
   );
 }

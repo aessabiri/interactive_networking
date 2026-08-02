@@ -1525,64 +1525,62 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
           })}
         </div>
 
-        {/* LIVE PACKET CONTENT INSPECTOR PANEL (DETAILED MODE ONLY) */}
-        {(appMode === 'detailed' || appMode === 'expert') && (
-          <SlideOutInspector title="Slide Out Sandbox Technical Deep Dive & Wire Logs">
-            <div className="space-y-4">
-              <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
-                <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-                  <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-xs">
-                    <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
-                    <span>SANDBOX LIVE PACKET CONTENT INSPECTOR</span>
-                  </div>
-                  <span className="text-amber-400 text-[10px] font-bold">
-                    {livePacketData ? livePacketData.currentHop : 'Idle (Waiting for Simulation)'}
-                  </span>
+        {/* LIVE PACKET CONTENT INSPECTOR PANEL & LOGS */}
+        <SlideOutInspector title="Technical Deep Dive & Sandbox Live Wire Logs">
+          <div className="space-y-4">
+            <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
+              <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-xs">
+                  <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
+                  <span>SANDBOX LIVE PACKET CONTENT INSPECTOR</span>
                 </div>
-
-                {livePacketData ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1.5">
-                      <div className="flex items-center justify-between text-blue-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
-                        <span>Layer 2 & Layer 3 Stack:</span>
-                        <span className="text-amber-400">{livePacketData.protocolName}</span>
-                      </div>
-                      <p className="text-slate-300 text-[11px]">
-                        <span className="text-slate-500 font-bold">EtherType:</span> <span className="text-amber-300 font-bold">{livePacketData.etherType}</span>
-                      </p>
-                      <p className="text-slate-300 text-[11px]">
-                        <span className="text-slate-500 font-bold">Layer 2 MACs:</span> <span className="text-cyan-300 font-bold">{livePacketData.l2}</span>
-                      </p>
-                      <p className="text-slate-300 text-[11px]">
-                        <span className="text-slate-500 font-bold">Layer 3 IPs:</span> <span className="text-emerald-300 font-bold">{livePacketData.l3}</span>
-                      </p>
-                    </div>
-
-                    <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1.5">
-                      <div className="flex items-center justify-between text-cyan-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
-                        <span>Layer 4 & Protocol Payload:</span>
-                        <span className="text-slate-400 text-[10px]">{livePacketData.currentHop}</span>
-                      </div>
-                      <p className="text-slate-300 text-[11px]">
-                        <span className="text-slate-500 font-bold">Transport Layer:</span> <span className="text-purple-300 font-bold">{livePacketData.l4}</span>
-                      </p>
-                      <p className="text-slate-300 text-[11px]">
-                        <span className="text-slate-500 font-bold">Payload Data:</span> <span className="text-amber-300 font-bold">{livePacketData.payload}</span>
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
-                    <p className="font-bold">No active packet frame in flight.</p>
-                    <p className="text-[10px]">Select source/target devices and click "Run Traffic Simulation" to inspect packet headers in real time.</p>
-                  </div>
-                )}
+                <span className="text-amber-400 text-[10px] font-bold">
+                  {livePacketData ? livePacketData.currentHop : 'Idle (Waiting for Simulation)'}
+                </span>
               </div>
 
-              <TerminalLog logs={logs} onClear={() => setLogs([])} />
+              {livePacketData ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1.5">
+                    <div className="flex items-center justify-between text-blue-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                      <span>Layer 2 & Layer 3 Stack:</span>
+                      <span className="text-amber-400">{livePacketData.protocolName}</span>
+                    </div>
+                    <p className="text-slate-300 text-[11px]">
+                      <span className="text-slate-500 font-bold">EtherType:</span> <span className="text-amber-300 font-bold">{livePacketData.etherType}</span>
+                    </p>
+                    <p className="text-slate-300 text-[11px]">
+                      <span className="text-slate-500 font-bold">Layer 2 MACs:</span> <span className="text-cyan-300 font-bold">{livePacketData.l2}</span>
+                    </p>
+                    <p className="text-slate-300 text-[11px]">
+                      <span className="text-slate-500 font-bold">Layer 3 IPs:</span> <span className="text-emerald-300 font-bold">{livePacketData.l3}</span>
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1.5">
+                    <div className="flex items-center justify-between text-cyan-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
+                      <span>Layer 4 & Protocol Payload:</span>
+                      <span className="text-slate-400 text-[10px]">{livePacketData.currentHop}</span>
+                    </div>
+                    <p className="text-slate-300 text-[11px]">
+                      <span className="text-slate-500 font-bold">Transport Layer:</span> <span className="text-purple-300 font-bold">{livePacketData.l4}</span>
+                    </p>
+                    <p className="text-slate-300 text-[11px]">
+                      <span className="text-slate-500 font-bold">Payload Data:</span> <span className="text-amber-300 font-bold">{livePacketData.payload}</span>
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
+                  <p className="font-bold">No active packet frame in flight.</p>
+                  <p className="text-[10px]">Select source/target devices and click "Run Traffic Simulation" to inspect packet headers in real time.</p>
+                </div>
+              )}
             </div>
-          </SlideOutInspector>
-        )}
+
+            <TerminalLog logs={logs} onClear={() => setLogs([])} />
+          </div>
+        </SlideOutInspector>
       </div>
     </div>
   );

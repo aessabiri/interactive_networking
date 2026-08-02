@@ -734,10 +734,9 @@ export default function DNSModule({ appMode = 'clean' }) {
         )}
       </div>
 
-      {/* TECHNICAL PACKET INSPECTOR & EVENT LOGS (DETAILED MODE ONLY) */}
-      {(appMode === 'detailed' || appMode === 'expert') && (
-        <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
+      {/* TECHNICAL PACKET INSPECTOR & EVENT LOGS */}
+      <SlideOutInspector title="Technical Deep Dive & DNS Packet Logs">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
             
             {/* LEFT COLUMN: LIVE REAL-TIME PACKET CONTENT INSPECTOR */}
             <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
@@ -797,7 +796,6 @@ export default function DNSModule({ appMode = 'clean' }) {
             <TerminalLog logs={logs} onClear={() => setLogs([])} />
           </div>
         </SlideOutInspector>
-      )}
     </div>
   );
 }

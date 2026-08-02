@@ -191,29 +191,20 @@ export function CleanInfoBanner(props) {
 }
 export const EasyInfoBanner = CleanInfoBanner;
 
-export function SlideOutInspector({ title = "Slide Out Technical Deep Dive & Wire Logs", children }) {
-  const [isOpen, setIsOpen] = useState(false);
-
+export function SlideOutInspector({ title = "Technical Deep Dive & Live Wire Logs", children }) {
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-950/80 overflow-hidden transition-all duration-300 shadow-xl font-mono">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-5 py-3 bg-slate-900/90 hover:bg-slate-800/90 text-slate-300 text-xs font-bold flex items-center justify-between transition-colors cursor-pointer border-b border-slate-800"
-      >
+    <div className="rounded-3xl border border-slate-800 bg-slate-950/80 overflow-hidden transition-all duration-300 shadow-xl font-mono space-y-0">
+      <div className="w-full px-5 py-3 bg-slate-900/90 text-slate-300 text-xs font-bold flex items-center justify-between border-b border-slate-800">
         <div className="flex items-center gap-2.5">
           <Sliders className="w-4 h-4 text-cyan-400" />
           <span className="font-black text-slate-100">{title}</span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800 font-extrabold">
-            {isOpen ? 'Expanded' : 'Collapsed'}
+          <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800 font-extrabold flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            ALWAYS VISIBLE & DEEP DIVE READY
           </span>
         </div>
-        <div className="flex items-center gap-1.5 text-cyan-400 font-extrabold text-xs">
-          <span>{isOpen ? 'Hide Technical Details' : 'Slide Out Technical Details'}</span>
-          {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4 animate-bounce" />}
-        </div>
-      </button>
-
-      <div className={`transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[1400px] opacity-100 p-5' : 'max-h-0 opacity-0 overflow-hidden p-0'}`}>
+      </div>
+      <div className="p-5">
         {children}
       </div>
     </div>

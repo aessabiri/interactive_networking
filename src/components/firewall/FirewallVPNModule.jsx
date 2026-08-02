@@ -1112,12 +1112,10 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
         </div>
       )}
 
-      {/* TERMINAL EVENT LOGS (DETAILED MODE ONLY) */}
-      {(appMode === 'detailed' || appMode === 'expert') && (
-        <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
-          <TerminalLog logs={logs} onClear={() => setLogs([])} />
-        </SlideOutInspector>
-      )}
+      {/* TERMINAL EVENT LOGS */}
+      <SlideOutInspector title="Technical Deep Dive & Firewall Wire Logs">
+        <TerminalLog logs={logs} onClear={() => setLogs([])} />
+      </SlideOutInspector>
     </div>
   );
 }

@@ -758,9 +758,8 @@ export default function ADModule({ appMode = 'clean' }) {
         </div>
       </div>
 
-      {/* SIDE-BY-SIDE TICKET CACHE SUMMARY & LOGS (DETAILED MODE ONLY) */}
-      {(appMode === 'detailed' || appMode === 'expert') && (
-        <SlideOutInspector title="Slide Out Technical Deep Dive & Wire Logs">
+      {/* SIDE-BY-SIDE TICKET CACHE SUMMARY & LOGS */}
+      <SlideOutInspector title="Technical Deep Dive & Kerberos Ticket Cache Logs">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
             
             {/* LEFT: LSA TICKET CACHE SUMMARY */}
@@ -805,7 +804,6 @@ export default function ADModule({ appMode = 'clean' }) {
             <TerminalLog logs={logs} onClear={() => setLogs([])} />
           </div>
         </SlideOutInspector>
-      )}
     </div>
   );
 }
