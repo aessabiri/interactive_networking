@@ -464,6 +464,21 @@ export default function LANModule({ appMode = 'clean' }) {
             <line x1="50%" y1="50%" x2="22%" y2="15%" stroke="#64748b" strokeWidth="3" strokeDasharray="6 4" strokeOpacity="0.5" />
           </svg>
 
+          {/* FAINT HIGHLIGHT NETWORK AREA CONTAINERS */}
+          {/* Access Subnet A */}
+          <div className="absolute left-[3%] top-[4%] w-[44%] h-[92%] border-2 border-dashed border-cyan-800/30 bg-cyan-950/15 rounded-3xl pointer-events-none p-3">
+            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-800/80 shadow">
+              ACCESS SUBNET A (192.168.1.0/24)
+            </span>
+          </div>
+
+          {/* Target Subnet B */}
+          <div className="absolute right-[3%] top-[4%] w-[44%] h-[92%] border-2 border-dashed border-blue-800/30 bg-blue-950/15 rounded-3xl pointer-events-none p-3 text-right">
+            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-blue-950/80 text-blue-300 border border-blue-800/80 shadow">
+              DEFAULT GATEWAY & TARGET ZONE
+            </span>
+          </div>
+
           {/* 1. TOP LEFT: DUMMY PC-C (22%, 15%) */}
           <div className="absolute left-[22%] top-[15%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 text-center z-10">
             <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-slate-900 text-slate-400 border border-slate-700 shadow">

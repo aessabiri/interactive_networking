@@ -372,6 +372,28 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
               />
             </svg>
 
+            {/* FAINT HIGHLIGHT AREA CONTAINERS */}
+            {/* Left: Trusted Internal LAN */}
+            <div className="absolute left-[3%] top-[5%] w-[30%] h-[90%] border-2 border-dashed border-cyan-800/30 bg-cyan-950/15 rounded-3xl pointer-events-none p-3">
+              <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-800/80 shadow">
+                TRUSTED INTERNAL LAN (192.168.1.0/24)
+              </span>
+            </div>
+
+            {/* Center: Firewall SPI Security DMZ */}
+            <div className="absolute left-[35%] top-[5%] w-[30%] h-[90%] border-2 border-dashed border-rose-800/30 bg-rose-950/15 rounded-3xl pointer-events-none p-3 text-center">
+              <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-rose-950/80 text-rose-300 border border-rose-800/80 shadow">
+                FIREWALL INSPECTION DMZ
+              </span>
+            </div>
+
+            {/* Right: Untrusted Public WAN */}
+            <div className="absolute right-[3%] top-[5%] w-[30%] h-[90%] border-2 border-dashed border-amber-800/30 bg-amber-950/15 rounded-3xl pointer-events-none p-3 text-right">
+              <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-800/80 shadow">
+                UNTRUSTED PUBLIC WAN (8.8.8.8)
+              </span>
+            </div>
+
             {/* Stage Nodes */}
             <div className="relative z-10 flex items-center justify-between h-[300px] px-8">
               

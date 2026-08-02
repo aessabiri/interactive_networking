@@ -526,6 +526,21 @@ export default function DHCPModule({ appMode = 'clean' }) {
             <line x1="50%" y1="50%" x2="78%" y2="15%" stroke="#06b6d4" strokeWidth="3" strokeDasharray="6 4" strokeOpacity="0.5" />
           </svg>
 
+          {/* FAINT HIGHLIGHT NETWORK AREA CONTAINERS */}
+          {/* Client Workstation Area */}
+          <div className="absolute left-[3%] top-[4%] w-[44%] h-[92%] border-2 border-dashed border-cyan-800/30 bg-cyan-950/15 rounded-3xl pointer-events-none p-3">
+            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-800/80 shadow">
+              CLIENT SUBNET (192.168.1.0/24)
+            </span>
+          </div>
+
+          {/* Infrastructure Server Area */}
+          <div className="absolute right-[3%] top-[4%] w-[44%] h-[92%] border-2 border-dashed border-purple-800/30 bg-purple-950/15 rounded-3xl pointer-events-none p-3 text-right">
+            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-950/80 text-purple-300 border border-purple-800/80 shadow">
+              SERVICES SUBNET (192.168.1.0/24)
+            </span>
+          </div>
+
           {/* 1. TOP LEFT: DUMMY PC-02 (22%, 15%) */}
           <div className="absolute left-[22%] top-[15%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 text-center z-10">
             <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-slate-900 text-slate-400 border border-slate-700 shadow">

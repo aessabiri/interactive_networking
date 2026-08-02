@@ -355,6 +355,28 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
           <line x1="72%" y1="42%" x2="85%" y2="85%" stroke="#a855f7" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" />
         </svg>
 
+        {/* FAINT HIGHLIGHT NETWORK AREA CONTAINERS */}
+        {/* Office Floor Workstations Area */}
+        <div className="absolute left-[2%] top-[4%] w-[33%] h-[92%] border-2 border-dashed border-cyan-800/30 bg-cyan-950/15 rounded-3xl pointer-events-none p-3">
+          <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-800/80 shadow">
+            OFFICE FLOOR 1 WORKSTATION ZONE
+          </span>
+        </div>
+
+        {/* Core Routing & Switching Zone */}
+        <div className="absolute left-[37%] top-[4%] w-[26%] h-[92%] border-2 border-dashed border-amber-800/30 bg-amber-950/15 rounded-3xl pointer-events-none p-3 text-center">
+          <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-800/80 shadow">
+            CORE ROUTING & FIREWALL ZONE
+          </span>
+        </div>
+
+        {/* Data Center Server Racks Area */}
+        <div className="absolute right-[2%] top-[4%] w-[33%] h-[92%] border-2 border-dashed border-purple-800/30 bg-purple-950/15 rounded-3xl pointer-events-none p-3 text-right">
+          <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-950/80 text-purple-300 border border-purple-800/80 shadow">
+            DATA CENTER SERVER RACKS ZONE
+          </span>
+        </div>
+
         {/* TOPOLOGY NODES */}
         
         {/* OFFICE FLOOR 1 WORKSTATIONS ZONE */}
