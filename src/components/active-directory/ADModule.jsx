@@ -317,7 +317,7 @@ export default function ADModule({ appMode = 'clean' }) {
 
       {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
       <CleanWidget
-        title="Active Directory & Kerberos Security Made Simple"
+        title="Active Directory & Kerberos Protocol Analyzer"
         subtitle="Understand how Windows Domain Controllers log in users securely using encrypted digital tickets"
         icon={ShieldCheck}
         ip="192.168.1.10 (DC01 Domain Controller)"

@@ -299,7 +299,7 @@ export default function LANModule({ appMode = 'clean' }) {
 
       {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
       <CleanWidget
-        title="Local Network (LAN) & ARP Routing Made Simple"
+        title="Local Area Network (LAN) & ARP Switching Analyzer"
         subtitle="Learn how network switches connect computers inside an office using MAC addresses and ARP resolution"
         icon={Layers}
         ip="192.168.1.105 → 192.168.1.200"
