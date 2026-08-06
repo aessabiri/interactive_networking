@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { 
   Cpu, 
   Layers, 
@@ -17,11 +18,14 @@ import {
   Trophy, 
   Settings, 
   Network, 
-  ChevronDown
+  ChevronDown,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode }) {
   const { lang, toggleLanguage, t } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
   const [openDropdown, setOpenDropdown] = useState(null);
   const navRef = useRef(null);
 
@@ -83,10 +87,10 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
   };
 
   return (
-    <header ref={navRef} className="sticky top-0 z-50 bg-[#12151e]/90 backdrop-blur-2xl border-b border-white/[0.04] px-4 py-3 shadow-[0_8px_20px_rgba(0,0,0,0.6)]">
+    <header ref={navRef} className="sticky top-0 z-50 bg-[#12151e]/90 dark:bg-[#12151e]/90 light:bg-[#ffffff]/85 backdrop-blur-2xl border-b border-white/[0.04] dark:border-white/[0.04] light:border-slate-200 px-4 py-3 shadow-[0_8px_20px_rgba(0,0,0,0.4)]">
       <div className="max-w-7xl mx-auto space-y-3">
         
-        {/* TOP ROW: BRAND LOGO, BREADCRUMB, LANGUAGE TOGGLE & MODE SWITCH */}
+        {/* TOP ROW: BRAND LOGO, BREADCRUMB, THEME TOGGLE, LANGUAGE TOGGLE & MODE SWITCH */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           
           {/* Brand Logo & Hub Button */}
@@ -96,7 +100,7 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
               className="flex items-center gap-2.5 cursor-pointer group hover:opacity-90 transition-opacity"
               title={t('returnToHub')}
             >
-              <div className="p-2 rounded-xl bg-[#0e1017] shadow-[inset_2px_2px_5px_rgba(0,0,0,0.65),_inset_-2px_-2px_5px_rgba(255,255,255,0.035)] text-[#f59e0b]">
+              <div className="p-2 rounded-xl bg-[#0e1017] dark:bg-[#0e1017] light:bg-[#f1f5f9] shadow-[inset_2px_2px_5px_rgba(0,0,0,0.65),_inset_-2px_-2px_5px_rgba(255,255,255,0.035)] text-[#f59e0b]">
                 <Cpu className="w-4 h-4" />
               </div>
               <div className="flex items-center gap-2">
@@ -113,16 +117,35 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
           {/* ACTIVE TAB BREADCRUMB BADGE */}
           <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full neumorphic-card text-xs font-mono text-white/70">
             <span className="text-[#f59e0b] font-semibold">{t('activeLab')}:</span>
-            <span className="text-white font-semibold">{getActiveTabTitle()}</span>
+            <span className="text-slate-800 dark:text-white font-semibold">{getActiveTabTitle()}</span>
           </div>
 
-          {/* RIGHT SIDE CONTROLS: LANGUAGE SWITCHER & MODE SWITCH */}
-          <div className="flex items-center gap-3">
+          {/* RIGHT SIDE CONTROLS: THEME SWITCHER, LANGUAGE SWITCHER & MODE SWITCH */}
+          <div className="flex items-center gap-2.5">
             
+            {/* LIGHT / DARK THEME TOGGLE BUTTON */}
+            <button
+              onClick={toggleTheme}
+              className="px-3 py-1 rounded-full neumorphic-card text-xs font-mono font-bold flex items-center gap-1.5 cursor-pointer hover:border-[#f59e0b]/40 transition-all text-slate-800 dark:text-white"
+              title="Toggle Light / Dark Mode"
+            >
+              {theme === 'dark' ? (
+                <>
+                  <Sun className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Light</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="w-3.5 h-3.5 text-indigo-500" />
+                  <span>Dark</span>
+                </>
+              )}
+            </button>
+
             {/* LANGUAGE SWITCHER BUTTON (EN | DE 🇩🇪) */}
             <button
               onClick={toggleLanguage}
-              className="px-3 py-1 rounded-full neumorphic-card text-xs font-mono font-bold flex items-center gap-1.5 cursor-pointer hover:border-[#f59e0b]/40 transition-all text-white"
+              className="px-3 py-1 rounded-full neumorphic-card text-xs font-mono font-bold flex items-center gap-1.5 cursor-pointer hover:border-[#f59e0b]/40 transition-all text-slate-800 dark:text-white"
               title={t('switchLangTip')}
             >
               <span>{lang === 'en' ? '🇬🇧 EN' : '🇩🇪 DE'}</span>
@@ -165,7 +188,7 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
                   openDropdown === cat.id || cat.items.some(i => i.id === activeTab)
                     ? 'neumorphic-card text-[#f59e0b]'
-                    : 'text-white/60 hover:text-white'
+                    : 'text-slate-700 dark:text-white/60 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <span>{cat.label}</span>
@@ -187,7 +210,7 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
                         className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center gap-2.5 font-medium transition-all ${
                           activeTab === item.id
                             ? 'bg-[#f59e0b]/15 text-[#f59e0b] border border-[#f59e0b]/30 font-semibold'
-                            : 'text-white/80 hover:bg-white/[0.04] hover:text-white'
+                            : 'text-slate-700 dark:text-white/80 hover:bg-slate-100 dark:hover:bg-white/[0.04] text-slate-900 dark:text-white'
                         }`}
                       >
                         <ItemIcon className="w-4 h-4 text-[#f59e0b]" />
