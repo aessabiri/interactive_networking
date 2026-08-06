@@ -512,19 +512,31 @@ export default function LANModule({ appMode = 'clean' }) {
             </div>
           </div>
 
-          {/* 3. DEAD CENTER: L2 SWITCH (50%, 50%) */}
+          {/* 3. DEAD CENTER: CENTRAL SWITCH / ROUTING ENGINE (50%, 50%) */}
           <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
-            <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-blue-950 text-blue-300 border border-blue-600 shadow-lg">
-              CENTRAL L2 SWITCH (CAM TABLE)
+            <span className={`px-3 py-1 rounded-full text-[10px] font-mono font-black border shadow-lg ${
+              isInterSubnetMode
+                ? 'bg-amber-950 text-amber-300 border-amber-500 shadow-amber-500/30 animate-pulse'
+                : 'bg-blue-950 text-blue-300 border-blue-600 shadow-blue-500/20'
+            }`}>
+              {isInterSubnetMode ? 'CENTRAL L3 MULTI-LAYER SWITCH / ROUTER (IP ROUTING)' : 'CENTRAL L2 SWITCH (MAC CAM TABLE)'}
             </span>
             <div className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
-              isPlaying ? 'bg-blue-900/90 border-blue-400 shadow-2xl shadow-blue-500/40 scale-110' : 'bg-blue-950/90 border-blue-500 text-blue-300'
+              isPlaying
+                ? 'bg-blue-900/90 border-blue-400 shadow-2xl shadow-blue-500/40 scale-110'
+                : isInterSubnetMode
+                ? 'bg-amber-950/90 border-amber-500 text-amber-300'
+                : 'bg-blue-950/90 border-blue-500 text-blue-300'
             }`}>
-              <Layers className="w-9 h-9 text-blue-400" />
+              {isInterSubnetMode ? <Router className="w-9 h-9 text-amber-400" /> : <Layers className="w-9 h-9 text-blue-400" />}
             </div>
             <div className="text-center font-mono">
-              <p className="text-xs font-extrabold text-blue-300">SWITCH</p>
-              <p className="text-[10px] text-slate-400">Learns MACs & Forwards Frames</p>
+              <p className="text-xs font-extrabold text-blue-300">
+                {isInterSubnetMode ? 'L3 SWITCH / ROUTER' : 'L2 SWITCH'}
+              </p>
+              <p className="text-[10px] text-slate-400">
+                {isInterSubnetMode ? 'Rewrites L2 MACs & Decrements TTL (L3 Routing)' : 'Learns MACs & Forwards L2 Frames'}
+              </p>
             </div>
           </div>
 

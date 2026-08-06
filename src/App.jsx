@@ -10,6 +10,14 @@ import MailModule from './components/mail/MailModule';
 import FirewallVPNModule from './components/firewall/FirewallVPNModule';
 import NetworkSandbox from './components/sandbox/NetworkSandbox';
 import LabNotebook from './components/notebook/LabNotebook';
+import LabScenarioModule from './components/labs/LabScenarioModule';
+import ConfigureModule from './components/configure/ConfigureModule';
+import HardwareModule from './components/hardware/HardwareModule';
+import TopologyModule from './components/topology/TopologyModule';
+import OSITCPIPModule from './components/osi/OSITCPIPModule';
+import ProtocolsModule from './components/protocols/ProtocolsModule';
+import RoutingProtocolModule from './components/routing/RoutingProtocolModule';
+import SubnettingModule from './components/subnetting/SubnettingModule';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('enterprise');
@@ -24,6 +32,14 @@ export default function App() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
         {activeTab === 'enterprise' && <EnterpriseModule appMode={appMode} />}
         {activeTab === 'dts' && <DTSCockpitModule appMode={appMode} />}
+        {activeTab === 'hardware' && <HardwareModule appMode={appMode} />}
+        {activeTab === 'topology' && <TopologyModule appMode={appMode} />}
+        {activeTab === 'osi' && <OSITCPIPModule appMode={appMode} />}
+        {activeTab === 'protocols' && <ProtocolsModule appMode={appMode} />}
+        {activeTab === 'routing' && <RoutingProtocolModule appMode={appMode} />}
+        {activeTab === 'subnetting' && <SubnettingModule appMode={appMode} />}
+        {activeTab === 'labs' && <LabScenarioModule appMode={appMode} />}
+        {activeTab === 'configure' && <ConfigureModule appMode={appMode} />}
         {activeTab === 'dhcp' && <DHCPModule appMode={appMode} />}
         {activeTab === 'dns' && <DNSModule appMode={appMode} />}
         {activeTab === 'ad' && <ADModule appMode={appMode} />}

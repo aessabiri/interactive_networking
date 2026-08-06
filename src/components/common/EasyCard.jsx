@@ -210,3 +210,34 @@ export function SlideOutInspector({ title = "Technical Deep Dive & Live Wire Log
     </div>
   );
 }
+
+export function EasyCard({ title, description, badge, tips = [] }) {
+  return (
+    <div className="p-5 rounded-3xl bg-gradient-to-r from-emerald-950/40 via-teal-950/30 to-slate-900 border border-emerald-800/60 shadow-xl space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-emerald-400 font-black text-sm">
+          <Sparkles className="w-4 h-4 fill-current" />
+          <span>{title}</span>
+        </div>
+        {badge && (
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-900/60 text-emerald-300 border border-emerald-700">
+            {badge}
+          </span>
+        )}
+      </div>
+      <p className="text-xs text-slate-300 leading-relaxed font-medium">{description}</p>
+      {tips.length > 0 && (
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1 border-t border-emerald-900/40 text-[11px] text-emerald-200/90 font-mono">
+          {tips.map((tip, idx) => (
+            <li key={idx} className="flex items-center gap-1.5">
+              <span className="text-emerald-400 font-bold">•</span>
+              <span>{tip}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+export default EasyCard;

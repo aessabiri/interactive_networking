@@ -62,13 +62,13 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
     { id: 106, src: '192.168.1.0/24', dst: '8.8.8.8', port: 'ICMP (PING)', protocol: 'ICMP', state: 'NEW', action: 'ACCEPT', desc: 'Allow Outbound Ping Diagnostics' },
   ]);
 
-  // VPN Tunnel Phase Steps
+  // VPN Tunnel Phase Steps (3 LANs: Herford Germany, Athens Greece, Frankfurt DC)
   const vpnSteps = [
-    { title: 'Ready for IPsec VPN Tunneling', subtitle: 'Branch Gateway (192.168.10.1) & HQ Gateway (172.16.0.1) connected over Public WAN Internet.' },
-    { title: '🔑 PHASE 1: IKEv2 / Diffie-Hellman Key Exchange', subtitle: 'Gateways negotiate Security Association (SA), exchange DH public keys, and create secure IKE SA channel (UDP Port 500).' },
-    { title: '🔒 PHASE 2: IPsec ESP Tunnel & Encryption (AES-256)', subtitle: 'Data payload from Branch LAN is wrapped in IPsec ESP header, encrypted with AES-256-GCM, and authenticated with HMAC SHA-256.' },
-    { title: '🌐 TRANSIT OVER UNTRUSTED PUBLIC WAN', subtitle: 'Encrypted ESP packet transits public internet routers. Eavesdroppers only see encrypted noise payload!' },
-    { title: '✅ DECAPSULATION AT HQ GATEWAY', subtitle: 'HQ Gateway decrypts ESP payload using shared secret key and delivers cleartext packet to HQ Internal Server (172.16.0.50).' }
+    { title: 'Ready for Multi-Site IPsec VPN', subtitle: '3 LAN Sites: Herford Germany 🇩🇪 (10.10.0.0/16), Athens Greece 🇬🇷 (10.20.0.0/16), and Frankfurt DC 🇩🇪 (10.30.0.0/16).' },
+    { title: '🔑 PHASE 1: IKEv2 / Diffie-Hellman Key Exchange', subtitle: 'Herford Gateway (198.51.100.1) & Athens Gateway (203.0.113.5) negotiate IKE SA and exchange DH public keys.' },
+    { title: '🔒 PHASE 2: IPsec ESP Tunnel Established (AES-256)', subtitle: 'IPsec Tunnel Active! Herford PC (Germany) & Athens PC (Greece) securely join the same network and TURN THE SAME COLOR!' },
+    { title: '🌐 TRANSIT OVER UNTRUSTED PUBLIC WAN', subtitle: 'Encrypted ESP packet transits European WAN routers. Eavesdroppers see only encrypted noise!' },
+    { title: '✅ DECAPSULATION & FULL VIRTUAL MESH', subtitle: 'Packet decapsulated at destination gateway. Herford PC and Athens PC share identical secure green virtual IP status!' }
   ];
 
   // TLS 1.3 Handshake Steps
@@ -812,14 +812,26 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
             </div>
           </div>
 
-          {/* MULTI-HOP VISUAL TOPOLOGY STAGE */}
-          <div className="relative min-h-[340px] bg-slate-950 p-6 rounded-3xl border border-slate-800 shadow-inner overflow-hidden">
+          {/* MULTI-SITE 3 LANS VISUAL TOPOLOGY STAGE */}
+          <div className="relative min-h-[380px] bg-slate-950 p-6 rounded-3xl border border-slate-800 shadow-inner overflow-hidden font-mono">
             
-            {/* GLOWING ENCRYPTED TUNNEL OVERLAY PIPE (PHYSICALLY APART, LOGICALLY CONNECTED) */}
-            <div className="absolute top-[28%] left-[8%] right-[8%] h-24 border-2 border-emerald-400/80 rounded-3xl bg-emerald-950/20 backdrop-blur-xs shadow-[0_0_30px_rgba(16,185,129,0.25)] pointer-events-none flex items-center justify-center z-20">
-              <div className="px-4 py-1.5 rounded-full bg-emerald-950 border border-emerald-400 text-emerald-300 text-[10px] font-black tracking-wider flex items-center gap-2 shadow-2xl animate-pulse">
-                <Lock className="w-4 h-4 text-emerald-400" />
-                <span>🔒 ENCRYPTED IPSEC TUNNEL CABLE — LOGICALLY ON SAME VIRTUAL PRIVATE NETWORK</span>
+            {/* GLOWING ENCRYPTED TUNNEL OVERLAY PIPE (LOGICALLY CONNECTING LANS IN SAME COLOR) */}
+            <div className={`absolute top-[22%] left-[4%] right-[4%] h-28 border-2 rounded-3xl backdrop-blur-xs transition-all duration-500 pointer-events-none flex flex-col items-center justify-center z-20 ${
+              activeStep > 0
+                ? 'border-emerald-400/90 bg-emerald-950/30 shadow-[0_0_40px_rgba(16,185,129,0.35)]'
+                : 'border-slate-800 bg-slate-950/40'
+            }`}>
+              <div className={`px-4 py-1.5 rounded-full border text-[11px] font-black tracking-wider flex items-center gap-2 shadow-2xl transition-all duration-500 ${
+                activeStep > 0
+                  ? 'bg-emerald-950 border-emerald-400 text-emerald-300 animate-pulse'
+                  : 'bg-slate-900 border-slate-700 text-slate-400'
+              }`}>
+                <Lock className={`w-4 h-4 ${activeStep > 0 ? 'text-emerald-400' : 'text-slate-500'}`} />
+                <span>
+                  {activeStep > 0
+                    ? '🔒 IPSEC VPN ACTIVE — HERFORD & ATHENS JOINED ON SAME VIRTUAL MESH & SAME COLOR!'
+                    : '⚪ IPSEC TUNNEL INACTIVE — LANS ISOLATED ON DIFFERING PUBLIC SUBNETS'}
+                </span>
               </div>
 
               {/* Animated ESP Encrypted Packet moving inside glowing tunnel */}
@@ -836,53 +848,53 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
 
             {/* PHYSICAL CONNECTIONS WIRE */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none">
-              <line x1="12%" y1="75%" x2="28%" y2="75%" stroke="#06b6d4" strokeWidth="3" strokeDasharray="6 4" />
-              <line x1="28%" y1="75%" x2="44%" y2="75%" stroke="#06b6d4" strokeWidth="3" strokeDasharray="6 4" />
-              <line x1="44%" y1="75%" x2="56%" y2="75%" stroke="#f59e0b" strokeWidth="3" strokeDasharray="6 4" />
-              <line x1="56%" y1="75%" x2="72%" y2="75%" stroke="#a855f7" strokeWidth="3" strokeDasharray="6 4" />
-              <line x1="72%" y1="75%" x2="88%" y2="75%" stroke="#a855f7" strokeWidth="3" strokeDasharray="6 4" />
+              <line x1="12%" y1="78%" x2="28%" y2="78%" stroke={activeStep > 0 ? '#10b981' : '#06b6d4'} strokeWidth="3" strokeDasharray="6 4" />
+              <line x1="28%" y1="78%" x2="44%" y2="78%" stroke={activeStep > 0 ? '#10b981' : '#f59e0b'} strokeWidth="3" strokeDasharray="6 4" />
+              <line x1="44%" y1="78%" x2="60%" y2="78%" stroke={activeStep > 0 ? '#10b981' : '#a855f7'} strokeWidth="3" strokeDasharray="6 4" />
+              <line x1="60%" y1="78%" x2="76%" y2="78%" stroke={activeStep > 0 ? '#10b981' : '#a855f7'} strokeWidth="3" strokeDasharray="6 4" />
+              <line x1="76%" y1="78%" x2="90%" y2="78%" stroke={activeStep > 0 ? '#10b981' : '#eab308'} strokeWidth="3" strokeDasharray="6 4" />
             </svg>
 
-            {/* TOPOLOGY NODES GRID */}
-            <div className="relative z-10 grid grid-cols-6 gap-2 items-end h-[290px]">
+            {/* TOPOLOGY NODES GRID — 3 LANS (HERFORD GERMANY, ATHENS GREECE, FRANKFURT DC) */}
+            <div className="relative z-10 grid grid-cols-6 gap-3 items-end h-[330px]">
               
-              {/* NODE 1: BRANCH PC-01 */}
+              {/* SITE 1: HERFORD GERMANY 🇩🇪 (PC-01) */}
+              <div className="flex flex-col items-center gap-1.5 text-center">
+                <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all duration-500 border ${
+                  activeStep > 0
+                    ? 'bg-emerald-500 text-slate-950 border-emerald-300 shadow-[0_0_15px_#10b981]'
+                    : 'bg-cyan-950 text-cyan-300 border-cyan-700'
+                }`}>
+                  {activeStep > 0 ? '🔒 10.100.0.10 (VPN)' : '10.10.1.100'}
+                </span>
+                <div className={`p-3 rounded-2xl border-2 transition-all duration-500 shadow-xl ${
+                  activeStep > 0
+                    ? 'bg-emerald-500 border-emerald-300 text-slate-950 shadow-[0_0_25px_#10b981] scale-105'
+                    : 'bg-slate-900 border-cyan-500 text-cyan-400'
+                }`}>
+                  <Laptop className="w-8 h-8" />
+                </div>
+                <div>
+                  <p className="font-black text-xs text-slate-100">Herford PC-01 🇩🇪</p>
+                  <p className="text-[10px] text-slate-400 font-bold">DTS HQ Germany</p>
+                </div>
+              </div>
+
+              {/* SITE 1 GATEWAY: HERFORD VPN GATEWAY */}
               <div className="flex flex-col items-center gap-1.5 text-center">
                 <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
-                  192.168.10.105
+                  198.51.100.1
                 </span>
-                <div className="p-3 bg-slate-900 border-2 border-cyan-500 rounded-2xl shadow-lg">
-                  <Laptop className="w-8 h-8 text-cyan-400" />
+                <div className={`p-3 bg-slate-900 border-2 rounded-2xl shadow-lg transition-all duration-500 ${
+                  activeStep > 0 ? 'border-emerald-400 text-emerald-400 shadow-[0_0_15px_#10b981]' : 'border-cyan-500 text-cyan-400'
+                }`}>
+                  <Router className="w-8 h-8 animate-pulse" />
                 </div>
-                <p className="font-extrabold text-[11px] text-slate-100">Branch PC-01</p>
-                <p className="text-[9px] text-slate-400">London Office</p>
-              </div>
-
-              {/* NODE 2: BRANCH SWITCH */}
-              <div className="flex flex-col items-center gap-1.5 text-center">
-                <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-slate-900 text-slate-400 border border-slate-800">
-                  VLAN 10 Switch
-                </span>
-                <div className="p-3 bg-slate-900 border-2 border-slate-700 rounded-2xl shadow-lg">
-                  <Layers className="w-8 h-8 text-slate-300" />
-                </div>
-                <p className="font-extrabold text-[11px] text-slate-100">Branch Switch</p>
-                <p className="text-[9px] text-slate-400">Layer 2 LAN</p>
-              </div>
-
-              {/* NODE 3: BRANCH VPN GATEWAY */}
-              <div className="flex flex-col items-center gap-1.5 text-center">
-                <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-700">
-                  203.0.113.5
-                </span>
-                <div className="p-3 bg-slate-900 border-2 border-emerald-500 rounded-2xl shadow-lg">
-                  <Router className="w-8 h-8 text-emerald-400 animate-pulse" />
-                </div>
-                <p className="font-extrabold text-[11px] text-emerald-300">Branch Gateway</p>
+                <p className="font-extrabold text-[11px] text-slate-200">Herford GW</p>
                 <p className="text-[9px] text-slate-400">VPN Router</p>
               </div>
 
-              {/* NODE 4: PUBLIC ISP CLOUD */}
+              {/* CENTER: PUBLIC ISP WAN CLOUD */}
               <div className="flex flex-col items-center gap-1.5 text-center">
                 <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-amber-950 text-amber-300 border border-amber-800">
                   Public WAN
@@ -890,32 +902,66 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
                 <div className="p-3 bg-amber-950/40 border-2 border-amber-600 rounded-2xl shadow-lg">
                   <Cloud className="w-8 h-8 text-amber-400" />
                 </div>
-                <p className="font-extrabold text-[11px] text-amber-300">ISP WAN Cloud</p>
-                <p className="text-[9px] text-slate-400">Untrusted Internet</p>
+                <p className="font-extrabold text-[11px] text-amber-300">European WAN</p>
+                <p className="text-[9px] text-slate-400">Public Transit</p>
               </div>
 
-              {/* NODE 5: HQ VPN GATEWAY */}
+              {/* SITE 2 GATEWAY: ATHENS VPN GATEWAY */}
               <div className="flex flex-col items-center gap-1.5 text-center">
                 <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800">
-                  198.51.100.1
+                  203.0.113.5
                 </span>
-                <div className="p-3 bg-slate-900 border-2 border-purple-500 rounded-2xl shadow-lg">
-                  <Router className="w-8 h-8 text-purple-400 animate-pulse" />
+                <div className={`p-3 bg-slate-900 border-2 rounded-2xl shadow-lg transition-all duration-500 ${
+                  activeStep > 0 ? 'border-emerald-400 text-emerald-400 shadow-[0_0_15px_#10b981]' : 'border-purple-500 text-purple-400'
+                }`}>
+                  <Router className="w-8 h-8 animate-pulse" />
                 </div>
-                <p className="font-extrabold text-[11px] text-purple-300">HQ Gateway</p>
+                <p className="font-extrabold text-[11px] text-slate-200">Athens GW</p>
                 <p className="text-[9px] text-slate-400">VPN Router</p>
               </div>
 
-              {/* NODE 6: HQ HOST PC-02 */}
+              {/* SITE 2: ATHENS GREECE 🇬🇷 (PC-01) */}
               <div className="flex flex-col items-center gap-1.5 text-center">
-                <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800">
-                  172.16.0.50
+                <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all duration-500 border ${
+                  activeStep > 0
+                    ? 'bg-emerald-500 text-slate-950 border-emerald-300 shadow-[0_0_15px_#10b981]'
+                    : 'bg-purple-950 text-purple-300 border-purple-700'
+                }`}>
+                  {activeStep > 0 ? '🔒 10.100.0.20 (VPN)' : '10.20.1.100'}
                 </span>
-                <div className="p-3 bg-slate-900 border-2 border-purple-500 rounded-2xl shadow-lg">
-                  <Laptop className="w-8 h-8 text-purple-400" />
+                <div className={`p-3 rounded-2xl border-2 transition-all duration-500 shadow-xl ${
+                  activeStep > 0
+                    ? 'bg-emerald-500 border-emerald-300 text-slate-950 shadow-[0_0_25px_#10b981] scale-105'
+                    : 'bg-slate-900 border-purple-500 text-purple-400'
+                }`}>
+                  <Laptop className="w-8 h-8" />
                 </div>
-                <p className="font-extrabold text-[11px] text-slate-100">HQ Host PC-02</p>
-                <p className="text-[9px] text-slate-400">Tokyo HQ LAN</p>
+                <div>
+                  <p className="font-black text-xs text-slate-100">Athens PC-01 🇬🇷</p>
+                  <p className="text-[10px] text-slate-400 font-bold">Athens Greece</p>
+                </div>
+              </div>
+
+              {/* SITE 3: FRANKFURT DC 🇩🇪 (STORAGE ARRAY) */}
+              <div className="flex flex-col items-center gap-1.5 text-center">
+                <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all duration-500 border ${
+                  activeStep > 0
+                    ? 'bg-emerald-500 text-slate-950 border-emerald-300 shadow-[0_0_15px_#10b981]'
+                    : 'bg-amber-950 text-amber-300 border-amber-800'
+                }`}>
+                  {activeStep > 0 ? '🔒 10.100.0.50 (VPN)' : '10.30.1.50'}
+                </span>
+                <div className={`p-3 rounded-2xl border-2 transition-all duration-500 shadow-xl ${
+                  activeStep > 0
+                    ? 'bg-emerald-500 border-emerald-300 text-slate-950 shadow-[0_0_25px_#10b981] scale-105'
+                    : 'bg-slate-900 border-amber-500 text-amber-400'
+                }`}>
+                  <Server className="w-8 h-8" />
+                </div>
+                <div>
+                  <p className="font-black text-xs text-slate-100">Frankfurt DC 🇩🇪</p>
+                  <p className="text-[10px] text-slate-400 font-bold">SAN Storage Array</p>
+                </div>
               </div>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, RotateCcw, Server, Laptop, Router, CheckCircle2, Zap, Gauge, Mail, HelpCircle, Radio, Database, Terminal, SkipForward, Globe, XCircle, Info, FileCode, X, Layers, Cpu, Hash, Activity, Sparkles } from 'lucide-react';
+import { Play, Pause, RotateCcw, Server, Laptop, Router, CheckCircle2, Zap, Gauge, Mail, HelpCircle, Radio, Database, Terminal, SkipForward, Globe, XCircle, Info, FileCode, X, Layers, Cpu, Hash, Activity, Sparkles, Settings, Sliders, ShieldCheck } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
+import PacketInspector from '../common/PacketInspector';
 import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
 
 export default function DHCPModule({ appMode = 'clean' }) {
@@ -9,61 +10,84 @@ export default function DHCPModule({ appMode = 'clean' }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSingleStep, setIsSingleStep] = useState(false);
   const [speed, setSpeed] = useState(0.5); // Default speed 0.5x
-  const [isRelayMode, setIsRelayMode] = useState(false);
+  const [isRelayMode, setIsRelayMode] = useState(false); // L2 Switch Mode vs L3 Router Relay Agent Mode (ip helper-address)
   const [activeOsTab, setActiveOsTab] = useState('windows');
   const [packetProgress, setPacketProgress] = useState(0); // 0 to 100%
   const [modalPayloadStep, setModalPayloadStep] = useState(null); // 1, 2, 3, 4 or null for floating modal
+  const [showConfigDrawer, setShowConfigDrawer] = useState(false); // Scope Config Drawer
+
+  // Realistic Enterprise DHCP Server Scope Configuration State
+  const [scopeConfig, setScopeConfig] = useState({
+    scopeName: 'Corporate-HQ-VLAN10',
+    subnet: '192.168.1.0/24',
+    startIp: '192.168.1.100',
+    endIp: '192.168.1.200',
+    exclusion: '192.168.1.1 - 192.168.1.20',
+    gateway: '192.168.1.1',
+    dnsPrimary: '8.8.8.8',
+    dnsSecondary: '1.1.1.1',
+    domainName: 'corp.dts.de',
+    leaseTime: '8 Days (691200s)',
+    assignedIp: '192.168.1.105'
+  });
 
   const [logs, setLogs] = useState([
-    { time: new Date().toLocaleTimeString(), tag: 'DHCP', message: 'DHCP Daemon initialized. Listening on UDP Port 67 (Server) / Port 68 (Client).' }
+    { time: new Date().toLocaleTimeString(), tag: 'DHCP', message: `DHCP Daemon initialized for scope ${scopeConfig.scopeName}. Listening on UDP Port 67 (Server) / Port 68 (Client).` }
   ]);
 
-  // Enhanced DORA Steps Metadata & Packet Payloads
+  // Enhanced DORA Steps Metadata & Dynamic Scope Payloads
   const stepMeta = {
     0: {
       title: 'Ready to Start DORA Handshake',
-      subtitle: 'Click "Next DORA Step" or "Play Full" to watch how Broadcast vs Unicast works across a Star Network Topology!',
+      subtitle: isRelayMode 
+        ? 'Mode: Multi-Subnet L3 Router DHCP Relay Agent (ip helper-address 10.20.1.50) with Option 82'
+        : 'Mode: Single-Subnet L2 Switch Broadcast (VLAN 1)',
       badge: 'STATE: UNCONFIGURED (0.0.0.0)',
       badgeColor: 'bg-slate-800 text-slate-400 border-slate-700',
       transmissionType: 'NONE',
-      serverPoolState: 'AVAILABLE (192.168.1.105)',
+      serverPoolState: `AVAILABLE (${scopeConfig.assignedIp})`,
       srcIp: '0.0.0.0',
       dstIp: '0.0.0.0',
     },
     1: {
-      title: '📢 STEP 1: DHCP DISCOVER (BROADCAST FLOODING)',
-      subtitle: 'PC-01 broadcasts. The central Switch FLOODS the packet to ALL ports (DHCP Server on right, Dummy PC-02, DNS Server)!',
-      badge: 'TRANSMISSION: BROADCAST (FLOOD ALL PORTS)',
-      badgeColor: 'bg-amber-950 text-amber-400 border-amber-500 animate-pulse',
-      transmissionType: 'BROADCAST',
+      title: isRelayMode ? '📢 STEP 1: DHCP DISCOVER & L3 RELAY (OPTION 82)' : '📢 STEP 1: DHCP DISCOVER (BROADCAST FLOODING)',
+      subtitle: isRelayMode
+        ? 'PC-01 broadcasts locally. L3 Router intercepts, appends Option 82 (Circuit ID), and UNICASTS to DHCP Server (10.20.1.50) across WAN!'
+        : 'PC-01 broadcasts. The central L2 Switch FLOODS the packet to ALL ports in VLAN 1!',
+      badge: isRelayMode ? 'L3 ROUTER RELAY: OPTION 82 INJECTED' : 'L2 TRANSMISSION: BROADCAST FLOODING',
+      badgeColor: isRelayMode ? 'bg-purple-950 text-purple-300 border-purple-500 animate-pulse' : 'bg-amber-950 text-amber-400 border-amber-500 animate-pulse',
+      transmissionType: isRelayMode ? 'RELAY' : 'BROADCAST',
       sender: 'CLIENT',
       receiver: 'SERVER',
       serverPoolState: 'INSPECTING POOL...',
       srcIp: '0.0.0.0',
-      dstIp: '255.255.255.255 (Broadcast)',
-      explanation: 'PC-01 sends a BROADCAST frame to the central Switch. The Switch FLOODS it to all connected devices. Dummy PC-02 and DNS Server drop the frame because they are not DHCP Servers.',
-      whyBroadcast: 'Broadcast Demonstration: Every connected device receives the packet, but only the DHCP Server processes it!',
+      dstIp: isRelayMode ? '10.20.1.50 (Relayed Unicast)' : '255.255.255.255 (Broadcast)',
+      explanation: isRelayMode
+        ? 'L3 Gateway Router intercepts local broadcast, inserts DHCP Option 82 (Circuit ID: Gi0/1, Remote ID: ROUTER-GW-01), and routes it to Central DHCP Server on Subnet 10.20.1.0/24.'
+        : 'PC-01 sends a BROADCAST frame to the central L2 Switch. The Switch FLOODS it to all connected devices on the same subnet.',
+      whyBroadcast: isRelayMode ? 'L3 Relay: Converts Layer 2 Broadcast into Layer 3 Routed Unicast across subnets.' : 'Broadcast: Flooded to all ports on same L2 VLAN.',
       payload: {
         stepName: '1. DHCP DISCOVER',
         messageType: 'DHCPDISCOVER (Option 53 = 1)',
         xid: '0x39A1F4',
         clientMac: '00:50:56:A1:B2:C3',
-        ciaddr: '0.0.0.0 (Client IP)',
-        yiaddr: '0.0.0.0 (Your Offered IP)',
-        siaddr: '0.0.0.0 (Server IP)',
+        ciaddr: '0.0.0.0',
+        yiaddr: '0.0.0.0',
+        siaddr: '0.0.0.0',
         l2Header: 'Src MAC: 00:50:56:A1:B2:C3 → Dst MAC: FF:FF:FF:FF:FF:FF (Broadcast)',
-        l3Header: 'Src IP: 0.0.0.0 → Dst IP: 255.255.255.255 (Global Broadcast)',
-        l4Header: 'UDP Src Port: 68 (BootP Client) → Dst Port: 67 (BootP Server)',
+        l3Header: isRelayMode ? 'Src IP: 192.168.1.1 (Gateway) → Dst IP: 10.20.1.50 (DHCP Server)' : 'Src IP: 0.0.0.0 → Dst IP: 255.255.255.255',
+        l4Header: 'UDP Src Port: 68 → Dst Port: 67',
         options: [
           'Option 53: Message Type = DHCPDISCOVER',
           'Option 55: Parameter Request List = [Subnet Mask, Router, DNS, Domain Name]',
-          'Option 61: Client Identifier = MAC 00:50:56:A1:B2:C3'
+          'Option 61: Client Identifier = MAC 00:50:56:A1:B2:C3',
+          ...(isRelayMode ? ['Option 82: Relay Agent Info = Circuit ID Gi0/1 | Remote ID ROUTER-GW-01'] : [])
         ]
       }
     },
     2: {
-      title: '🎁 STEP 2: DHCP OFFER (DIRECT UNICAST)',
-      subtitle: 'DHCP Server (on right) replies via UNICAST. The Switch forwards it ONLY to Workstation PC-01!',
+      title: '🎁 STEP 2: DHCP OFFER (CONFIGURED SCOPE PARAMS)',
+      subtitle: `DHCP Server replies with offered IP ${scopeConfig.assignedIp}, Gateway ${scopeConfig.gateway}, DNS ${scopeConfig.dnsPrimary}.`,
       badge: 'TRANSMISSION: DIRECT UNICAST (TARGETED)',
       badgeColor: 'bg-cyan-950 text-cyan-400 border-cyan-500 animate-pulse',
       transmissionType: 'UNICAST',
@@ -71,33 +95,34 @@ export default function DHCPModule({ appMode = 'clean' }) {
       receiver: 'CLIENT',
       serverPoolState: 'TEMPORARILY RESERVED (Offer Active)',
       srcIp: '192.168.1.10 (DHCP Server)',
-      dstIp: '192.168.1.105 (Offered IP)',
-      explanation: 'The DHCP Server sends an OFFER frame to the central Switch. The Switch checks its MAC table and forwards it DIRECTLY to PC-01. Dummy PC-02 and DNS Server receive 0 packets!',
-      whyBroadcast: 'Unicast Demonstration: Unicast traffic is not flooded to other devices.',
+      dstIp: scopeConfig.assignedIp,
+      explanation: `The DHCP Server matches the requested scope (${scopeConfig.scopeName}) and proposes IP ${scopeConfig.assignedIp} with Gateway ${scopeConfig.gateway} and DNS ${scopeConfig.dnsPrimary}.`,
+      whyBroadcast: 'Unicast: Direct targeted reply to client MAC address.',
       payload: {
         stepName: '2. DHCP OFFER',
         messageType: 'DHCPOFFER (Option 53 = 2)',
         xid: '0x39A1F4',
         clientMac: '00:50:56:A1:B2:C3',
         ciaddr: '0.0.0.0',
-        yiaddr: '192.168.1.105 (Offered Lease IP)',
-        siaddr: '192.168.1.10 (DHCP Server IP)',
-        l2Header: 'Src MAC: 00:0C:29:88:77:66 → Dst MAC: 00:50:56:A1:B2:C3 (Targeted Unicast)',
-        l3Header: 'Src IP: 192.168.1.10 → Dst IP: 192.168.1.105',
-        l4Header: 'UDP Src Port: 67 (BootP Server) → Dst Port: 68 (BootP Client)',
+        yiaddr: scopeConfig.assignedIp,
+        siaddr: '192.168.1.10',
+        l2Header: 'Src MAC: 00:0C:29:88:77:66 → Dst MAC: 00:50:56:A1:B2:C3 (Unicast)',
+        l3Header: `Src IP: 192.168.1.10 → Dst IP: ${scopeConfig.assignedIp}`,
+        l4Header: 'UDP Src Port: 67 → Dst Port: 68',
         options: [
           'Option 53: Message Type = DHCPOFFER',
           'Option 1: Subnet Mask = 255.255.255.0',
-          'Option 3: Default Gateway = 192.168.1.1',
-          'Option 6: Domain Name Server (DNS) = 192.168.1.10',
-          'Option 51: IP Address Lease Time = 691200 seconds (8 Days)',
+          `Option 3: Default Gateway = ${scopeConfig.gateway}`,
+          `Option 6: DNS Server = ${scopeConfig.dnsPrimary}, ${scopeConfig.dnsSecondary}`,
+          `Option 15: Domain Name = ${scopeConfig.domainName}`,
+          `Option 51: Lease Time = ${scopeConfig.leaseTime}`,
           'Option 54: Server Identifier = 192.168.1.10'
         ]
       }
     },
     3: {
-      title: '✉️ STEP 3: DHCP REQUEST (BROADCAST ACCEPTANCE)',
-      subtitle: 'PC-01 broadcasts acceptance. Switch FLOODS to all devices again to confirm selection.',
+      title: '✉️ STEP 3: DHCP REQUEST (ACCEPTANCE CONFIRMATION)',
+      subtitle: `PC-01 confirms acceptance of IP ${scopeConfig.assignedIp} from server 192.168.1.10.`,
       badge: 'TRANSMISSION: BROADCAST (FLOOD ALL PORTS)',
       badgeColor: 'bg-blue-950 text-blue-400 border-blue-500 animate-pulse',
       transmissionType: 'BROADCAST',
@@ -106,8 +131,8 @@ export default function DHCPModule({ appMode = 'clean' }) {
       serverPoolState: 'CONFIRMING SELECTION...',
       srcIp: '0.0.0.0',
       dstIp: '255.255.255.255 (Broadcast)',
-      explanation: 'PC-01 broadcasts its choice. The central Switch floods the frame to all devices. If another DHCP server existed, it would see this broadcast and release its reserved offer.',
-      whyBroadcast: 'Broadcast Demonstration: Broadcasting guarantees all DHCP servers know which server was chosen!',
+      explanation: `PC-01 broadcasts its selection of IP ${scopeConfig.assignedIp} so all network DHCP servers know which offer was accepted.`,
+      whyBroadcast: 'Broadcast: Ensures all listening DHCP servers release unchosen offers.',
       payload: {
         stepName: '3. DHCP REQUEST',
         messageType: 'DHCPREQUEST (Option 53 = 3)',
@@ -118,46 +143,47 @@ export default function DHCPModule({ appMode = 'clean' }) {
         siaddr: '0.0.0.0',
         l2Header: 'Src MAC: 00:50:56:A1:B2:C3 → Dst MAC: FF:FF:FF:FF:FF:FF (Broadcast)',
         l3Header: 'Src IP: 0.0.0.0 → Dst IP: 255.255.255.255',
-        l4Header: 'UDP Src Port: 68 (BootP Client) → Dst Port: 67 (BootP Server)',
+        l4Header: 'UDP Src Port: 68 → Dst Port: 67',
         options: [
           'Option 53: Message Type = DHCPREQUEST',
-          'Option 50: Requested IP Address = 192.168.1.105',
+          `Option 50: Requested IP Address = ${scopeConfig.assignedIp}`,
           'Option 54: Server Identifier Chosen = 192.168.1.10'
         ]
       }
     },
     4: {
-      title: '✅ STEP 4: DHCP ACK (DIRECT UNICAST LEASE)',
-      subtitle: 'DHCP Server sends final ACK via UNICAST directly to PC-01. Lease is active!',
+      title: '✅ STEP 4: DHCP ACK (COMMITTED LEASE)',
+      subtitle: `DHCP Server commits lease for IP ${scopeConfig.assignedIp} in database. Lease active!`,
       badge: 'TRANSMISSION: DIRECT UNICAST (LEASE COMMITTED)',
       badgeColor: 'bg-emerald-950 text-emerald-400 border-emerald-500',
       transmissionType: 'UNICAST',
       sender: 'SERVER',
       receiver: 'CLIENT',
-      serverPoolState: 'ACTIVE LEASE (8 Days)',
+      serverPoolState: `ACTIVE LEASE (${scopeConfig.leaseTime})`,
       srcIp: '192.168.1.10',
-      dstIp: '192.168.1.105',
-      explanation: 'The DHCP Server sends the ACK directly to PC-01 through the Switch. PC-01 configures IP 192.168.1.105, Subnet Mask 255.255.255.0, Gateway 192.168.1.1, and DNS 192.168.1.10!',
-      whyBroadcast: 'Final State: Client PC-01 is online and fully configured.',
+      dstIp: scopeConfig.assignedIp,
+      explanation: `DHCP Server commits ${scopeConfig.assignedIp} lease in its database and sends final ACK. Client configures IP, Gateway ${scopeConfig.gateway}, DNS ${scopeConfig.dnsPrimary}, and Domain ${scopeConfig.domainName}!`,
+      whyBroadcast: 'Final State: Client is fully online and configured.',
       payload: {
         stepName: '4. DHCP ACK',
         messageType: 'DHCPACK (Option 53 = 5)',
         xid: '0x39A1F4',
         clientMac: '00:50:56:A1:B2:C3',
         ciaddr: '0.0.0.0',
-        yiaddr: '192.168.1.105 (Committed Active IP)',
-        siaddr: '192.168.1.10 (DHCP Server IP)',
+        yiaddr: scopeConfig.assignedIp,
+        siaddr: '192.168.1.10',
         l2Header: 'Src MAC: 00:0C:29:88:77:66 → Dst MAC: 00:50:56:A1:B2:C3 (Unicast)',
-        l3Header: 'Src IP: 192.168.1.10 → Dst IP: 192.168.1.105',
-        l4Header: 'UDP Src Port: 67 (BootP Server) → Dst Port: 68 (BootP Client)',
+        l3Header: `Src IP: 192.168.1.10 → Dst IP: ${scopeConfig.assignedIp}`,
+        l4Header: 'UDP Src Port: 67 → Dst Port: 68',
         options: [
           'Option 53: Message Type = DHCPACK',
           'Option 1: Subnet Mask = 255.255.255.0',
-          'Option 3: Default Gateway = 192.168.1.1',
-          'Option 6: Domain Name Server (DNS) = 192.168.1.10',
-          'Option 51: IP Address Lease Time = 691200s (8 Days)',
-          'Option 58: Renewal (T1) Time = 345600s (4 Days)',
-          'Option 59: Rebinding (T2) Time = 604800s (7 Days)'
+          `Option 3: Default Gateway = ${scopeConfig.gateway}`,
+          `Option 6: DNS Server = ${scopeConfig.dnsPrimary}, ${scopeConfig.dnsSecondary}`,
+          `Option 15: Domain Name = ${scopeConfig.domainName}`,
+          `Option 51: Lease Time = ${scopeConfig.leaseTime}`,
+          'Option 58: Renewal (T1) Time = 50% Expiry (4 Days)',
+          'Option 59: Rebinding (T2) Time = 87.5% Expiry (7 Days)'
         ]
       }
     }
@@ -244,78 +270,91 @@ export default function DHCPModule({ appMode = 'clean' }) {
     setPacketProgress(0);
   };
 
-  const currentMeta = stepMeta[activeStep];
-  const isFinalStepComplete = activeStep === 4;
+  const handleUpdateScope = (field, val) => {
+    setScopeConfig({ ...scopeConfig, [field]: val });
+    setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'DHCP_SCOPE', message: `Updated DHCP Scope ${field}: ${val}` }]);
+  };
 
-  // STAR TOPOLOGY EXACT COORDINATES (% of stage width/height):
-  // Central L2 Switch: (50%, 50%) -> DEAD CENTER
-  // Workstation PC-01 (Left-Down): (12%, 58%)
-  // DHCP Server (Right-Down): (88%, 58%)
-  // Dummy PC-02 (Top-Left): (22%, 15%)
-  // Dummy DNS Server (Top-Right): (78%, 15%)
+  const currentMeta = stepMeta[activeStep];
+  const activeModalData = modalPayloadStep ? stepMeta[modalPayloadStep]?.payload : null;
+  const currentPayload = currentMeta.payload;
+
+  const currentPacketData = activeStep > 0 && currentPayload ? {
+    etherType: '0x0800 (IPv4)',
+    srcMac: currentPayload.clientMac || '00:50:56:A1:B2:C3',
+    dstMac: currentMeta.transmissionType === 'BROADCAST' ? 'FF:FF:FF:FF:FF:FF (Broadcast)' : '00:50:56:A1:B2:C3 (Unicast)',
+    srcIp: currentMeta.srcIp,
+    dstIp: currentMeta.dstIp,
+    protocol: 'UDP',
+    srcPort: currentMeta.sender === 'CLIENT' ? 68 : 67,
+    dstPort: currentMeta.sender === 'CLIENT' ? 67 : 68,
+    type: currentPayload.messageType,
+    payload: {
+      xid: currentPayload.xid,
+      ciaddr: currentPayload.ciaddr,
+      yiaddr: currentPayload.yiaddr,
+      siaddr: currentPayload.siaddr,
+      options: currentPayload.options
+    }
+  } : null;
 
   const getPacketPosition = () => {
     if (!currentMeta.sender) return { left: '12%', top: '58%', currentPort: '' };
 
     if (currentMeta.sender === 'CLIENT') {
-      // PC-01 (12%, 58%) -> Switch (50%, 50%) -> DHCP Server (88%, 58%)
-      if (packetProgress <= 50) {
-        const t = packetProgress / 50; // 0 to 1
-        const posX = 12 + t * 38; // 12% -> 50%
-        const posY = 58 - t * 8;  // 58% -> 50%
-        return {
-          left: `${posX}%`,
-          top: `${posY}%`,
-          currentPort: t > 0.8 ? 'Entering L2 Switch (Port 1)' : 'Exiting PC-01 → Moving to Switch'
-        };
-      } else {
-        const t = (packetProgress - 50) / 50; // 0 to 1
-        const posX = 50 + t * 38; // 50% -> 88%
-        const posY = 50 + t * 8;  // 50% -> 58%
-        return {
-          left: `${posX}%`,
-          top: `${posY}%`,
-          currentPort: t > 0.8 ? 'Entering DHCP Server (UDP 67)' : 'Exiting Switch → Moving to DHCP Server'
-        };
-      }
-    } else {
-      // DHCP Server (88%, 58%) -> Switch (50%, 50%) -> PC-01 (12%, 58%)
       if (packetProgress <= 50) {
         const t = packetProgress / 50;
-        const posX = 88 - t * 38; // 88% -> 50%
-        const posY = 58 - t * 8;  // 58% -> 50%
+        const posX = 12 + t * 38;
+        const posY = 58 - t * 8;
         return {
           left: `${posX}%`,
           top: `${posY}%`,
-          currentPort: t > 0.8 ? 'Entering L2 Switch (Port 2)' : 'Exiting DHCP Server → Moving to Switch'
+          currentPort: t > 0.8 ? (isRelayMode ? 'Entering L3 Router Gateway (ip helper)' : 'Entering L2 Switch (Port 1)') : 'Exiting PC-01 → Moving to Switch/Router'
         };
       } else {
         const t = (packetProgress - 50) / 50;
-        const posX = 50 - t * 38; // 50% -> 12%
-        const posY = 50 + t * 8;  // 50% -> 58%
+        const posX = 50 + t * 38;
+        const posY = 50 + t * 8;
         return {
           left: `${posX}%`,
           top: `${posY}%`,
-          currentPort: t > 0.8 ? 'Entering PC-01 (UDP 68)' : 'Exiting Switch → Moving to PC-01'
+          currentPort: t > 0.8 ? 'Entering DHCP Server (UDP 67)' : 'Relaying to DHCP Server'
+        };
+      }
+    } else {
+      if (packetProgress <= 50) {
+        const t = packetProgress / 50;
+        const posX = 88 - t * 38;
+        const posY = 58 - t * 8;
+        return {
+          left: `${posX}%`,
+          top: `${posY}%`,
+          currentPort: t > 0.8 ? 'Entering Switch/Router' : 'Exiting DHCP Server'
+        };
+      } else {
+        const t = (packetProgress - 50) / 50;
+        const posX = 50 - t * 38;
+        const posY = 50 + t * 8;
+        return {
+          left: `${posX}%`,
+          top: `${posY}%`,
+          currentPort: t > 0.8 ? 'Entering PC-01 (UDP 68)' : 'Delivering to PC-01'
         };
       }
     }
   };
 
-  // Flooded Packet Traversal Positions for Broadcast (Switch 50%,50% -> Dummy PC-02 22%,15% & Dummy DNS Server 78%,15%)
   const getFloodedPacketPositions = () => {
     if (!isPlaying || currentMeta.transmissionType !== 'BROADCAST' || packetProgress <= 50) {
       return null;
     }
-    const t = (packetProgress - 50) / 50; // 0 to 1 during phase 2
+    const t = (packetProgress - 50) / 50;
     
-    // Packet to Dummy PC-02 (Top-Left: 22%, 15%)
     const dummyPcPos = {
       left: `${50 - t * 28}%`,
       top: `${50 - t * 35}%`
     };
 
-    // Packet to Dummy DNS Server (Top-Right: 78%, 15%)
     const dummyDnsPos = {
       left: `${50 + t * 28}%`,
       top: `${50 - t * 35}%`
@@ -326,21 +365,19 @@ export default function DHCPModule({ appMode = 'clean' }) {
 
   const packetPos = getPacketPosition();
   const floodedPos = getFloodedPacketPositions();
-  const activeModalData = modalPayloadStep ? stepMeta[modalPayloadStep]?.payload : null;
-  const currentPayload = currentMeta.payload;
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative font-sans">
 
       {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
       <CleanWidget
-        title="DHCP 4-Way DORA Handshake"
-        subtitle="Automatic IP Lease Negotiation (UDP Ports 67 & 68)"
+        title="DHCP Scope Configurator & DORA Analyzer"
+        subtitle="Configure realistic DHCP scope options (Gateway, DNS, Lease) and simulate L2 Switch vs L3 Router Relay Agent (ip helper-address) traffic."
         icon={Zap}
-        ip="192.168.1.105 (Leased)"
+        ip={`${scopeConfig.assignedIp} (Leased)`}
         protocol="DHCP (UDP)"
         port="UDP 67 / 68"
-        status={isRelayMode ? "DHCP Relay Active" : "Local LAN Broadcast"}
+        status={isRelayMode ? "L3 Relay (Option 82 Active)" : "Local L2 Switch Broadcast"}
         actionTitle={currentMeta.title}
         actionDesc={currentMeta.subtitle}
         stepNumber={activeStep}
@@ -355,12 +392,127 @@ export default function DHCPModule({ appMode = 'clean' }) {
         setShowAnimation={setShowAnimation}
       />
 
-      {/* FLOATING MODAL POPUP FOR PACKET PAYLOAD INSPECTOR (DETAILED MODE ONLY) */}
+      {/* TOOLBAR CONTROLS: 1. MODE SWITCH (L2 SWITCH VS L3 ROUTER RELAY), 2. OPEN SCOPE CONFIG DRAWER */}
+      <div className="glass-panel p-4 rounded-3xl border border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 font-mono text-xs shadow-xl">
+        <div className="flex items-center gap-2">
+          <span className="text-slate-400 font-bold text-[11px] uppercase">Architecture Mode:</span>
+          
+          <button
+            onClick={() => { setIsRelayMode(false); setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'DHCP_MODE', message: 'Switched to Single-Subnet L2 Switch Broadcast Mode.' }]); }}
+            className={`px-3 py-1.5 rounded-xl border font-black transition-all cursor-pointer ${
+              !isRelayMode
+                ? 'bg-blue-950 text-blue-300 border-blue-500 shadow-md shadow-blue-500/20'
+                : 'bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700'
+            }`}
+          >
+            🏢 Single-Subnet L2 Switch
+          </button>
+
+          <button
+            onClick={() => { setIsRelayMode(true); setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'DHCP_MODE', message: 'Switched to Multi-Subnet L3 Router Relay Agent (ip helper-address 10.20.1.50 with Option 82).' }]); }}
+            className={`px-3 py-1.5 rounded-xl border font-black transition-all cursor-pointer ${
+              isRelayMode
+                ? 'bg-purple-950 text-purple-300 border-purple-500 shadow-md shadow-purple-500/20'
+                : 'bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700'
+            }`}
+          >
+            🛰️ Multi-Subnet L3 Relay Agent (Option 82)
+          </button>
+        </div>
+
+        <button
+          onClick={() => setShowConfigDrawer(!showConfigDrawer)}
+          className={`px-4 py-1.5 rounded-xl border font-black text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
+            showConfigDrawer
+              ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-lg shadow-amber-500/30'
+              : 'bg-slate-950 hover:bg-slate-800 text-amber-400 border-slate-800 hover:border-amber-700'
+          }`}
+        >
+          <Sliders className="w-4 h-4" />
+          <span>{showConfigDrawer ? 'Close Scope Config ⚙️' : 'Configure DHCP Scope ⚙️'}</span>
+        </button>
+      </div>
+
+      {/* REALISTIC DHCP SERVER SCOPE CONFIGURATOR DRAWER */}
+      {showConfigDrawer && (
+        <div className="glass-panel p-6 rounded-3xl border border-slate-700 bg-slate-950/95 font-mono text-xs text-slate-100 shadow-2xl space-y-4 animate-fadeIn">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center gap-2 text-amber-400 font-black text-sm">
+              <Settings className="w-5 h-5" />
+              <span>Enterprise DHCP Server Scope Properties ({scopeConfig.scopeName})</span>
+            </div>
+            <span className="text-[10px] text-slate-400 font-bold">Options 3 (GW), 6 (DNS), 15 (Domain), 51 (Lease)</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div>
+              <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Scope Name</label>
+              <input
+                type="text"
+                value={scopeConfig.scopeName}
+                onChange={(e) => handleUpdateScope('scopeName', e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-cyan-300 font-bold focus:outline-none focus:border-cyan-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Subnet & Mask</label>
+              <input
+                type="text"
+                value={scopeConfig.subnet}
+                onChange={(e) => handleUpdateScope('subnet', e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-cyan-300 font-bold focus:outline-none focus:border-cyan-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Offered Target IP (yiaddr)</label>
+              <input
+                type="text"
+                value={scopeConfig.assignedIp}
+                onChange={(e) => handleUpdateScope('assignedIp', e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-amber-300 font-bold focus:outline-none focus:border-amber-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Option 3: Default Gateway</label>
+              <input
+                type="text"
+                value={scopeConfig.gateway}
+                onChange={(e) => handleUpdateScope('gateway', e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-purple-300 font-bold focus:outline-none focus:border-purple-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Option 6: Primary DNS Server</label>
+              <input
+                type="text"
+                value={scopeConfig.dnsPrimary}
+                onChange={(e) => handleUpdateScope('dnsPrimary', e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-emerald-300 font-bold focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Option 15: DNS Domain Name</label>
+              <input
+                type="text"
+                value={scopeConfig.domainName}
+                onChange={(e) => handleUpdateScope('domainName', e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-200 font-bold focus:outline-none focus:border-slate-500"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FLOATING MODAL POPUP FOR PACKET PAYLOAD INSPECTOR */}
       {(appMode === 'detailed' || appMode === 'expert') && modalPayloadStep && activeModalData && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
           <div className="glass-panel max-w-2xl w-full p-7 rounded-3xl border border-slate-700 shadow-2xl space-y-6 bg-slate-900/95 relative text-slate-100 max-h-[90vh] overflow-y-auto">
             
-            {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-3">
                 <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
@@ -379,10 +531,7 @@ export default function DHCPModule({ appMode = 'clean' }) {
               </button>
             </div>
 
-            {/* Modal Body with BIG READABLE FONTS */}
             <div className="space-y-4 font-mono">
-              
-              {/* L2 Ethernet & L3 IP & L4 UDP Headers Box */}
               <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
                 <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-sm border-b border-slate-800 pb-2">
                   <Layers className="w-4 h-4" />
@@ -395,7 +544,6 @@ export default function DHCPModule({ appMode = 'clean' }) {
                 </div>
               </div>
 
-              {/* DHCP Payload Fields Box */}
               <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
                 <div className="flex items-center justify-between text-amber-400 font-extrabold text-sm border-b border-slate-800 pb-2">
                   <span className="flex items-center gap-2">
@@ -413,18 +561,9 @@ export default function DHCPModule({ appMode = 'clean' }) {
                     <span className="text-xs text-slate-400 block font-bold">Your Offered IP (yiaddr):</span>
                     <span className="text-amber-300 font-bold text-base">{activeModalData.yiaddr}</span>
                   </div>
-                  <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-800">
-                    <span className="text-xs text-slate-400 block font-bold">Client IP (ciaddr):</span>
-                    <span className="text-slate-300 font-bold text-sm">{activeModalData.ciaddr}</span>
-                  </div>
-                  <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-800">
-                    <span className="text-xs text-slate-400 block font-bold">Server IP (siaddr):</span>
-                    <span className="text-slate-300 font-bold text-sm">{activeModalData.siaddr}</span>
-                  </div>
                 </div>
               </div>
 
-              {/* DHCP Options List Box (BIG CLEAR TEXT) */}
               <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
                 <div className="flex items-center gap-2 text-emerald-400 font-extrabold text-sm border-b border-slate-800 pb-2">
                   <Hash className="w-4 h-4" />
@@ -441,7 +580,6 @@ export default function DHCPModule({ appMode = 'clean' }) {
               </div>
             </div>
 
-            {/* Modal Footer */}
             <div className="flex justify-end pt-2 border-t border-slate-800">
               <button
                 onClick={() => setModalPayloadStep(null)}
@@ -457,10 +595,55 @@ export default function DHCPModule({ appMode = 'clean' }) {
       {/* MAIN MASTER WORKSPACE STAGE */}
       <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-5 shadow-2xl relative overflow-hidden">
         
-        {/* COMPACT LOW-PROFILE DORA STEP CARDS */}
+        {/* DETAILED MODE: EXTENDED SCOPE PARAMETERS & INFRASTRUCTURE CARD */}
+        {(appMode === 'detailed' || appMode === 'expert') && (
+          <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800/90 space-y-3 font-mono text-xs shadow-inner">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+              <div className="flex items-center gap-2 text-cyan-400 font-bold">
+                <Database className="w-4 h-4" />
+                <span>Enterprise DHCP Scope Parameters ({scopeConfig.scopeName})</span>
+              </div>
+              <button
+                onClick={() => setShowConfigDrawer(true)}
+                className="px-2.5 py-1 rounded-lg bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-700 text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1"
+              >
+                <Settings className="w-3.5 h-3.5" />
+                <span>Configure Scope</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <span className="text-[10px] text-slate-500 block uppercase font-bold">Subnet & Pool Range</span>
+                <span className="text-cyan-300 font-bold">{scopeConfig.subnet}</span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">{scopeConfig.startIp} - {scopeConfig.endIp}</span>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <span className="text-[10px] text-slate-500 block uppercase font-bold">Default Gateway</span>
+                <span className="text-amber-300 font-bold">{scopeConfig.gateway}</span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Option 3</span>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <span className="text-[10px] text-slate-500 block uppercase font-bold">DNS Servers</span>
+                <span className="text-purple-300 font-bold">{scopeConfig.dnsPrimary}</span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Option 6 ({scopeConfig.dnsSecondary})</span>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <span className="text-[10px] text-slate-500 block uppercase font-bold">Lease Time & Domain</span>
+                <span className="text-emerald-300 font-bold">{scopeConfig.leaseTime.split(' ')[0]} {scopeConfig.leaseTime.split(' ')[1]}</span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">{scopeConfig.domainName}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* COMPACT DORA STEP CARDS */}
         <div className="grid grid-cols-4 gap-2 border-b border-slate-800/80 pb-3">
           {[
-            { num: 1, name: '1. DISCOVER', desc: 'Broadcast', icon: '📢' },
+            { num: 1, name: '1. DISCOVER', desc: isRelayMode ? 'L3 Relay' : 'Broadcast', icon: '📢' },
             { num: 2, name: '2. OFFER', desc: 'Unicast', icon: '🎁' },
             { num: 3, name: '3. REQUEST', desc: 'Broadcast', icon: '✉️' },
             { num: 4, name: '4. ACK', desc: 'Unicast', icon: '✅' },
@@ -491,9 +674,7 @@ export default function DHCPModule({ appMode = 'clean' }) {
           })}
         </div>
 
-
-
-        {/* Dynamic Action Banner (DETAILED MODE ONLY) */}
+        {/* Dynamic Action Banner */}
         {(appMode === 'detailed' || appMode === 'expert') && (
           <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-all duration-300 ${currentMeta.badgeColor}`}>
             <div className="flex items-center gap-3">
@@ -507,42 +688,41 @@ export default function DHCPModule({ appMode = 'clean' }) {
           </div>
         )}
 
-        {/* WORKSPACE STAGE CANVAS (TOGGLEABLE VIA ICON IN CLEAN MODE) */}
+        {/* WORKSPACE STAGE CANVAS */}
         {(showAnimation || appMode === 'detailed' || appMode === 'expert') && (
           <div className={`py-6 px-4 relative bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden ${appMode !== 'detailed' && appMode !== 'expert' ? 'min-h-[520px]' : 'min-h-[660px]'}`}>
           
-          {/* VISIBLE SVG NETWORK CABLE LINES */}
+          {/* FAINT HIGHLIGHT SUBNET BOUNDARY CONTAINERS */}
+          {!isRelayMode ? (
+            <div className="absolute left-[3%] top-[4%] w-[94%] h-[92%] border-2 border-dashed border-cyan-800/30 bg-cyan-950/10 rounded-3xl pointer-events-none">
+              <span className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/90 text-cyan-300 border border-cyan-800/80 shadow">
+                SINGLE LOCAL SUBNET & BROADCAST DOMAIN (192.168.1.0/24)
+              </span>
+            </div>
+          ) : (
+            <>
+              <div className="absolute left-[3%] top-[4%] w-[42%] h-[92%] border-2 border-dashed border-cyan-800/40 bg-cyan-950/20 rounded-3xl pointer-events-none">
+                <span className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/90 text-cyan-300 border border-cyan-800/80 shadow">
+                  SUBNET A: CLIENT ZONE (10.10.1.0/24)
+                </span>
+              </div>
+              <div className="absolute right-[3%] top-[4%] w-[42%] h-[92%] border-2 border-dashed border-purple-800/40 bg-purple-950/20 rounded-3xl pointer-events-none">
+                <span className="absolute bottom-3 right-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-950/90 text-purple-300 border border-purple-800/80 shadow">
+                  SUBNET B: DATACENTER (10.20.1.0/24)
+                </span>
+              </div>
+            </>
+          )}
+
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
-            {/* Cable 1: Left PC-01 (12%, 58%) -> Center Switch (50%, 50%) */}
             <line x1="12%" y1="58%" x2="50%" y2="50%" stroke="#06b6d4" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.7" />
-            
-            {/* Cable 2: Center Switch (50%, 50%) -> Right DHCP Server (88%, 58%) */}
             <line x1="50%" y1="50%" x2="88%" y2="58%" stroke="#f59e0b" strokeWidth="4" strokeDasharray="8 6" className="animate-wire-dash" strokeOpacity="0.7" />
-
-            {/* Cable 3: Center Switch (50%, 50%) -> Top-Left Dummy PC-02 (22%, 15%) */}
-            <line x1="50%" y1="50%" x2="22%" y2="15%" stroke="#64748b" strokeWidth="3" strokeDasharray="6 4" strokeOpacity="0.5" />
-
-            {/* Cable 4: Center Switch (50%, 50%) -> Top-Right Dummy DNS Server (78%, 15%) */}
-            <line x1="50%" y1="50%" x2="78%" y2="15%" stroke="#06b6d4" strokeWidth="3" strokeDasharray="6 4" strokeOpacity="0.5" />
+            <line x1="50%" y1="50%" x2="22%" y2="18%" stroke="#64748b" strokeWidth="3" strokeDasharray="6 4" strokeOpacity="0.5" />
+            <line x1="50%" y1="50%" x2="78%" y2="18%" stroke="#06b6d4" strokeWidth="3" strokeDasharray="6 4" strokeOpacity="0.5" />
           </svg>
 
-          {/* FAINT HIGHLIGHT NETWORK AREA CONTAINERS */}
-          {/* Client Workstation Area */}
-          <div className="absolute left-[3%] top-[4%] w-[44%] h-[92%] border-2 border-dashed border-cyan-800/30 bg-cyan-950/15 rounded-3xl pointer-events-none">
-            <span className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-950/90 text-cyan-300 border border-cyan-800/80 shadow">
-              CLIENT SUBNET (192.168.1.0/24)
-            </span>
-          </div>
-
-          {/* Infrastructure Server Area */}
-          <div className="absolute right-[3%] top-[4%] w-[44%] h-[92%] border-2 border-dashed border-purple-800/30 bg-purple-950/15 rounded-3xl pointer-events-none">
-            <span className="absolute bottom-3 right-3 px-2.5 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-950/90 text-purple-300 border border-purple-800/80 shadow">
-              SERVICES SUBNET (192.168.1.0/24)
-            </span>
-          </div>
-
-          {/* 1. TOP LEFT: DUMMY PC-02 (22%, 15%) */}
-          <div className="absolute left-[22%] top-[15%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 text-center z-10">
+          {/* 1. TOP LEFT: DUMMY PC-02 (22%, 18%) */}
+          <div className="absolute left-[22%] top-[18%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 text-center z-10">
             <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-slate-900 text-slate-400 border border-slate-700 shadow">
               UDP Port 68 (Client 2)
             </span>
@@ -564,8 +744,8 @@ export default function DHCPModule({ appMode = 'clean' }) {
             </div>
           </div>
 
-          {/* 2. TOP RIGHT: DUMMY DNS SERVER (78%, 15%) */}
-          <div className="absolute left-[78%] top-[15%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 text-center z-10">
+          {/* 2. TOP RIGHT: DUMMY DNS SERVER (78%, 18%) */}
+          <div className="absolute left-[78%] top-[18%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 text-center z-10">
             <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-700 shadow">
               UDP Port 53 (DNS Server)
             </span>
@@ -587,19 +767,21 @@ export default function DHCPModule({ appMode = 'clean' }) {
             </div>
           </div>
 
-          {/* 3. DEAD CENTER: L2 SWITCH (50%, 50%) */}
+          {/* 3. DEAD CENTER: CENTRAL SWITCH / ROUTER (50%, 50%) */}
           <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-10">
-            <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-blue-950 text-blue-300 border border-blue-600 shadow-lg">
-              CENTRAL L2 SWITCH
+            <span className={`px-3 py-1 rounded-full text-[10px] font-mono font-black border shadow-lg ${
+              isRelayMode ? 'bg-purple-950 text-purple-300 border-purple-500 shadow-purple-500/30 animate-pulse' : 'bg-blue-950 text-blue-300 border-blue-600 shadow-blue-500/20'
+            }`}>
+              {isRelayMode ? 'L3 ROUTER RELAY AGENT (IP HELPER 10.20.1.50)' : 'CENTRAL L2 SWITCH'}
             </span>
             <div className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
-              isPlaying ? 'bg-blue-900/90 border-blue-400 shadow-2xl shadow-blue-500/40 scale-110' : 'bg-blue-950/90 border-blue-500 text-blue-300'
+              isPlaying ? 'bg-blue-900/90 border-blue-400 shadow-2xl scale-110' : isRelayMode ? 'bg-purple-950/90 border-purple-500 text-purple-300' : 'bg-blue-950/90 border-blue-500 text-blue-300'
             }`}>
-              <Layers className="w-9 h-9 text-blue-400" />
+              {isRelayMode ? <Router className="w-9 h-9 text-purple-400" /> : <Layers className="w-9 h-9 text-blue-400" />}
             </div>
             <div className="text-center font-mono">
-              <p className="text-xs font-extrabold text-blue-300">SWITCH</p>
-              <p className="text-[10px] text-slate-400">Floods Broadcasts / Unicasts Targets</p>
+              <p className="text-xs font-extrabold text-blue-300">{isRelayMode ? 'L3 ROUTER' : 'L2 SWITCH'}</p>
+              <p className="text-[10px] text-slate-400">{isRelayMode ? 'Injects Option 82 & Routes to 10.20.1.50' : 'Floods Broadcasts / Unicasts Targets'}</p>
             </div>
           </div>
 
@@ -611,8 +793,6 @@ export default function DHCPModule({ appMode = 'clean' }) {
             <div className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
               activeStep === 4
                 ? 'bg-emerald-950/90 border-emerald-400 shadow-2xl shadow-emerald-500/30 scale-110'
-                : activeStep === 1 || activeStep === 3
-                ? 'bg-cyan-950/90 border-cyan-400 shadow-2xl shadow-cyan-500/30 scale-105 animate-bounce'
                 : 'bg-slate-900/90 border-cyan-500/60'
             }`}>
               <Laptop className={`w-9 h-9 ${activeStep === 4 ? 'text-emerald-400' : 'text-cyan-400'}`} />
@@ -623,7 +803,7 @@ export default function DHCPModule({ appMode = 'clean' }) {
               <div className={`px-3 py-1 rounded-full text-xs font-extrabold border transition-all ${
                 activeStep === 4 ? 'bg-emerald-950 text-emerald-300 border-emerald-600 shadow' : 'bg-slate-800 text-slate-400 border-slate-700'
               }`}>
-                {activeStep === 4 ? 'IP: 192.168.1.105 (Leased!)' : 'IP: 0.0.0.0 (Unconfigured)'}
+                {activeStep === 4 ? `IP: ${scopeConfig.assignedIp} (Leased!)` : 'IP: 0.0.0.0 (Unconfigured)'}
               </div>
             </div>
           </div>
@@ -642,15 +822,11 @@ export default function DHCPModule({ appMode = 'clean' }) {
             </div>
             <div className="text-center font-mono space-y-1">
               <p className="text-sm font-extrabold text-purple-300">DHCP SERVER</p>
-              <p className="text-xs text-slate-400">IP: 192.168.1.10</p>
+              <p className="text-xs text-slate-400">{isRelayMode ? 'IP: 10.20.1.50' : 'IP: 192.168.1.10'}</p>
               <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all ${
-                activeStep === 4
-                  ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
-                  : activeStep === 2
-                  ? 'bg-cyan-950 text-cyan-300 border-cyan-700'
-                  : 'bg-purple-950 text-purple-300 border-purple-800'
+                activeStep === 4 ? 'bg-emerald-950 text-emerald-300 border-emerald-700' : 'bg-purple-950 text-purple-300 border-purple-800'
               }`}>
-                Pool IP 192.168.1.105: {currentMeta.serverPoolState}
+                Scope {scopeConfig.assignedIp}: {currentMeta.serverPoolState}
               </div>
             </div>
           </div>
@@ -669,95 +845,21 @@ export default function DHCPModule({ appMode = 'clean' }) {
               <span>{currentMeta.badge.split(':')[1] || 'PACKET'}</span>
             </div>
           )}
-
-          {/* FLOODED BROADCAST PACKETS (Sent from Switch to Dummy PC-02 & Dummy DNS Server) */}
-          {floodedPos && (
-            <>
-              {/* Flooded Packet to Dummy PC-02 */}
-              <div
-                style={{ left: floodedPos.dummyPcPos.left, top: floodedPos.dummyPcPos.top }}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 z-20 px-2.5 py-1 rounded-full font-mono font-bold text-[10px] bg-rose-500 text-white shadow-lg flex items-center gap-1 border border-white animate-pulse"
-              >
-                <Radio className="w-3 h-3" />
-                <span>FLOODED</span>
-              </div>
-
-              {/* Flooded Packet to Dummy DNS Server */}
-              <div
-                style={{ left: floodedPos.dummyDnsPos.left, top: floodedPos.dummyDnsPos.top }}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 z-20 px-2.5 py-1 rounded-full font-mono font-bold text-[10px] bg-rose-500 text-white shadow-lg flex items-center gap-1 border border-white animate-pulse"
-              >
-                <Radio className="w-3 h-3" />
-                <span>FLOODED</span>
-              </div>
-            </>
-          )}
         </div>
-        )}
-
-        {/* LIVE PACKET VIEWER (REAL-TIME PROTOCOL HEADERS & PAYLOAD INSPECTOR - DETAILED MODE ONLY) */}
-        {(appMode === 'detailed' || appMode === 'expert') && (
-          <div className="p-4 bg-slate-950/95 rounded-2xl border border-slate-800 space-y-3 font-mono text-xs shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-              <div className="flex items-center gap-2 text-amber-400 font-extrabold text-xs">
-                <Activity className="w-4 h-4 text-amber-400 animate-pulse" />
-                <span>LIVE PACKET VIEWER (REAL-TIME HEADERS & PAYLOAD)</span>
-              </div>
-              <span className="text-slate-400 text-[10px] font-bold">
-                {packetPos.currentPort || `Src: ${currentMeta.srcIp} → Dst: ${currentMeta.dstIp}`}
-              </span>
-            </div>
-
-            {currentPayload ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {/* Column 1: Network Headers */}
-                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
-                  <div className="flex items-center justify-between text-cyan-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
-                    <span>Protocol Stack Headers:</span>
-                    <span className="text-amber-400">{currentPayload.stepName}</span>
-                  </div>
-                  <p className="text-slate-300 text-[11px]">
-                    <span className="text-slate-500 font-bold">Ethernet (L2):</span> {currentPayload.l2Header}
-                  </p>
-                  <p className="text-slate-300 text-[11px]">
-                    <span className="text-slate-500 font-bold">IPv4 (L3):</span> <span className="text-cyan-300 font-bold">{currentPayload.l3Header}</span>
-                  </p>
-                  <p className="text-slate-300 text-[11px]">
-                    <span className="text-slate-500 font-bold">UDP (L4):</span> <span className="text-emerald-300 font-bold">{currentPayload.l4Header}</span>
-                  </p>
-                </div>
-
-                {/* Column 2: BOOTP/DHCP Payload Data */}
-                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 space-y-1.5">
-                  <div className="flex items-center justify-between text-amber-400 font-bold border-b border-slate-800 pb-1 text-[11px]">
-                    <span>DHCP Payload & Parameters:</span>
-                    <span className="text-slate-400 text-[10px]">xid: {currentPayload.xid}</span>
-                  </div>
-                  <p className="text-slate-300 text-[11px]">
-                    <span className="text-slate-500 font-bold">Client MAC (chaddr):</span> <span className="text-cyan-300 font-bold">{currentPayload.clientMac}</span>
-                  </p>
-                  <p className="text-slate-300 text-[11px]">
-                    <span className="text-slate-500 font-bold">Offered IP (yiaddr):</span> <span className="text-amber-300 font-bold">{currentPayload.yiaddr}</span>
-                  </p>
-                  <p className="text-slate-300 text-[11px]">
-                    <span className="text-slate-500 font-bold">Key DHCP Option:</span> <span className="text-emerald-300 font-bold">{currentPayload.options[0]}</span>
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
-                <p className="font-bold">No active DHCP packet in flight.</p>
-                <p className="text-[10px]">Click "Next DORA Step" or "Play Full DORA" to observe real-time packet headers.</p>
-              </div>
-            )}
-          </div>
         )}
       </div>
 
-      {/* TECHNICAL INSPECTOR & EVENT LOGS */}
       <SlideOutInspector title="Technical Deep Dive & DHCP Protocol Logs">
         <div className="space-y-4">
           
+          {/* LIVE PACKET INSPECTOR */}
+          <PacketInspector
+            activeStep={activeStep}
+            packetData={currentPacketData}
+            stepTitle={currentMeta.title}
+            stepDescription={currentMeta.explanation}
+          />
+
           {/* OS CLI COMMANDS & PACKET PAYLOAD INSPECTOR */}
           <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4 shadow-2xl font-mono text-xs">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-slate-800 pb-3 font-mono">
@@ -786,7 +888,7 @@ export default function DHCPModule({ appMode = 'clean' }) {
               </div>
             </div>
 
-            {/* 4 COMMAND CARDS GRID */}
+            {/* 4 COMMAND CARDS GRID FOR DORA STEPS */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs">
               {[
                 {
@@ -805,7 +907,7 @@ export default function DHCPModule({ appMode = 'clean' }) {
                   color: 'text-cyan-400 border-cyan-500/40',
                   btnBg: 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black shadow-lg shadow-cyan-500/20',
                   winCmd: 'Get-DhcpServerv4Scope',
-                  winDesc: 'Inspects configured scope range (192.168.1.100-200) and available IPs.',
+                  winDesc: `Inspects configured scope range (${scopeConfig.startIp}-${scopeConfig.endIp}) and offered IP ${scopeConfig.assignedIp}.`,
                   linCmd: 'cat /etc/dhcp/dhcpd.conf',
                   linDesc: 'Server matches client subnet and prepares DHCPOFFER packet.'
                 },
@@ -815,7 +917,7 @@ export default function DHCPModule({ appMode = 'clean' }) {
                   color: 'text-blue-400 border-blue-500/40',
                   btnBg: 'bg-blue-500 hover:bg-blue-400 text-slate-950 font-black shadow-lg shadow-blue-500/20',
                   winCmd: 'ipconfig /renew',
-                  winDesc: 'Client broadcasts acceptance of offered IP to all servers on LAN.',
+                  winDesc: `Client broadcasts acceptance of offered IP ${scopeConfig.assignedIp} to all servers on LAN.`,
                   linCmd: 'sudo dhclient eth0',
                   linDesc: 'Sends DHCPREQUEST broadcast confirming server choice.'
                 },
@@ -825,7 +927,7 @@ export default function DHCPModule({ appMode = 'clean' }) {
                   color: 'text-emerald-400 border-emerald-500/40',
                   btnBg: 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black shadow-lg shadow-emerald-500/20',
                   winCmd: 'Get-DhcpServerv4Lease & ipconfig /all',
-                  winDesc: 'Server commits lease in dhcp.mdb; Client displays assigned IP & Gateway.',
+                  winDesc: `Server commits lease in dhcp.mdb; Client displays assigned IP ${scopeConfig.assignedIp} & Gateway ${scopeConfig.gateway}.`,
                   linCmd: 'cat /var/lib/dhcp/dhcpd.leases & ip addr',
                   linDesc: 'Server logs active lease in dhcpd.leases; Client binds IP address.'
                 }

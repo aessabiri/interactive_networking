@@ -1,0 +1,1021 @@
+
+
+ 
+ 
+  
+TECHNICAL TRAINING 
+PROGRAM 
+ 
+Instructor: Tsounias Ioannis | Technical Training Specialist 
+Netwo rk 
+Infrast ructu re 
+
+Tsounias Ioannis  1 
+ Chapter 5 – Networking Fundamentals 
+ 
+What is a Network 
+It is useful to distinguish between a physical device and a network node. 
+A network node is any physical or virtual endpoint or intermediary that participates in network 
+communication.  Examples  include  computers,  servers,  printers,  routers,  switches,  Virtual 
+Machines, and virtual network appliances. 
+In this material, the term physical device refers specifically to hardware, while a network node 
+may be physical or virtual. 
+ 
+A Network Diagram 
+  
+
+Tsounias Ioannis  2 
+Domain vs Computer Workgroup 
+ 
+ 
+Workgroup vs Domain 
+ 
+A Windows Workgroup is a peer-to-peer arrangement in which each computer manages its 
+own local user accounts, security settings, and shared resources. 
+No  computer  centrally  controls  the  other  computers  in  the  Workgroup.  Access  to  a  shared 
+folder, printer, or other resource depends on the accounts and permissions configured on the 
+computer that provides the resource. 
+A Windows Domain is a centrally managed environment in which user accounts, computers, 
+security policies, and access to network resources can be administered through services such 
+as Active Directory Domain Services. 
+Domains    are    commonly    used    in    organizations    because    they    provide    centralized 
+authentication, authorization, policy management, and administration. 
+  
+
+Tsounias Ioannis  3 
+Network Types 
+ 
+Local Area Network (LAN) 
+ 
+ 
+A LAN Network 
+ 
+A Local Area Network, or LAN, connects devices within a limited geographical area, such as a 
+home, office, school, building, or campus. 
+A computer used by an employee or another end user may be called a workstation. 
+However, a LAN may also contain servers, printers, switches, routers, Access Points, phones, 
+cameras, and other network devices. 
+A LAN can operate with or without a dedicated server. Devices may connect through wired 
+Ethernet, wireless technology, or a combination of both.  
+
+Tsounias Ioannis  4 
+Wide Area Network (WAN) 
+ 
+ 
+A WAN Network 
+ 
+WAN links  often  have higher  latency than  LAN  connections  because  traffic  may travel over 
+longer distances and pass through service-provider infrastructure. 
+However, the available bandwidth, reliability, and overall performance depend on the type of 
+WAN service, the provider’s infrastructure,  the  geographical  distance,  and  the  network 
+design. Modern WAN services can provide very high transmission speeds. 
+  
+
+Tsounias Ioannis  5 
+Wireless Local Area Network (WLAN) 
+ 
+ 
+A WLAN Network 
+ 
+A Wireless Local Area Network, or WLAN, is a LAN that uses wireless technology, normally Wi-
+Fi,  to  connect  compatible  devices. Wireless  clients  commonly  connect  through  an Access 
+Point. The Access Point normally bridges wireless devices to the wired LAN. 
+Internet  access,  when  available,  is  normally  provided  through  a  router  or  another  Default 
+Gateway.  A  WLAN  can  exist  and  support  local  communication  even  when  no  Internet 
+connection is available. 
+One major advantage of wireless networking is mobility. Users can move within the coverage 
+area while maintaining their network connection. 
+ 
+  
+
+Tsounias Ioannis  6 
+Internet 
+ 
+ 
+ 
+The  Internet  is  a  global  system  of  interconnected  networks  that  communicate  by  using  the 
+TCP/IP protocol suite. 
+It depends on physical infrastructure such as routers, switches, servers, data centers, copper 
+and  fiber-optic  cables,  wireless  links,  and  submarine  cables.  However,  it  also  depends  on 
+logical  addressing,  routing,  protocols,  and  services  that  allow  independent  networks  to 
+operate together. 
+For this reason, the Internet is commonly described as a network of networks. 
+The Internet supports many services such as: 
+• World Wide Web: it’s a library consisting of files, documents, videos, pictures etc. that 
+can be accessed over the internet. 
+• eMail: It’s a service that let us send and receive messages over the Internet. 
+• Social Media: They are online platforms/applications that allow users to interact with 
+each other. 
+• Search Engines: It’s the tool that helps us to find information on the Internet.  
+
+Tsounias Ioannis  7 
+Intranet – Extranet 
+ 
+Intranet 
+ 
+An Intranet is a private network or collection of internal services used by an organization. 
+It allows authorized users to access internal information, applications, documents, and other 
+organizational  resources.  Access  may  be  controlled  through  authentication,  permissions, 
+network-security controls, and organizational policies. 
+An Intranet may or may not provide access to the public Internet. 
+Extranet 
+ 
+An Extranet is a controlled extension of an organization’s internal environment that provides 
+selected  external  users,  such  as  customers,  suppliers,  or  business partners,  with  access  to 
+specific  resources. Access  may  be  provided  through  a VPN,  a  secure  web  portal,  an 
+authenticated application, or another protected access method. 
+External  users  should  receive  access  only  to  the  resources  required  for  their  approved 
+purpose. 
+ 
+Intranet + Extranet 
+  
+
+Tsounias Ioannis  8 
+Data Transmission Technologies 
+ 
+Asymmetric Digital Subscriber Line (ADSL) 
+ADSL and ADSL2+ transmit data through existing copper telephone lines. They are asymmetric 
+technologies, meaning that the downstream and upstream speeds are different. 
+ADSL2+  can  provide  better  performance  than  earlier  ADSL  implementations.  However,  DSL 
+technologies  are  increasingly  considered  legacy  access  solutions,  although they  may  still  be 
+used in locations where newer infrastructure is unavailable. 
+ 
+ADSL Diagram 
+ 
+Very high-speed Digital Subscriber Line (VDSL) 
+VDSL and VDSL2 also use copper telephone infrastructure but can provide higher data rates 
+than ADSL over suitable line conditions. 
+Performance  is  strongly  affected by the distance between the customer and the provider’s 
+equipment,  the  quality  of  the  copper  line,  electromagnetic  interference,  crosstalk,  and  the 
+technology profile  being used. Performance  normally decreases as the copper-line  distance 
+increases. 
+ 
+VDSL Diagram 
+  
+
+Tsounias Ioannis  9 
+Fiber Optics 
+Fiber-optic technology transmits data by using modulated light signals through glass or plastic 
+optical fibers. 
+It  can  provide  high  bandwidth,  low  signal  attenuation  over  long  distances,  and  strong 
+resistance to electromagnetic interference. The achievable distance and speed depend on the 
+fiber type, optical transceivers, wavelength, and network standard. 
+ 
+A network consisting of copper cables, Wi-Fi, and Fiber Optics 
+ 
+  
+
+Tsounias Ioannis  10 
+Network Topologies 
+ 
+We use the term Network Topology to describe the way that the various network devices are 
+connected  and  arranged  within  a  communication  network.  This  includes  both  the  physical 
+layout, which  refers  to the  actual  placement  and  connections of  hardware  devices (such  as 
+computers, switches, and routers), and the logical layout, which relates to the path that data 
+must follow as it crosses the network. 
+The most common types of Network Topology are: 
+Point – to – Point Topology 
+It is the direct connection between two nodes or devices. It is the simplest type of network 
+topology as it has only two endpoints? 
+ 
+Point – to - Point Topology 
+ 
+Bus Topology 
+In this topology all devices are connected to a single central cable which is called backbone. 
+ 
+Bus Topology 
+  
+
+Tsounias Ioannis  11 
+Star Topology 
+It’s the most  common  topology  of  all.  Here  all  devices  are  connected  to  a  central  hub  or 
+switch, which acts as the central communication channel for data transmission. 
+ 
+Star Topology 
+Ring Topology 
+In this topology, every node is connected to two other nodes forming a circular path for the 
+data, similar to a ring. 
+ 
+Ring Topology 
+  
+
+Tsounias Ioannis  12 
+(Full) Mesh Topology 
+In  this type of  topology,  each  node  is  connected  to every  other  node.  This  creates  multiple 
+paths for data to travel in the network, on the one  hand enhancing redundancy but οn the 
+other hand raises the cost. 
+ 
+Full Mesh Topology 
+Partial Mesh Topology 
+In a Partial Mesh Topology, some nodes have  connections to multiple other nodes,  but  not 
+every node is directly connected to every other node. 
+This provides  some alternative communication paths while  requiring fewer links than a Full 
+Mesh Topology. 
+ 
+Half Mesh Topology 
+  
+
+Tsounias Ioannis  13 
+Tree Topology 
+This specific topology is a combination of Bus and Star Topologies. The whole structure 
+is organized in hierarchical manner, like a tree. 
+ 
+Tree Topology 
+ 
+ 
+  
+
+Tsounias Ioannis  14 
+Protocols and Protocol Suite 
+ 
+Network communication is governed by agreed rules called protocols. A protocol defines how 
+information is formatted, addressed, transmitted, received, and interpreted. It may also define 
+timing,  sequencing,  error  handling,  and  the  actions  that  communicating  systems  must 
+perform. 
+Different protocols support different functions. For example, FTP is one protocol that may be 
+used to transfer files between systems, although other file-transfer methods also exist. 
+A   protocol   suite   is   a   collection   of   related   protocols   that   work   together   to   support 
+communication   between   systems.   A   protocol   suite   does   not   guarantee   that   every 
+communication will be error-free; reliability depends on the protocols and mechanisms being 
+used. 
+In  the  field  of  IT  there  are  two  major  implementation  models.  The  TCP/IP  (Transmission 
+Control  Protocol/Internet  Protocol)  model  and  the  OSI  (Open  Systems  Interconnection) 
+model.  Very  important  to  know  is  that  we  implement  TCP/IP  rules,  but  when  we  have  to 
+troubleshoot or refer to a specific portion of the IT infrastructure, we follow the OSI terms. 
+The network IT infrastructure is divided in Layers. The OSI model, which is also called 
+as OSI Reference model, it consists of seven layers and is far more analytic than TCP/IP 
+which has only four Layers. 
+OSI Reference Model TCP/IP Model TCP/IP Model new 
+Application Layer 
+Application Layer Application Layer Presentation Layer 
+Session Layer 
+Transport Layer Transport Layer Transport Layer 
+Network Layer Internet Layer Network Layer 
+Data Link Layer 
+Link Layer 
+Data Link Layer 
+Physical Layer Physical Layer 
+ 
+OSI vs TCP/IP vs TCP/IP new 
+  
+
+Tsounias Ioannis  15 
+The Functions of the Seven Levels 
+ 
+Layer Seven (Application Layer) 
+Enables Users And Applications To 
+Access Network Services 
+Layer Six (Presentation Layer) Translates Data Into A Common Format 
+Layer Five (Session Layer) 
+Establishes A Communication Session 
+Between Applications 
+Layer Four (Transport Layer) 
+Manages Message Fragmentation And 
+Reassembly 
+Layer Three (Network Layer) 
+Manages Logical Addressing, Data 
+Routing Creating Subnetworks 
+Layer Two (Data Link Layer) 
+Provides local-link frame delivery, MAC 
+addressing, media access, and frame-
+error detection 
+Layer One (Physical Layer) Physical Network Media And Signal 
+Methods 
+ 
+Note: Network  functions are  associated  with different  OSI  layers, but the distinction 
+between hardware and software is not absolute. 
+Modern  network  devices  may  use  hardware,  firmware,  and  software  to  process 
+information from multiple layers, including Layers 4 through 7. 
+Protocol Data Units PDUs 
+ 
+OSI Layer Protocol Data Units 
+Transport Layer Segment 
+Network Layer Packet 
+Data Link Layer Frame 
+Physical Layer Bits 
+ 
+  
+
+Tsounias Ioannis  16 
+Network Devices 
+ 
+Hub (Layer 1 device) 
+ 
+The HUB is  an  older  network  device  that  is  rarely  used  in  modern  networks,  it  is  used  to 
+connect  many  network  devices  such  as  computers  printers  within  a  local  LAN  network.  Its 
+mode of operation was quite simple, when a data packet was arriving at one of its ports, the 
+HUB  forwarded  (Broadcasted)  the  traffic  out  of  all  its  remaining active ports,  without 
+examining  the  packet  for  errors,  checking  the  sender  or  the  receiver.  This  means  that  all 
+devices  connected  to  the  hub  would  receive  and  process, up  to  a  specific  level,  the  packet 
+regardless of who the recipient was. 
+This caused major problems and delays in communication because all devices connected to 
+the Hub were part of a Collision Domain. That is, if two devices were sending data at the same 
+time, there was a high probability that conflicts would occur during transmission. 
+ 
+ 
+How the Hub Handles Traffic 
+
+Tsounias Ioannis  17 
+To manage to mitigate the problem they introduced a mechanism new for the time, CSMA/CD 
+(Carrier Sense Multiple Access with Collision Detection). 
+But how did this mechanism work? 
+• The sending device was monitoring the transmission medium to see if it was idle and 
+so to begin to send data. 
+• Multiple devices can access the medium but only one can send data at a time. 
+• When  two  devices  were  sending  data  in  parallel  then  a  collision  would  occur.  The 
+devices would then detect the collision and stop the transmission. 
+• Finally,  after  the  collision,  a  random  clock  was  run  for  each  device  before  trying  to 
+send data again. 
+The  collision  problem  has  been  minimized  by  the  extensive  use  of  switches  in  modern 
+networks. A Switch creates a separate collision domain for each connected device. 
+  
+
+Tsounias Ioannis  18 
+Switch (Layer 2 device & Layer 3 device) 
+ 
+A  switch  is  a  very  basic  network  device.  It  is  used  like  the  hub  device  to connect  several 
+computers or other network devices to a local network. Its main job is to receive a data frame 
+from  the  sender  and  forward  it  to  the  appropriate  final  recipient.  However,  the  operation 
+mode of the switch is completely different from that of the hub. When a data packet arrives 
+at the switch port, after checking some specific characteristics of the packet, it forwards it to 
+the specific port to which the recipient is connected. 
+The switch checks the MAC Address of the frame and compares it with the MAC Address Table 
+stored internally. So, it can check if there is a record with the recipient's details and forward 
+the packet out the appropriate port. 
+ 
+ 
+Network Devices Connected on a Switch 
+In order for a switch to build its internal MAC Address Table, it must follow a process called 
+MAC Learning. So, when a Switch receives an Ethernet frame on one of its ports, it examines 
+the MAC Address of the frame and if it finds that there is no corresponding entry, it registers 
+it together with the number of the port that received the frame. Each of these records has a 
+particular lifetime (Aging Time). If the switch does not receive any traffic from a specific MAC 
+within  a  certain  time,  then  this  record  is  deleted.  It  is  a  basic  process  of  the  Switch,  which 
+allows  it  to  forward  packets  only  to  the  appropriate  ports  and  thus  manages  to  reduce 
+unnecessary traffic within the network. 
+  
+
+Tsounias Ioannis  19 
+ 
+CAM (Content Addressable Memory) Table – MAC Table 
+The Flooding function can occur in some cases such as: 
+ In case that a switch receives a frame with an unknown destination MAC Address, it 
+Broadcasts  the specific  frame  to  all  its  active  ports  and  waits  to  receive  a  response 
+from the appropriate recipient in order to complete the MAC Address Table. 
+ When it is fresh installed and has to learn the devices, it has connected to it. 
+ 
+ 
+  
+
+Tsounias Ioannis  20 
+Switches can operate in three different modes to forward traffic 
+ 
+i. Store and Forward 
+In this mode the switch stores temporarily the whole frame and investigates the Frame Check 
+Sequence,  and  if  it doesn’t find any problem it forwards it the receiver. In case there is an 
+error, the switch drops the frame. 
+ 
+Store n Forward Method 
+ii. Cut Through 
+Different mode of operation from Store and Forward, and considerably faster. In this mode 
+the switch only examines the recipient's MAC Address and starts forwarding the frame to it 
+without waiting to receive the entire message. 
+ 
+Cut-Through Method 
+  
+
+Tsounias Ioannis  21 
+iii. Fragment-Free 
+This case is a combination of the previous two functions. The switch waits to receive the first 
+64  bytes  of  the  frame  before  it  starts  forwarding  traffic.  This  serves  to  avoid Collision 
+Fragments which usually occur in the first 64 bytes of a message. 
+Each of these three modes have advantages and disadvantages, the choice really depends on 
+the  specific network requirements such as the need for high data integrity or it is important 
+for the network to have low latency. 
+ 
+ 
+Switching Methods 
+Switching Methods Pros & Cons 
+Store and Forward 
+Pros Cons 
+Error Checking Higher Latency 
+Security Resource Intensive 
+QoS  
+ 
+Cut Through 
+Pros Cons 
+Low Latency Error Spread 
+Speed Limited Error Handling 
+Efficiency Specific Use Cases 
+ 
+Fragment Free 
+Pros Cons 
+Reduced Error Propagation Partial Error Checking 
+Balanced Latency Moderate Latency 
+Improved Network Performance Specific Use Cases 
+ 
+  
+
+Tsounias Ioannis  22 
+Router (Layer 3 Device) 
+ 
+A  router  is  a  network  device  that  is  responsible  for  sending  and  receiving  data  between 
+different networks. It chooses to which network and through which path to send the data and 
+joins different networks and subnets. Within a LAN, if a device wants to communicate with a 
+different network than its own, such as the Internet, then all it needs to know is the “Default 
+Gateway” of the network it belongs to. 
+Another basic function of the Router is to divide the network into “Broadcast Domains”. Each 
+router  port  is  also  a  separate  Broadcast  Domain.  A  Broadcast  Domain  includes  all  network 
+devices that can communicate with each other at OSI Layer 2 via broadcasting. 
+ 
+One Router - Two Networks 
+The router, like the switches, creates an address table called “Routing  Table”. This table 
+contains  all  the  IP  addresses  of  the  networks  that  the  router  knows,  either  statically 
+(Manually) or dynamically (Routing Protocol), so that it can route the traffic. 
+ 
+ 
+Routing Table 
+  
+
+Tsounias Ioannis  23 
+Modem 
+ 
+The Modem (Modulator / Demodulator) is the device through which we manage to access the 
+Internet. It allows the conversion of Digital Signals from a computer to Analog Signals that way 
+the data can be transmitted over telephone lines or other analog media and vice versa. 
+ 
+Modem 
+ 
+In a Fiber Optic network the modem has been replaced by ONTs (Optical Network Terminal). 
+An ONT is  a device  used  in  fiber  optic  networks  to  connect  a  business  to  the  ISP.  The  ONT 
+converts the  optical  signals  transmitted  through  the optical  fiber  into  electrical  signals  that 
+can be used by network devices into our internal network. 
+ 
+ONT Installation 
+ 
+  
+
+Tsounias Ioannis  24 
+Cabling 
+ 
+In networks, data transfer is either wired or wireless. In this paragraph we will talk about wired 
+networks.  The  most  common  and  widely  used  cables  are  twisted  pair  copper  cables.  The 
+cables are twisted to neutralize electromagnetic interference (Crosstalk). 
+Cable Types 
+ 
+Unshielded Twisted Pair (UTP) cable: It consists of four pairs of cables. It comes in two forms, 
+one is rigid because it has a plastic core inside, and so it goes more easily through channels 
+and  walls.  There  is  also the classic  cable which  is  flexible  and  only  has  copper wires  inside. 
+Each pair has one colored wire and one with the corresponding color but with a white stripe. 
+Depending  on  the  company  that  produces  them,  the  cables  are  inside  a  PVC  plastic.  Their 
+termination is always on an RJ-45 connector. 
+Shielded  Twisted  Pair  (STP) cable:  Similar  to  UTP  but  with  additional  shielding  to  further 
+reduce EMI, used in environments with high electromagnetic interference. 
+Foil  Shielded  Twisted  Pair  (FTP) cable:  Uses  a thin  layer  of  aluminum  foil  to  provide  100% 
+coverage of the conductors it surrounds. 
+Braided  Shielded  cable:  Uses  a  mesh  of  woven  copper  wires  to  provide  shielding.  Offers 
+flexibility and durability. 
+Of course, there are other types of shielded cables which are a combination of the others such 
+as: S/FTP, F/FTP, SF/FTP cables. 
+ 
+Cable Types 
+ 
+  
+
+Tsounias Ioannis  25 
+All shielded twisted pair cables they are not using a plastic RJ-45 connector, but a metallic one 
+which provides for better shielding against EMI, are more durable than plastic one and they 
+are more resistant to the heat. Also, although this concerns electricians, in order to get the 
+desired results, there should be proper grounding in all the wiring, even in the sockets. 
+ 
+RJ-45 Connector Pin Numbering 
+ 
+ 
+ 
+RJ-45 Passthrough 
+ 
+ 
+Crimping Tool 
+  
+
+Tsounias Ioannis  26 
+Cable Termination 
+ 
+In  networking  there  are  two  cable  termination  standards, T568A & T568B.  Both  have 
+differences in Pin configuration: 
+❖ T568A:  White/Green,  Solid  Green,  White/Orange,  Solid  Blue,  White/Blue,  Solid 
+Orange, White/Brown, Solid Brown. 
+❖ T568B:  White/Orange,  Solid  Orange,  White/Green,  Solid  Blue,  White/Blue,  Solid 
+Green, White Brown, Solid Brown. 
+We  can  use  either  layout  we  want  but  we  should  follow  the  same  pattern  throughout  the 
+wiring to avoid mistakes. 
+There are two Ethernet cable types: 
+a. Straight-Through   cable:   When   both   ethernet   cable   ends   have   the   same   pin 
+configuration  then  the  cable  is  called  Straight-Through  and  is  used  to  connect 
+different devices such as: Computer to switch, computer to router, router to switch, 
+switch to hub. 
+b. Crossover cable: In this situation the two cable ends have different pin configuration 
+and is used to connect same devices such as: Computer to computer, switch to switch, 
+router to router, computer to router (consider to be same devices). 
+In  modern  implementations,  we  can  use  any  cable,  because  in  the  network  cards  of  the 
+devices we can activate the Auto Sensing function. 
+The different end configuration is: 
+ 
+  
+
+Tsounias Ioannis  27 
+There is also another type of cable type which is called Rollover cable (Console cable) and is 
+used when we need to connect a computer to a router’s console port. As we can see below 
+rollover cables have opposite Pin assignments on each end of the cable. 
+ 
+An example of a Rollover cable in 568-B 
+ 
+Fiber Optics Cables 
+ 
+Fiber optics is a cutting-edge technology used for transmitting data in the form of light signals. 
+Using  materials  such  as  glass  or  plastic,  FO  allow  for  fast  and  reliable  transmission  of  large 
+amount of data over long distances. 
+For this reason we have different types of Fibers 
+֎ Single-Mode Fiber (SMF): We use this type when we need to transmit data over long 
+distances.  They  have  small  core  and  are  ideal  for  telecommunications  and  WAN 
+implementations. 
+֎ Multi-Mode Fiber (MMF): Different king of cable with bigger core, and they are able 
+to  transmit  multiple  light  paths.  They  are  suitable  for  short  distances  and  is  very 
+common use in LANs, buildings, campuses and connecting equipment like Servers and 
+Switches. 
+ 
+Single-Mode vs Multi-Mode Fiber 
+ 
+
+Tsounias Ioannis  28 
+ 
+Data Transmission in a Fiber Optic Cable 
+ 
+  
+
+Tsounias Ioannis  29 
+ 
+Fiber Optic Cable Layers 
+ 
+OSI Model Layers 
+ 
+Layer 1: Physical Layer 
+ 
+It  deals  with  the  physical  connection  between  devices.  As  we  have  already  mentioned  the 
+three first layers are containing hardware components also. So, in L1 we can find cables, hubs, 
+and other devices. 
+Layer 2: Data Link Layer 
+ 
+Provides  node-to-node  data  transfer  and  manages  error  detection  and  correction  from  the 
+physical layer. L2 hardware components: Switches, network interface cards (NIC). Protocols: 
+Ethernet, PPP (Point-to-Point Protocol). 
+In Ethernet, the Data Link Layer uses the Frame Check Sequence to detect frame corruption. 
+If  a  frame  is  detected  as  corrupted,  it  is  normally  discarded.  Ethernet  does not correct  the 
+damaged frame or automatically request its retransmission. 
+Recovery, when required, is provided by another protocol or application mechanism. 
+  
+
+Tsounias Ioannis  30 
+The Data Link Layer is divided into two sublayers: 
+1. Logical Link Control (LLC): It handles error checking and frame synchronization. 
+It provides a way to identify the network layer protocol being used. 
+2. Media  Access  Control  (MAC):  It controls  how  devices  on  the  network  gain 
+access to the medium and permission to transmit data. It deals with Physical 
+Addressing and network topology. 
+Each  device  within  a  network  has  a  unique  MAC  Address  which  is  used  for  device 
+Identification  at  L2.  MAC  Addresses  are  48-bit  long  and  are  assigned  on  NICs.  The 
+Ethernet protocol is the most important L2 Protocol. It is also known as IEEE 802.3, is 
+a set of rules that enable devices to communicate in a LAN environment. 
+A very important feature of L2 is VLAN (Virtual Local Area Network), which allows for 
+network  segmentation  improving  network  security  and  performance.  In  Data  Link 
+Layer  we can apply the Link  Aggregation  feature,  which  combines  multiple  network 
+connection to increase bandwidth and provide redundancy. Moreover, in L2 we can 
+configure QoS in order to prioritize specific traffic to increase performance. 
+VLAN most important characteristics: 
+o Segmentation: A  VLAN  can  divide  a  network  into  smaller  ones  and  thus  create 
+separate  Broadcast  Domains.  This  means  that  devices  from  different  VLANs  cannot 
+communicate directly to each other without a layer 3 device, like a router or a layer 3 
+switch. 
+o Flexibility: By using VLANs an administrator is able to group network devices  based 
+on function, or by department, regardless of their physical location. 
+o Traffic Management: With VLANs an administrator can isolate the traffic and improve 
+performance by reducing congestion. 
+o Security: VLANs provide logical segmentation and create separate broadcast domains. 
+However,  a  VLAN  alone  does  not  enforce  complete  access  control.  Communication 
+between  VLANs  should  be  controlled  through  routing  policies,  Access  Control  Lists, 
+firewalls, authentication, and other security controls. 
+o VLAN   Tagging:   VLANs   for   the   purpose   of   network   traffic   identification   and 
+management use tagging protocols such as IEEE 802.1Q. This way multiple VLANs can 
+share the same physical medium while remaining logically separate. 
+ 
+  
+
+Tsounias Ioannis  31 
+ 
+VLAN 
+ 
+ 
+Broadcast traffic With/Without VLANs 
+  
+
+Tsounias Ioannis  32 
+ 
+A Network Topology 
+ 
+ 
+ 
+ 
+Switch L2 vs Switch L3 vs Router 
+
+Tsounias Ioannis  33 
+Layer 3: Network Layer 
+ 
+Manages  the  routing  of  data  packets  between  devices  across different  networks.  It  is  a 
+connectionless  protocol,  which  means  that  the  recipient  does  not  know  that  someone  is 
+sending those data and also there is no predetermined path that the data will follow from the 
+sender to the recipient. Finally, the IP protocol is not involved with the proper transport of the 
+packet, which is the responsibility of a higher protocol. 
+The Network Layer deals with the Logical Addressing of the devices The Network Layer uses 
+logical IP addressing to identify interfaces and route packets between networks. 
+IP  addresses  may  be  configured  manually  or  assigned  through  mechanisms  such  as  DHCP, 
+DHCPv6,  or  SLAAC  (Stateless  Address  Autoconfiguration).  This  layer  determines  the  most 
+efficient path for data traffic from source to destination device. Since the path is determined 
+the  next  thing  is  to  forward  traffic  from  one  network  to  another  until  the  data  reach  the 
+receiver. Many times,  a packet  is too large  to be  transmitted over a network, so it must  be 
+break down into smaller fragments to be easier to send it from one destination to another. As 
+soon  as  the  data  packet  reaches  its  final  destination  the  Network  Layer  undertakes  to 
+reassemble it into its original form. 
+Each  Network  Interface  has  a  unique  IP  address. There  are  two  versions of  IP protocol,  the 
+IPv4 and IPv6. Since 2012 IPv4 has been exhausted and we have moved to IPv6, but it is not 
+that often used in internal networks at least. 
+ 
+Router with Layer 2 Switch 
+ 
+ 
+Router with Layer 3 Switch with VLANs configured  
+
+Tsounias Ioannis  34 
+IPV4 Key Features 
+ 
+ Is   a  32-bit   address   displayed   as   four   decimal   numbers   separated   by   dots   (.) 
+(192.168.1.1) it allows for approximately 4.3 billion unique addresses. 
+ Can   be   configured   manually   or   dynamically   through   DHCP   (Dynamic   Host 
+Configuration Protocol). 
+ Security  is  an  optional  feature  and  if  needed  is  implemented  by  IPsec  (Internet 
+Protocol Security). 
+ Uses ARP (Address Resolution Protocol) to map IPv4 addresses to MAC addresses. 
+ Supports QoS features through ToS (Type of Service) field in IP header. 
+ 
+ 
+IPv4 Header 
+ 
+  
+
+Tsounias Ioannis  35 
+IPv6 Key Features 
+ 
+ Is a 128-bit address displayed as eight groups of four hexadecimal digits separated by 
+colons  (:)  (2001:0db8:85a3:0000:0000:8a2e:0370:7334),  this  allows  for  a  huge 
+amount of IPv6 addresses, approximately 340 undecillions. 
+ Supports   automatic   address   configuration   through   SLAAC   (StateLess   Address 
+AutoConfiguration)  and  DHCPv6.  Of  course,  we  can  configure  a  network  interface 
+manually, but it is something that can easily lead to an error.  
+ IPv6  was  designed  with  support  for  IPsec,  but  IPv6  traffic  is  not  automatically 
+encrypted.  Security  depends  on  whether  IPsec  or  another  security  technology  has 
+been configured and used. 
+ Uses NDP (Neighbor Discovery Protocol), to map IP addresses to MAC Addresses. 
+ It also supports QoS through Flow Label Filed. 
+ 
+IPv6 Header 
+ 
+IPv4 vs IPv6 
+ 
+  
+
+Tsounias Ioannis  36 
+IPv4 Private Addresses 
+ 
+Private IPv4 address, is a range of IP reserved for use within private networks. These addresses 
+are  not routable on  the  public  internet,  meaning  they  cannot  be  accessed  directly  from 
+outside  the  local  network.  Instead,  they  are  used  for  internal  communication  within  a 
+network, such as a home or office LAN. 
+Private IPv4 Classes 
+Class A 
+Range 10.0.0.0 – 10.255.255.255 
+Subnet Mask 255.0.0.0 or /8 
+Usage Very Large Networks 
+ 
+Class B 
+Range 172.16.0.0 – 172.31.255.255 
+Subnet Mask 255.240.0.0 or /12 
+Usage Medium to Large Networks 
+ 
+Class C 
+Range 192.168.0.0 – 192.168.255.255 
+Subnet Mask 255.255.0.0 or /16 
+Usage Small to Medium Networks 
+ 
+  
+
+Tsounias Ioannis  37 
+Public IPv4 Addresses 
+ 
+A public IPv4 address is a unique IP address and is assigned to a device that is connected to 
+the  internet.  These  addresses  are routable on  the  Internet,  meaning  they  can  be  accessed 
+from  anywhere  in  the  world.  Public  IP  addresses  are  crucial  for  devices  that  need  to 
+communicate over the internet, such as web servers, email servers, and any device that needs 
+to be accessible from outside a local network. 
+A public IPv4 address is an address that may be globally routed through the Internet. 
+However, not every IPv4 address outside the RFC 1918 private ranges is a normal public 
+address. IPv4 also contains several special-purpose and reserved address ranges.  
+
+Tsounias Ioannis  38 
+Types of IP address 
+ 
+IP communication commonly uses Unicast, Multicast, Broadcast, and Anycast delivery 
+concepts. 
+IPv4 supports unicast, multicast, and broadcast communication. 
+IPv6 supports  unicast,  multicast,  and  Anycast  communication,  but  it  does  not  use 
+broadcast addresses.  
+Unicast   Address:   Identifies   uniquely   a   device   on   a   network.   It   is   used   for 
+communication between two devices. A data traffic is directed to a specific network 
+device. 
+ 
+This is a Unicast traffic from PC .4.1 to Printer .4.253 
+ 
+  
+
+Tsounias Ioannis  39 
+Multicast Address: Is an address that identifies a group of devices. A data traffic is directed to 
+multiple network devices but not to all devices in the network. 
+Multicast IP Address Range: 224.0.0.0 – 239.255.255.255 
+ 
+ 
+A Multicast traffic from PC .4.1 to PC .4.3 & PC .4.4 
+  
+
+Tsounias Ioannis  40 
+Broadcast  Address:  Is  an  address  that  identifies  all  the  devices  on  a  network.  A  data  traffic 
+that is directed to every device on a network. 
+ 
+ 
+A broadcast traffic from PC H2 to Broadcast Domain 
+ 
+Unicast One-to-One Communication 
+Multicast One-to-Many Communication 
+Broadcast  One-to-All Communication 
+ 
+ 
+ 
+Unicast vs Multicast vs Broadcast 
+ 
+  
+
+Tsounias Ioannis  41 
+Routing Protocols 
+ 
+Routing protocols are important for defining the best route for data packets to travel across a 
+network.  They  allow  routers  to  communicate  with  each  other,  share  information  about 
+changes  in  network  topology,  and  make  decisions  on  the  most  efficient  routes  for  data 
+transmission. 
+Interior Gateway Protocols (IGP) 
+ 
+Used in a single Autonomous System (AS), such as RIP, RIPv2, EIGRP, OSPF. 
+Exterior Gateway Protocols (EGP) 
+ 
+Used to route traffic between different Autonomous Systems, such as: BGP (Boarder Gateway 
+Protocol). 
+Autonomous System (AS) 
+An autonomous system is the collection of connected networks that are managed by a single 
+organization. Each AS has a unique number called Autonomous System Number (ASN), which 
+is used by BGP in order to exchange routing information between different ASes. 
+There are three types of Autonomous Systems: 
+1. Stub AS: Connects to only one AS. 
+2. Multi-Homed AS: Connects to multiple ASes without transit the information.  
+3. Transit AS: Connects Multiple ASes but also allows data to pass through. 
+ 
+Autonomous System 
+  
+
+Tsounias Ioannis  42 
+The protocols are divided into Distance Vector Protocols, Link State Protocols, and Path Vector 
+Protocols. 
+Distance Vector Routing Protocols 
+They determine the best path based on hops, i.e. in how many hops will the information have 
+to take to reach the destination. (RIP, IGRP cisco proprietary protocol) 
+Link State Routing Protocols 
+Have a complete view of the network topology and use algorithms to calculate the shortest 
+(fastest) path (OSPF, IS-IS). 
+Path Vector Routing Protocols 
+Maintain  the  path  information  that  gets  updated  dynamically  as  the  network  topology 
+changes (BGP). 
+ 
+Dynamic Routing Protocols 
+ 
+Boarder Gateway Protocol (BGP) 
+The  BGP  is  an  exterior  gateway  protocol  which  is  used  to  exchange  routing  information 
+between different Autonomous Systems on the Internet. 
+The way that the BGP works is as follows: 
+o Peering: The BGP Routers (peers) establish a connection in order to exchange routing 
+information.  
+o Route Advertisement: The BGP Routers advertise the routes they know to the other 
+already connected routers.  
+o Path  Selection:  The  way  that  BGP  chooses  the  right  path is  based  on  many  metrics 
+such as path length and policy rules. 
+o Route Propagation: As soon as a router decides the best path then it propagates the 
+path to the other peers to have the updated routing information. 
+  
+
+Tsounias Ioannis  43 
+Layer 4: Transport Layer 
+The Transport Layer provides end-to-end communication between applications. 
+Functions such as reliability, ordering, acknowledgements, retransmission, flow control, and 
+connection management depend on the transport protocol. TCP provides these mechanisms, 
+while UDP does not provide delivery guarantees.  
+TCP Layer basic features: 
+ End-to-end  Communication:  Offers  connectivity  between  source  and  destination 
+device. 
+ Segmentation  &  Reassembly:  It  breaks  big  data  streams  into  smaller  and  easier  to 
+manage  data  segments.  At  the destination  point  transport  layer  is  obliged  to 
+reassembly the data segments into their original form. 
+ Connection  Management:  It  establishes,  maintains,  and  terminates  the  connection 
+between communicating devices.  
+ Flow Control: Controls the data transmission rate to avoid network congestion. 
+ Error   Detection   &   Correction:   It   detects   errors   and   corrupted   data   must   be 
+retransmitted. 
+ Multiplexing: Multiple apps can use the network simultaneously. 
+The TCP Layer has two main transmission protocols: 
+1. TCP (Transmission Control Protocol) 
+It checks the status of the connection and also checks whether the data was received correctly 
+by the user. It is Full Duplex, meaning the data exchange takes place at the same time. 
+Prior to data transmission the TCP must establish a connection between the two ends. This 
+process  is  called 3-Way  Handshake. It’s a fundamental process used in the Transmission 
+Control  Protocol  (TCP)  to  establish  a  reliable  connection  between  a  client  and  a  server,  in 
+order to exchange data.  
+ 
+3-way Handshake 
+  
+
+Tsounias Ioannis  44 
+3-way Handshake Procedure 
+ SYN  packet:  The  client  sends  a  synchronization  packet  to  the  server  to  initiate  a 
+connection.  
+ SYN-ACK packet: The server responds to the client with an Acknowledge packet. 
+ ACK  packet:  Finally  the  client  responds  to  server  with  an  Acknowledge  packet  and 
+then the connection is established, and the two sides are ready to exchange data. 
+TCP uses a sliding-window mechanism for flow control. 
+The  receiver  advertises  how  much  additional  data  it  is  prepared  to  accept.  TCP  may  use 
+cumulative    and    delayed    acknowledgements    and    does    not    necessarily    send    one 
+acknowledgement for every received segment. 
+Congestion control is a separate mechanism that adjusts transmission behavior according to 
+conditions within the network. 
+Finally, after the communication is completed and one of the two ends wishes to terminate 
+the connection (client for example), sends a FIN packet, the recipient (server) responds with 
+an  ACK  packet  and  at  the same  time  sends  another FIN  (ACK/FIN)  packet  and  the  side  that 
+started (the client) it sends a final ACK packet, and the connection is terminated. 
+ 
+TCP Connection Termination Procedure 
+ 
+ 
+  
+
+Tsounias Ioannis  45 
+UDP (User Datagram Protocol) 
+It is also a protocol of the fourth layer of the OSI Reference model and its purpose is 
+transmission speed and not transmission reliability. 
+The main features of UDP are: 
+1. Connectionless:  Unlike  TCP,  UDP  does  not  set  up  communication  before 
+sending data. Which makes it fast but not as reliable.  
+2. No Guarantees: It has no mechanism to check that the package was delivered 
+correctly or that it was delivered in the correct order. 
+3. Low  Overhead:  Because  of  this  it  is  suitable  for  applications  where  speed  is 
+essential. 
+4. Usage: It is mainly used in applications that are time sensitive, such as video 
+streaming, VoIP, DNS, Online Gaming. 
+TCP vs UDP 
+Key Differences TCP UDP 
+Reliability 
+Reliable & Ensures Data 
+Integrity 
+Fast but No Delivery 
+Guarantees. 
+Connection Connection Oriented Connectionless 
+Overhead Higher Overhead  Minimal Overhead 
+Usage Reliability & Data 
+Integrity 
+Speed & Low Latency 
+ 
+ 
+  
+
+Tsounias Ioannis  46 
+Layer 5: Session Layer 
+This layer is responsible for establishing, managing, and terminating sessions between 
+applications.  
+Key Features 
+• Session Management: Establishes, maintains, and terminates communication 
+sessions between applications. 
+• Communication Control: Manages the communication between two devices, 
+ensuring  that  data  is  properly  synchronized, and  the  two  devices  have  no 
+problems in communication. 
+• Data Synchronization: Provides synchronization in   data   traffic   between 
+devices,  allowing for  recovery  and  continuation of  communication  in  case  of 
+disruptions. 
+  
+
+Tsounias Ioannis  47 
+Layer 5 Protocols 
+The most important protocols in Session Layer are, the NetBIOS and RPC (Remote Procedure 
+Call). 
+NetBIOS (Network Basic Input Output System): Allows applications on different computers to 
+communicate within a LAN. It permits application to establish sessions, send/receive data and 
+terminate sessions.  
+It has three basic services:  
+ Name Services: Lists and  Resolves NetBIOS names to IP addresses. 
+ Datagram Service: Supports Connectionless Communication. 
+ Session Service: Supports Connection-Oriented Communication. 
+ 
+RPC (Remote Procedure Call): Allows a program to execute a procedure on a remote server as 
+if it were on the same network. 
+  
+
+Tsounias Ioannis  48 
+Layer 6: Presentation Layer 
+This  layer  is  responsible  for  the  translation,  encryption,  and  compression  of  data.  Converts 
+data from the application layer into a format that can be sent over the network. It encrypts 
+data  before  transmission  and  decrypts  them  at  the  destination,  that  way  data  is  protected 
+from  unauthorized  access.  In  order  to  improve  transmission  speed  it  compress  the  data  in 
+order  to  reduce  the  size.  A  very  important  part  of  Layer  6  is  to  ensure  that  the  data  is 
+presented in an understandable way from the receiving application.  
+Layer 6 Protocols and Standards 
+TLS (Transport Layer Security): Provides encryption for secure communication. 
+SSL (Secure Socket Layer): An older protocol for securing data transmission. 
+MIME  (Multipurpose  Internet  Mail  Extensions):  Used  for  formatting  multimedia  email 
+messages. 
+  
+
+Tsounias Ioannis  49 
+Layer 7: Application Layer 
+The final layer in OSI Reference model stack. Is the layer that is the closest to the final user 
+and ensures that data is presented in a readable format for the user. Moreover, it provides 
+network services directly to the end-user applications.  
+Application Layer Protocols 
+HTTP/HTTPS For Web Browsing 
+FTP For File Transfers 
+SMTP For Sending emails 
+DNS  For Domain name resolution 
+ 
+Application Layer Services 
+File Transfer File Transfer between devices 
+Email Services Enables sending/receiving emails 
+Web Browsing Allows interaction of users and web apps 
+Directory Services Provides access to Directory Databases 
+ 
+ 
+  
+
+Tsounias Ioannis  50 
+Troubleshooting and Monitoring Tools 
+No matter how well a network is configured, we should always check its correct 
+operation. To achieve this there are many tools either of the operating system we 
+use or of a third party. 
+In  a  Windows  OS  environment  we  can  use  the  CMD  commands  in  order  to  identify 
+that our network is working as it should. 
+CMD Networking Troubleshooting Commands 
+ipconfig or ipconfig /all Checks the TCP network configuration 
+ipconfig /displaydns 
+Displays  entries  in  the  local  Windows 
+DNS resolver cache. 
+Ipconfig /flushdns 
+Clears  the  local  DNS  resolver  cache.  It 
+does  not  delete  records  from  a  DNS 
+Server 
+ping 
+Sends    ICMP    Echo    requests    to    test 
+whether  replies  are  received.  A  failed 
+ping does not always prove that the host 
+is offline 
+arp -a Displays ARP entries 
+tracert Checks and counts the path to a host 
+route print Displays the routing table. 
+netstat 
+Displays information about local 
+network   connections,   listening   ports, 
+and protocol statistics, depending on the 
+selected parameters 
+nslookup Diagnoses DNS issues 
+pathping  Combines Tracert & ping 
+ 
+Support Protocols 
+ ICMP  (Internet  Control Message Protocol): ICMP  carries  control,  diagnostic, 
+and  error-reporting  messages  for  IP  communication.  The  ping  command 
+commonly uses ICMP Echo Request and Echo Reply messages. 
+ ARP  (Address  Resolution  Protocol): We  know  the  recipient's  IP  address  and 
+look up its MAC address. 
+ RARP (Reverse ARP): Reverse  ARP  was  an  early  protocol  used  by  a  device  to 
+request an IPv4 address  based on its hardware address. It has  been replaced 
+by more capable protocols such as BOOTP and DHCP. 
+Telnet & SSH (Secure Shell): Remote access to a device such as a router, switch, or 
+firewall, via the command line. The main difference is that in the case of SSH the 
+communication is encrypted. 
+ 

@@ -2,9 +2,19 @@ import React, { useState, useRef } from 'react';
 import { Network, Laptop, Server, Router, ShieldCheck, Globe, Play, Square, Trash2, Plus, Zap, Gauge, CheckCircle2, Settings, Cpu, FileCode, Terminal, X, Radio, HardDrive, Mail, Layers, Activity, Printer, Wifi, Database, Download, Upload, FileJson, Sparkles, RotateCcw } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
+import { generateCiscoConfig, parseCiscoConfig } from './CiscoConfigExporter';
+import { TOPOLOGY_PRESETS } from './TopologyPresets';
+import { downloadPcapFile } from '../../utils/pcapExporter';
+import { calculateOspfSpf } from '../../utils/routingEngine';
+import { calculateSubnet } from '../../utils/subnetCalculator';
+import CiscoTerminalModal from './CiscoTerminalModal';
 
 export default function NetworkSandbox({ appMode = 'clean' }) {
   const [showAnimation, setShowAnimation] = useState(true);
+  const [zoom, setZoom] = useState(1); // Canvas Zoom Level (0.75x to 1.5x)
+  const [showCamModal, setShowCamModal] = useState(false); // Switch CAM Table Inspector
+  const [showSubnetModal, setShowSubnetModal] = useState(false); // CIDR Subnet Calculator Modal
+  const [terminalNodeId, setTerminalNodeId] = useState(null); // Active CLI Terminal Node ID
   // Initial Nodes on Canvas (Includes connected INTERNET-ISP node)
   const [nodes, setNodes] = useState([
     {
@@ -284,52 +294,44 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
     setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'EXPORT', message: 'Topology exported to netpulse_topology.json.' }]);
   };
 
+  // Export Wireshark Binary Packet Capture (.pcap)
+  const handleExportPcap = () => {
+    const srcNode = nodes.find(n => n.id === simSource);
+    const dstNode = nodes.find(n => n.id === simTarget);
+    const packetList = [
+      {
+        srcMac: srcNode?.mac || '00:50:56:A1:B2:C1',
+        dstMac: dstNode?.mac || '00:11:22:33:44:00',
+        srcIp: srcNode?.ip || '192.168.1.105',
+        dstIp: dstNode?.ip || '8.8.8.8',
+        srcPort: 54321,
+        dstPort: simType === 'http' ? 443 : simType === 'dns' ? 53 : simType === 'kerberos' ? 88 : simType === 'smb' ? 445 : 80,
+        protocol: simType === 'dns' ? 'UDP' : simType === 'ping' ? 'ICMP' : 'TCP',
+        payloadText: `NetPulse Live Simulation Packet [${simType.toUpperCase()}] from ${srcNode?.name || 'Src'} to ${dstNode?.name || 'Dst'}`
+      }
+    ];
+    downloadPcapFile(packetList, `netpulse_${simType}_traffic.pcap`);
+    setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'EXPORT_PCAP', message: `Exported Wireshark packet capture file: netpulse_${simType}_traffic.pcap` }]);
+  };
+
+  // Run OSPF Dijkstra Shortest Path First calculation
+  const handleCheckOspfRoute = () => {
+    const spfResult = calculateOspfSpf(nodes, links, simSource, simTarget);
+    if (spfResult.path) {
+      const pathNames = spfResult.path.map(id => nodes.find(n => n.id === id)?.name).join(' ➔ ');
+      setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'OSPF_SPF', message: `OSPF Dijkstra Shortest Path: ${pathNames} (Total Metric Cost = ${spfResult.totalCost})` }]);
+      setStatusBanner({
+        title: `🗺️ OSPF Dijkstra Shortest Path (Cost = ${spfResult.totalCost})`,
+        subtitle: `Optimal Path: ${pathNames}`
+      });
+    } else {
+      setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'OSPF_SPF', message: `OSPF SPF: No reachable path between source and target.` }]);
+    }
+  };
+
   // Export Cisco IOS Running-Config Script (.cfg)
   const handleExportCiscoConfig = () => {
-    let script = `! ==========================================\n`;
-    script += `! NETPULSE LAB - CISCO IOS RUNNING CONFIGURATION\n`;
-    script += `! Generated on: ${new Date().toLocaleString()}\n`;
-    script += `! ==========================================\n\n`;
-
-    nodes.forEach(node => {
-      script += `! ------------------------------------------\n`;
-      script += `! DEVICE: ${node.name} (${node.type.toUpperCase()})\n`;
-      script += `! OS: ${node.os}\n`;
-      script += `! ------------------------------------------\n`;
-      script += `hostname ${node.name.replace(/[^a-zA-Z0-9_-]/g, '_')}\n!\n`;
-
-      if (node.type === 'switch') {
-        script += `vlan 10\n name MANAGEMENT\n!\n`;
-        script += `vlan 20\n name DATA_USERS\n!\n`;
-        const connected = links.filter(l => l.from === node.id || l.to === node.id);
-        connected.forEach((link, idx) => {
-          const otherId = link.from === node.id ? link.to : link.from;
-          const otherNode = nodes.find(n => n.id === otherId);
-          script += `interface GigabitEthernet0/${idx + 1}\n`;
-          script += ` description Link to ${otherNode ? otherNode.name : 'Device'}\n`;
-          script += ` switchport mode ${link.cableType === 'trunk' ? 'trunk' : 'access'}\n`;
-          script += ` no shutdown\n!\n`;
-        });
-      } else if (node.type === 'router' || node.type === 'firewall') {
-        script += `interface GigabitEthernet0/0\n`;
-        script += ` description LAN Gateway\n`;
-        script += ` ip address ${node.ip !== 'N/A (L2)' ? node.ip : '192.168.1.1'} ${node.subnetMask || '255.255.255.0'}\n`;
-        script += ` no shutdown\n!\n`;
-        if (node.roles?.includes('nat')) {
-          script += `ip nat inside source list 1 interface GigabitEthernet0/1 overload\n!\n`;
-        }
-      } else if (node.type === 'server') {
-        script += `! Server IP Address: ${node.ip}\n`;
-        if (node.roles?.includes('dhcp')) {
-          script += `ip dhcp pool CORPORATE_LAN\n`;
-          script += ` network 192.168.1.0 255.255.255.0\n`;
-          script += ` default-router 192.168.1.1\n`;
-          script += ` dns-server 192.168.1.10\n!\n`;
-        }
-      }
-      script += `\n`;
-    });
-
+    const script = generateCiscoConfig(nodes, links);
     const blob = new Blob([script], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -356,47 +358,10 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
           setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'IMPORT_JSON', message: `Topology imported from JSON (${parsed.nodes.length} devices, ${parsed.links.length} cables).` }]);
           return;
         }
-      } catch (jsonErr) {
+      } catch (_jsonErr) {
         // Fallback: Parse Cisco IOS CLI Config script (.cfg, .txt, .ios)
-        const lines = content.split('\n');
-        const importedNodes = [];
+        const importedNodes = parseCiscoConfig(content);
         const importedLinks = [];
-        let currentDevice = null;
-        let xPos = 100;
-        let yPos = 160;
-
-        lines.forEach(line => {
-          const trimmed = line.trim();
-          if (trimmed.startsWith('hostname')) {
-            const name = trimmed.split(' ')[1] || 'CISCO-DEVICE';
-            const isSwitch = name.toLowerCase().includes('sw') || name.toLowerCase().includes('switch');
-            const isRouter = name.toLowerCase().includes('rt') || name.toLowerCase().includes('router');
-            const isFw = name.toLowerCase().includes('fw') || name.toLowerCase().includes('firewall');
-            const type = isSwitch ? 'switch' : isRouter ? 'router' : isFw ? 'firewall' : 'server';
-
-            currentDevice = {
-              id: `imported-${Date.now()}-${importedNodes.length}`,
-              name,
-              type,
-              x: xPos,
-              y: yPos,
-              ip: isSwitch ? 'N/A (L2)' : '192.168.1.1',
-              mac: '00:1A:2B:3C:4D:' + (10 + importedNodes.length),
-              os: isSwitch ? 'Cisco IOS L2 Switch' : isRouter ? 'Cisco IOS Router' : 'Palo Alto PAN-OS',
-              roles: isSwitch ? [] : isRouter ? ['nat'] : ['firewall'],
-              subnetMask: '255.255.255.0'
-            };
-            importedNodes.push(currentDevice);
-            xPos = (xPos + 220) % 800;
-            if (xPos < 120) yPos += 150;
-          } else if (currentDevice && trimmed.startsWith('ip address')) {
-            const parts = trimmed.split(' ');
-            if (parts.length >= 4) {
-              currentDevice.ip = parts[2];
-              currentDevice.subnetMask = parts[3];
-            }
-          }
-        });
 
         if (importedNodes.length > 0) {
           for (let i = 0; i < importedNodes.length - 1; i++) {
@@ -436,113 +401,9 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
     setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), tag: 'RESET', message: 'Canvas reset to clean empty workspace state.' }]);
   };
 
-  // Preset Template Loader
-  const handleLoadTemplate = (templateKey) => {
-    const templates = {
-      standard_lan: {
-        nodes: [
-          { id: 'pc1', name: 'SALES-LAPTOP-01', type: 'laptop', x: 80, y: 120, ip: '192.168.1.105', mac: '00:50:56:A1:B2:C1', os: 'Windows 11 Pro', roles: [], subnetMask: '255.255.255.0', vlan: '10 (SALES)', gateway: '192.168.1.1' },
-          { id: 'pc2', name: 'HR-DESKTOP-02', type: 'desktop', x: 80, y: 260, ip: '192.168.1.106', mac: '00:50:56:A1:B2:C2', os: 'Windows 11 Pro', roles: [], subnetMask: '255.255.255.0', vlan: '20 (HR)', gateway: '192.168.1.1' },
-          { id: 'prn1', name: 'NETWORK-PRINTER', type: 'printer', x: 80, y: 400, ip: '192.168.1.50', mac: '00:11:22:33:44:55', os: 'LPR Print Firmware', roles: [], subnetMask: '255.255.255.0', gateway: '192.168.1.1' },
-          { id: 'sw1', name: 'FLOOR-1-SWITCH', type: 'switch', x: 340, y: 260, ip: 'N/A (L2)', mac: '00:11:22:00:11:22', os: 'Cisco Catalyst L2', roles: [], vlan: 'TRUNK' },
-          { id: 'srv1', name: 'DC01-AD-SERVER', type: 'server', x: 600, y: 120, ip: '192.168.1.10', mac: '00:0C:29:8E:7F:11', os: 'Windows Server 2022', roles: ['dhcp', 'ad', 'dns'], subnetMask: '255.255.255.0', gateway: '192.168.1.1' },
-          { id: 'r1', name: 'CORE-ROUTER-GW', type: 'router', x: 600, y: 360, ip: '192.168.1.1', mac: '00:00:0C:07:AC:01', os: 'Cisco IOS RouterOS', roles: ['nat'], subnetMask: '255.255.255.0' },
-          { id: 'isp1', name: 'INTERNET-ISP 🌐', type: 'cloud', x: 840, y: 360, ip: '8.8.8.8 (WAN)', mac: '00:FE:88:99:AA:BB', os: 'Public WAN ISP', roles: [] }
-        ],
-        links: [
-          { id: 'l1', from: 'pc1', to: 'sw1', cableType: 'straight' },
-          { id: 'l2', from: 'pc2', to: 'sw1', cableType: 'straight' },
-          { id: 'l3', from: 'prn1', to: 'sw1', cableType: 'straight' },
-          { id: 'l4', from: 'sw1', to: 'srv1', cableType: 'straight' },
-          { id: 'l5', from: 'sw1', to: 'r1', cableType: 'straight' },
-          { id: 'l6', from: 'r1', to: 'isp1', cableType: 'straight' }
-        ]
-      },
-      corporate: {
-        nodes: [
-          { id: 'lap1', name: 'WORKSTATION-01', type: 'laptop', x: 80, y: 160, ip: '192.168.1.105', mac: '00:50:56:A1:B2:C1', os: 'Windows 11 Pro', roles: [], subnetMask: '255.255.255.0', vlan: '10 (DATA)', gateway: '192.168.1.1' },
-          { id: 'sw1', name: 'CORE-SWITCH-01', type: 'switch', x: 320, y: 200, ip: 'N/A (L2 Switch)', mac: '00:11:22:33:44:00', os: 'Cisco IOS L2', roles: [], vlan: 'TRUNK' },
-          { id: 'srv1', name: 'DC01-AD-SERVER', type: 'server', x: 580, y: 100, ip: '192.168.1.10', mac: '00:0C:29:8E:7F:11', os: 'Windows Server 2022 Datacenter', roles: ['dhcp', 'ad', 'dns'], subnetMask: '255.255.255.0', gateway: '192.168.1.1' },
-          { id: 'r1', name: 'EDGE-ROUTER', type: 'router', x: 580, y: 320, ip: '192.168.1.1', mac: '00:00:0C:07:AC:01', os: 'Enterprise Gateway OS', roles: ['nat'], subnetMask: '255.255.255.0' },
-          { id: 'isp1', name: 'INTERNET-ISP 🌐', type: 'cloud', x: 820, y: 320, ip: '8.8.8.8 (WAN)', mac: '00:FE:88:99:AA:BB', os: 'Public WAN Gateway ISP', roles: [] }
-        ],
-        links: [
-          { id: 'link1', from: 'lap1', to: 'sw1', cableType: 'straight' },
-          { id: 'link2', from: 'sw1', to: 'srv1', cableType: 'straight' },
-          { id: 'link3', from: 'sw1', to: 'r1', cableType: 'straight' },
-          { id: 'link4', from: 'r1', to: 'isp1', cableType: 'straight' }
-        ]
-      },
-      dmz: {
-        nodes: [
-          { id: 'lap1', name: 'ADMIN-PC', type: 'laptop', x: 80, y: 160, ip: '192.168.1.100', mac: '00:50:56:11:22:33', os: 'Windows 11 Enterprise', roles: [], subnetMask: '255.255.255.0', vlan: '10 (MGMT)', gateway: '192.168.1.1' },
-          { id: 'sw1', name: 'INTERNAL-SWITCH', type: 'switch', x: 300, y: 160, ip: 'N/A (L2)', mac: '00:11:22:33:00:01', os: 'Cisco Catalyst L2', roles: [], vlan: 'TRUNK' },
-          { id: 'fw1', name: 'DMZ-FIREWALL', type: 'firewall', x: 520, y: 220, ip: '192.168.1.1', mac: '00:90:0B:22:33:44', os: 'Palo Alto PAN-OS Firewall', roles: ['firewall'], subnetMask: '255.255.255.0' },
-          { id: 'web1', name: 'DMZ-WEB-SERVER', type: 'server', x: 520, y: 80, ip: '10.0.0.50', mac: '00:0C:29:AA:BB:CC', os: 'Linux Ubuntu Server', roles: ['http'], subnetMask: '255.255.255.0', vlan: '50 (DMZ)', gateway: '10.0.0.1' },
-          { id: 'isp1', name: 'INTERNET-ISP 🌐', type: 'cloud', x: 780, y: 220, ip: '8.8.8.8 (WAN)', mac: '00:FE:88:99:AA:BB', os: 'Public WAN ISP', roles: [] }
-        ],
-        links: [
-          { id: 'link1', from: 'lap1', to: 'sw1', cableType: 'straight' },
-          { id: 'link2', from: 'sw1', to: 'fw1', cableType: 'straight' },
-          { id: 'link3', from: 'fw1', to: 'web1', cableType: 'straight' },
-          { id: 'link4', from: 'fw1', to: 'isp1', cableType: 'straight' }
-        ]
-      },
-      hybrid_wan: {
-        nodes: [
-          { id: 'b_pc', name: 'BRANCH-USER', type: 'laptop', x: 60, y: 220, ip: '10.10.1.105', mac: '00:50:56:44:55:66', os: 'Windows 11 Pro', roles: [], subnetMask: '255.255.255.0', gateway: '10.10.1.1' },
-          { id: 'b_sdwan', name: 'BRANCH-SDWAN-EDGE', type: 'router', x: 260, y: 220, ip: '10.10.1.1', mac: '00:11:22:44:55:00', os: 'Cisco SD-WAN VEdge', roles: ['nat'], subnetMask: '255.255.255.0' },
-          { id: 'isp_pri', name: 'PRIMARY-FIBER-WAN 🌐', type: 'cloud', x: 500, y: 120, ip: '198.51.100.1', mac: '00:FE:88:11:22:33', os: 'Primary Fiber ISP Provider', roles: [] },
-          { id: 'isp_sec', name: 'BACKUP-5G-LTE 🌐', type: 'cloud', x: 500, y: 320, ip: '203.0.113.50', mac: '00:FE:88:44:55:66', os: 'Secondary 5G Cellular ISP', roles: [] },
-          { id: 'hq_edge', name: 'HQ-SDWAN-HUB', type: 'router', x: 740, y: 220, ip: '172.16.1.1', mac: '00:11:22:77:88:99', os: 'Cisco SD-WAN C8000', roles: ['nat'], subnetMask: '255.255.0.0' },
-          { id: 'hq_app', name: 'HQ-DATACENTER-APP', type: 'server', x: 940, y: 220, ip: '172.16.1.10', mac: '00:0C:29:99:88:77', os: 'Linux Enterprise Server', roles: ['http', 'db'], subnetMask: '255.255.0.0', gateway: '172.16.1.1' }
-        ],
-        links: [
-          { id: 'hl1', from: 'b_pc', to: 'b_sdwan', cableType: 'straight' },
-          { id: 'hl2', from: 'b_sdwan', to: 'isp_pri', cableType: 'fiber' },
-          { id: 'hl3', from: 'b_sdwan', to: 'isp_sec', cableType: 'serial' },
-          { id: 'hl4', from: 'isp_pri', to: 'hq_edge', cableType: 'fiber' },
-          { id: 'hl5', from: 'isp_sec', to: 'hq_edge', cableType: 'serial' },
-          { id: 'hl6', from: 'hq_edge', to: 'hq_app', cableType: 'straight' }
-        ]
-      },
-      vpn: {
-        nodes: [
-          { id: 'pc1', name: 'BRANCH-PC', type: 'laptop', x: 80, y: 200, ip: '192.168.10.50', mac: '00:50:56:77:88:99', os: 'Windows 11 Pro', roles: [], subnetMask: '255.255.255.0', vlan: '100', gateway: '192.168.10.1' },
-          { id: 'r_branch', name: 'BRANCH-VPN-GW', type: 'router', x: 320, y: 200, ip: '192.168.10.1', mac: '00:11:22:88:99:00', os: 'IPsec Gateway OS', roles: ['nat'], subnetMask: '255.255.255.0' },
-          { id: 'isp1', name: 'PUBLIC-WAN 🌐', type: 'cloud', x: 550, y: 200, ip: '203.0.113.1', mac: '00:FE:88:99:AA:BB', os: 'Public WAN Gateway', roles: [] },
-          { id: 'r_hq', name: 'HQ-VPN-GW', type: 'router', x: 750, y: 200, ip: '172.16.0.1', mac: '00:11:22:99:00:11', os: 'IPsec Gateway OS', roles: ['nat'], subnetMask: '255.255.0.0' },
-          { id: 'hq_srv', name: 'HQ-APP-SERVER', type: 'server', x: 920, y: 200, ip: '172.16.0.50', mac: '00:0C:29:11:22:33', os: 'Windows Server 2022', roles: ['smb', 'dns'], subnetMask: '255.255.0.0', gateway: '172.16.0.1' }
-        ],
-        links: [
-          { id: 'l1', from: 'pc1', to: 'r_branch', cableType: 'straight' },
-          { id: 'l2', from: 'r_branch', to: 'isp1', cableType: 'fiber' },
-          { id: 'l3', from: 'isp1', to: 'r_hq', cableType: 'fiber' },
-          { id: 'l4', from: 'r_hq', to: 'hq_srv', cableType: 'straight' }
-        ]
-      },
-      enterprise_ha: {
-        nodes: [
-          { id: 'user1', name: 'CORP-PC-01', type: 'laptop', x: 80, y: 220, ip: '10.20.1.100', mac: '00:50:56:99:00:11', os: 'Windows 11 Enterprise', roles: [], subnetMask: '255.255.255.0', gateway: '10.20.1.1' },
-          { id: 'sw_pri', name: 'CORE-SW-01 (HA)', type: 'switch', x: 300, y: 120, ip: 'N/A (L2/L3)', mac: '00:11:22:AA:BB:01', os: 'Cisco Catalyst 9500', roles: [], vlan: 'TRUNK' },
-          { id: 'sw_sec', name: 'CORE-SW-02 (HA)', type: 'switch', x: 300, y: 320, ip: 'N/A (L2/L3)', mac: '00:11:22:AA:BB:02', os: 'Cisco Catalyst 9500', roles: [], vlan: 'TRUNK' },
-          { id: 'fw_pri', name: 'PA-NGFW-ACTIVE', type: 'firewall', x: 580, y: 120, ip: '10.20.1.1', mac: '00:90:0B:AA:BB:01', os: 'Palo Alto PAN-OS Active', roles: ['firewall'], subnetMask: '255.255.255.0' },
-          { id: 'fw_sec', name: 'PA-NGFW-STANDBY', type: 'firewall', x: 580, y: 320, ip: '10.20.1.2', mac: '00:90:0B:AA:BB:02', os: 'Palo Alto PAN-OS Passive', roles: ['firewall'], subnetMask: '255.255.255.0' },
-          { id: 'hq_db', name: 'DATACENTER-SQL-CLUSTER', type: 'server', x: 860, y: 220, ip: '10.20.1.50', mac: '00:0C:29:CC:DD:EE', os: 'SQL Server HA Cluster', roles: ['db', 'ad'], subnetMask: '255.255.255.0', gateway: '10.20.1.1' }
-        ],
-        links: [
-          { id: 'hal1', from: 'user1', to: 'sw_pri', cableType: 'straight' },
-          { id: 'hal2', from: 'user1', to: 'sw_sec', cableType: 'straight' },
-          { id: 'hal3', from: 'sw_pri', to: 'sw_sec', cableType: 'trunk' },
-          { id: 'hal4', from: 'sw_pri', to: 'fw_pri', cableType: 'straight' },
-          { id: 'hal5', from: 'sw_sec', to: 'fw_sec', cableType: 'straight' },
-          { id: 'hal6', from: 'fw_pri', to: 'hq_db', cableType: 'straight' },
-          { id: 'hal7', from: 'fw_sec', to: 'hq_db', cableType: 'straight' }
-        ]
-      }
-    };
-
-    const sel = templates[templateKey];
+  // Load Preset Topology Template
+  const handleLoadPreset = (templateKey) => {
+    const sel = TOPOLOGY_PRESETS[templateKey];
     if (sel) {
       setNodes(sel.nodes);
       setLinks(sel.links);
@@ -1126,54 +987,111 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
             </select>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={handleExportTopology}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-cyan-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer"
-              title="Download current topology layout as JSON file"
-            >
-              <Download className="w-3.5 h-3.5" /> Export JSON
-            </button>
+          {/* GROUPED HIGH-VISIBILITY TOOLBAR CONTROLS */}
+          <div className="flex flex-wrap items-center gap-3 w-full border-b border-slate-800 pb-3">
+            
+            {/* GROUP 1: NETWORK TOOLS & INSPECTORS */}
+            <div className="flex items-center gap-1 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 shadow">
+              <span className="text-[10px] text-slate-400 font-extrabold uppercase px-2 flex items-center gap-1 border-r border-slate-800">
+                🛠️ Tools:
+              </span>
+              
+              <button
+                onClick={() => setShowSubnetModal(true)}
+                className="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-amber-950 text-amber-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-amber-700 transition-colors cursor-pointer"
+                title="Open IPv4 CIDR Subnetting & Range Calculator"
+              >
+                <Gauge className="w-3.5 h-3.5 text-amber-400" /> Subnet Calc
+              </button>
 
-            <button
-              onClick={handleExportCiscoConfig}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-purple-950 text-purple-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-purple-700 transition-colors cursor-pointer"
-              title="Generate & download Cisco IOS CLI running-config script (.cfg)"
-            >
-              <FileCode className="w-3.5 h-3.5 text-purple-400" /> Export Cisco (.cfg)
-            </button>
+              <button
+                onClick={() => setShowCamModal(true)}
+                className="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-blue-950 text-blue-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-blue-700 transition-colors cursor-pointer"
+                title="Inspect Layer 2 Switch MAC Address Table (CAM Table) & ARP Cache"
+              >
+                <Layers className="w-3.5 h-3.5 text-blue-400" /> CAM / ARP Table
+              </button>
 
-            <label className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-amber-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer" title="Import NetPulse JSON topology (.json) or Cisco IOS running-config script (.cfg, .txt)">
-              <Upload className="w-3.5 h-3.5" /> Import
-              <input type="file" accept=".json,.cfg,.txt,.ios" onChange={handleImportTopology} className="hidden" />
-            </label>
+              <button
+                onClick={() => setTerminalNodeId(selectedNodeId || nodes[0]?.id)}
+                className="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-cyan-950 text-cyan-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-cyan-700 transition-colors cursor-pointer"
+                title="Open Cisco IOS CLI Terminal Emulator for Selected Device"
+              >
+                <Terminal className="w-3.5 h-3.5 text-cyan-400" /> Cisco CLI
+              </button>
 
+              <button
+                onClick={handleCheckOspfRoute}
+                className="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-emerald-950 text-emerald-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-emerald-700 transition-colors cursor-pointer"
+                title="Calculate OSPF Dijkstra Shortest Path First (SPF) metric & route"
+              >
+                <Activity className="w-3.5 h-3.5 text-emerald-400" /> OSPF Route
+              </button>
+
+              <button
+                onClick={handleExportPcap}
+                className="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-cyan-950 text-cyan-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-cyan-700 transition-colors cursor-pointer"
+                title="Generate & download raw Wireshark packet capture file (.pcap)"
+              >
+                <FileCode className="w-3.5 h-3.5 text-cyan-400" /> Wireshark (.pcap)
+              </button>
+            </div>
+
+            {/* GROUP 2: IMPORT / EXPORT & PRESETS */}
+            <div className="flex items-center gap-1 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 shadow">
+              <span className="text-[10px] text-slate-400 font-extrabold uppercase px-2 flex items-center gap-1 border-r border-slate-800">
+                📁 Files:
+              </span>
+
+              <button
+                onClick={handleExportCiscoConfig}
+                className="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-purple-950 text-purple-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-purple-700 transition-colors cursor-pointer"
+                title="Generate & download Cisco IOS CLI running-config script (.cfg)"
+              >
+                <FileCode className="w-3.5 h-3.5 text-purple-400" /> Export Cisco (.cfg)
+              </button>
+
+              <button
+                onClick={handleExportTopology}
+                className="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer"
+                title="Download current topology layout as JSON file"
+              >
+                <Download className="w-3.5 h-3.5 text-cyan-400" /> Export JSON
+              </button>
+
+              <label className="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer" title="Import NetPulse JSON topology (.json) or Cisco IOS running-config script (.cfg, .txt)">
+                <Upload className="w-3.5 h-3.5 text-amber-400" /> Import
+                <input type="file" accept=".json,.cfg,.txt,.ios" onChange={handleImportTopology} className="hidden" />
+              </label>
+
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    handleLoadTemplate(e.target.value);
+                    e.target.value = "";
+                  }
+                }}
+                defaultValue=""
+                className="bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1 text-xs font-bold text-emerald-300 focus:outline-none focus:border-emerald-500 cursor-pointer"
+              >
+                <option value="" disabled>Load Preset Template...</option>
+                <option value="standard_lan">🏢 Standard Enterprise Office LAN</option>
+                <option value="corporate">🌐 Corporate HQ & Server Rack</option>
+                <option value="dmz">🛡️ DMZ Palo Alto NGFW Architecture</option>
+                <option value="hybrid_wan">🛰️ Hybrid SD-WAN & Dual ISP WAN</option>
+                <option value="vpn">🔒 Site-to-Site IPsec VPN Branch</option>
+                <option value="enterprise_ha">⚡ High-Availability (HA) Core Campus</option>
+              </select>
+            </div>
+
+            {/* GROUP 3: RESET */}
             <button
               onClick={handleResetCanvas}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-rose-950 text-rose-300 hover:text-rose-200 font-bold text-xs flex items-center gap-1 border border-slate-800 hover:border-rose-700 transition-colors cursor-pointer"
+              className="px-3 py-2 rounded-2xl bg-slate-950 hover:bg-rose-950 text-rose-300 hover:text-rose-200 font-bold text-xs flex items-center gap-1.5 border border-slate-800 hover:border-rose-700 transition-colors cursor-pointer ml-auto"
               title="Clear all devices and cables from canvas"
             >
               <RotateCcw className="w-3.5 h-3.5 text-rose-400" /> Reset Canvas
             </button>
-
-            <select
-              onChange={(e) => {
-                if (e.target.value) {
-                  handleLoadTemplate(e.target.value);
-                  e.target.value = "";
-                }
-              }}
-              defaultValue=""
-              className="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs font-bold text-emerald-300 focus:outline-none focus:border-emerald-500 cursor-pointer"
-            >
-              <option value="" disabled>Load Preset Template...</option>
-              <option value="standard_lan">🏢 Standard Enterprise Office LAN</option>
-              <option value="corporate">🌐 Corporate HQ & Server Rack</option>
-              <option value="dmz">🛡️ DMZ Palo Alto NGFW Architecture</option>
-              <option value="hybrid_wan">🛰️ Hybrid SD-WAN & Dual ISP WAN</option>
-              <option value="vpn">🔒 Site-to-Site IPsec VPN Branch</option>
-              <option value="enterprise_ha">⚡ High-Availability (HA) Core Campus</option>
-            </select>
           </div>
         </div>
 
@@ -1284,9 +1202,36 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
               <span>🔴 Disconnected</span>
             </span>
           </div>
-          {/* FLOATING CONTROL PANEL AT TOP-RIGHT OF WORKPLACE CANVAS: 1. ADD DEVICE, 2. DISCONNECT, 3. ADD CABLE */}
+          {/* FLOATING CONTROL PANEL AT TOP-RIGHT OF WORKPLACE CANVAS: 1. ZOOM CONTROLS (- / +), 2. ADD DEVICE, 3. DISCONNECT, 4. ADD CABLE */}
           <div className="absolute top-4 right-4 z-30 font-mono flex flex-col items-end gap-2">
             
+            {/* FLOATING PROMINENT ZOOM CONTROLS (- / +) */}
+            <div className="flex items-center gap-1.5 bg-slate-900/95 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-slate-700 text-slate-100 shadow-2xl font-mono text-xs">
+              <span className="text-[10px] text-slate-400 font-extrabold uppercase pr-1">Canvas Zoom:</span>
+              <button
+                onClick={() => setZoom(prev => Math.max(0.6, Math.round((prev - 0.1) * 100) / 100))}
+                className="w-7 h-7 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-black text-lg border border-slate-600 cursor-pointer flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow"
+                title="Zoom Out (-)"
+              >
+                -
+              </button>
+              <span className="px-1.5 font-black text-amber-300 min-w-[42px] text-center">{Math.round(zoom * 100)}%</span>
+              <button
+                onClick={() => setZoom(prev => Math.min(1.6, Math.round((prev + 0.1) * 100) / 100))}
+                className="w-7 h-7 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-black text-lg border border-slate-600 cursor-pointer flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow"
+                title="Zoom In (+)"
+              >
+                +
+              </button>
+              <button
+                onClick={() => setZoom(1)}
+                className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold text-[10px] border border-slate-700 cursor-pointer"
+                title="Reset Zoom to 100%"
+              >
+                Reset
+              </button>
+            </div>
+
             {/* 1. ADD DEVICE BUTTON & DROPDOWN POPOVER */}
             <div className="relative">
               <button
@@ -1409,8 +1354,13 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
             </button>
           </div>
 
-          {/* CABLES SVG WITH DYNAMIC NETWORK STATUS COLORING & ACTIVE PACKET PULSE */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none">
+          {/* INNER SCALABLE CANVAS STAGE */}
+          <div
+            style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
+            className="w-full h-full relative transition-transform duration-150 ease-out"
+          >
+            {/* CABLES SVG WITH DYNAMIC NETWORK STATUS COLORING & ACTIVE PACKET PULSE */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none">
             {links.map(link => {
               const n1 = nodes.find(n => n.id === link.from);
               const n2 = nodes.find(n => n.id === link.to);
@@ -1523,6 +1473,7 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
               </div>
             );
           })}
+          </div>
         </div>
 
         {/* LIVE PACKET CONTENT INSPECTOR PANEL & LOGS */}
@@ -1581,6 +1532,147 @@ export default function NetworkSandbox({ appMode = 'clean' }) {
             <TerminalLog logs={logs} onClear={() => setLogs([])} />
           </div>
         </SlideOutInspector>
+
+        {/* SWITCH CAM TABLE INSPECTOR MODAL POPUP */}
+        {showCamModal && (
+          <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div className="glass-panel max-w-2xl w-full p-6 rounded-3xl border border-slate-700 space-y-4 bg-slate-900/95 font-mono text-xs text-slate-100 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2 text-blue-400 font-bold text-sm">
+                  <Layers className="w-5 h-5" />
+                  <span>Layer 2 Switch CAM Table & Host ARP Cache Inspector</span>
+                </div>
+                <button
+                  onClick={() => setShowCamModal(false)}
+                  className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                <div className="space-y-2">
+                  <h4 className="font-extrabold text-cyan-300">Active Layer 2 CAM MAC Tables (Switches)</h4>
+                  <table className="w-full text-left text-[11px] border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-800 text-slate-400">
+                        <th className="py-1.5">Switch Name</th>
+                        <th className="py-1.5">Learned MAC</th>
+                        <th className="py-1.5">Mapped Device</th>
+                        <th className="py-1.5">VLAN</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800 text-slate-200">
+                      {nodes.filter(n => n.type === 'switch').length > 0 ? (
+                        nodes.filter(n => n.type === 'switch').map(sw => {
+                          const connectedLinks = links.filter(l => l.from === sw.id || l.to === sw.id);
+                          return connectedLinks.map((link, i) => {
+                            const otherId = link.from === sw.id ? link.to : link.from;
+                            const otherNode = nodes.find(n => n.id === otherId);
+                            return (
+                              <tr key={`${sw.id}-${i}`}>
+                                <td className="py-1.5 text-blue-300 font-bold">{sw.name}</td>
+                                <td className="py-1.5 text-amber-300 font-mono">{otherNode?.mac || '00:11:22:33:44:55'}</td>
+                                <td className="py-1.5 text-cyan-300 font-bold">{otherNode?.name || 'Device'}</td>
+                                <td className="py-1.5 text-purple-300 font-bold">VLAN 10</td>
+                              </tr>
+                            );
+                          });
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan={4} className="py-3 text-center text-slate-500 italic">No L2 Switches present on canvas. Add an L2 Switch to inspect learned CAM MAC entries.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="space-y-2 pt-2 border-t border-slate-800">
+                  <h4 className="font-extrabold text-amber-300">Active Host ARP Cache (`ip address` ➔ `mac address`)</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {nodes.filter(n => n.type !== 'switch' && n.type !== 'cloud').map(node => (
+                      <div key={node.id} className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px]">
+                        <span className="font-bold text-slate-200">{node.name}:</span>
+                        <p className="text-cyan-300 font-mono mt-0.5">{node.ip || '192.168.1.100'} ➔ {node.mac || '00:11:22:33:44:55'}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-800 flex justify-end">
+                <button
+                  onClick={() => setShowCamModal(false)}
+                  className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold cursor-pointer"
+                >
+                  Close Inspector
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* IPV4 CIDR SUBNET CALCULATOR MODAL POPUP */}
+        {showSubnetModal && (
+          <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div className="glass-panel max-w-lg w-full p-6 rounded-3xl border border-slate-700 space-y-4 bg-slate-900/95 font-mono text-xs text-slate-100 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                  <Gauge className="w-5 h-5" />
+                  <span>IPv4 CIDR Subnet & Range Calculator</span>
+                </div>
+                <button
+                  onClick={() => setShowSubnetModal(false)}
+                  className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {(() => {
+                const selectedNodeObj = nodes.find(n => n.id === selectedNodeId) || nodes[0];
+                const subnetInfo = calculateSubnet(selectedNodeObj?.ip || '192.168.1.100', 24);
+                return (
+                  <div className="space-y-3">
+                    <p className="text-slate-300">
+                      Calculated CIDR details for target device <span className="text-cyan-300 font-bold">{selectedNodeObj?.name || 'Device'}</span> ({selectedNodeObj?.ip || '192.168.1.100'}):
+                    </p>
+
+                    <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
+                      <div className="flex justify-between"><span className="text-slate-400">IP Address / CIDR:</span><span className="text-cyan-300 font-bold">{subnetInfo?.ip} /24</span></div>
+                      <div className="flex justify-between"><span className="text-slate-400">Subnet Netmask:</span><span className="text-amber-300 font-bold">{subnetInfo?.netmask}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-400">Network ID:</span><span className="text-purple-300 font-bold">{subnetInfo?.networkIp}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-400">Broadcast ID:</span><span className="text-rose-300 font-bold">{subnetInfo?.broadcastIp}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-400">Usable Host Range:</span><span className="text-emerald-300 font-bold">{subnetInfo?.usableHostRange}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-400">Total Usable Hosts:</span><span className="text-blue-300 font-bold">{subnetInfo?.totalUsableHosts} hosts</span></div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div className="pt-3 border-t border-slate-800 flex justify-end">
+                <button
+                  onClick={() => setShowSubnetModal(false)}
+                  className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold cursor-pointer"
+                >
+                  Close Calculator
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* CISCO IOS CLI TERMINAL EMULATOR MODAL */}
+        {terminalNodeId && (
+          <CiscoTerminalModal
+            node={nodes.find(n => n.id === terminalNodeId) || nodes[0]}
+            onClose={() => setTerminalNodeId(null)}
+            onUpdateNode={(id, field, val) => {
+              setNodes(nodes.map(n => n.id === id ? { ...n, [field]: val } : n));
+            }}
+          />
+        )}
       </div>
     </div>
   );
