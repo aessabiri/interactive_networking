@@ -29,7 +29,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <div className="min-h-screen bg-[#10121a] dark:bg-[#10121a] light:bg-[#f1f5f9] text-slate-100 dark:text-slate-100 light:text-slate-900 flex flex-col font-sans selection:bg-amber-500/30 selection:text-amber-200">
+        <div className="min-h-screen bg-[var(--bg-dark)] text-slate-100 dark:text-slate-100 light:text-slate-900 flex flex-col font-sans selection:bg-amber-500/30 selection:text-amber-200 transition-colors duration-200">
           {/* Header Navbar (only visible inside active modules) */}
           {activeTab !== 'landing' && (
             <Navbar activeTab={activeTab} setActiveTab={setActiveTab} appMode={appMode} setAppMode={setAppMode} />
@@ -59,10 +59,10 @@ export default function App() {
           </main>
 
           {/* Footer */}
-          <footer className="border-t border-slate-700/20 dark:border-white/[0.04] bg-[#10121a]/80 dark:bg-[#10121a]/80 light:bg-[#f1f5f9]/80 backdrop-blur-md px-6 py-4 text-xs text-slate-400 font-sans">
+          <footer className="border-t border-slate-700/20 dark:border-white/[0.04] light:border-slate-300 bg-[var(--bg-dark)]/90 backdrop-blur-md px-6 py-4 text-xs text-[var(--text-muted)] font-sans">
             <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
               <span className="font-medium">NetPulse • Architecture & Security Suite</span>
-              <span className="text-slate-400 text-[11px]">DTS Herford Enterprise Training</span>
+              <span className="text-[11px]">DTS Herford Enterprise Training</span>
             </div>
           </footer>
         </div>

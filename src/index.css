@@ -260,9 +260,22 @@ html.light .text-slate-400,
 html.light .text-slate-500,
 html.light .text-white\/60,
 html.light .text-white\/50,
-html.light .text-white\/40 {
+html.light .text-white\/40,
+html.light .text-gray-400,
+html.light .text-gray-300 {
   color: #334155 !important;
 }
+
+html.light .bg-\[\#10121a\],
+html.light .bg-\[\#12151e\],
+html.light .bg-\[\#0e1017\],
+html.light .bg-slate-900,
+html.light .bg-slate-950,
+html.light .bg-black\/40,
+html.light .bg-black\/80 {
+  background-color: #ffffff !important;
+}
+
 
 /* Canvas Node IP & Subtext - High Contrast Bold Slate */
 html.light svg text {
@@ -333,10 +346,11 @@ html.light .neumorphic-card .bg-black\/40 {
 /* ========================================================
    PROFESSIONAL IDE TERMINAL & LOG CONSOLE IN LIGHT MODE
    ======================================================== */
+html.light .terminal,
+html.light .console,
 html.light .glass-panel.h-48,
 html.light div[ref="containerRef"],
-html.light .bg-slate-950\/80,
-html.light .bg-\[\#10121a\] {
+html.light .bg-slate-950\/80 {
   background-color: #0f172a !important; /* Sleek IDE Dark Navy */
   border-color: #1e293b !important;
 }
