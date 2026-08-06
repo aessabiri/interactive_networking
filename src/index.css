@@ -27,10 +27,10 @@
 }
 
 /* ========================================================
-   SOFT MINIMALIST STUDIO LIGHT MODE DESIGN SYSTEM
+   PURE CRISP WHITE & DEEP BLACK LIGHT MODE DESIGN SYSTEM
    ======================================================== */
 html.light {
-  --bg-dark: #f3f4f6;
+  --bg-dark: #ffffff;
   --bg-surface: #ffffff;
   --bg-inset: #f8fafc;
   
@@ -39,13 +39,13 @@ html.light {
   --accent-cyan: #0284c7;
   --accent-cyan-dark: #0369a1;
 
-  /* Soft Ambient Studio Elevation Shadows */
-  --neu-flat: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
-  --neu-hover: 0 10px 30px -4px rgba(15, 23, 42, 0.1), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+  /* Soft Crisp Elevation Shadows */
+  --neu-flat: 0 4px 20px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --neu-hover: 0 10px 30px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
   --neu-pressed: inset 2px 2px 6px rgba(148, 163, 184, 0.25), inset -2px -2px 6px rgba(255, 255, 255, 0.95);
   --text-main: #0f172a;
-  --text-muted: #475569;
-  --card-border: #e2e8f0;
+  --text-muted: #334155;
+  --card-border: #cbd5e1;
 }
 
 * {
@@ -72,11 +72,8 @@ body {
 }
 
 html.light body {
-  background-color: #f3f4f6;
-  background-image: 
-    radial-gradient(circle at 15% 15%, rgba(245, 158, 11, 0.08) 0px, transparent 40%),
-    radial-gradient(circle at 85% 20%, rgba(2, 132, 199, 0.08) 0px, transparent 40%),
-    radial-gradient(circle at 50% 85%, rgba(124, 77, 255, 0.06) 0px, transparent 40%);
+  background-color: #ffffff;
+  background-image: none;
   color: #0f172a;
 }
 
@@ -208,93 +205,64 @@ html.light body {
 }
 
 /* ========================================================
-   LIGHT MODE MANDATORY CONTRAST OVERRIDES
+   100% PURE WHITE & DEEP BLACK TEXT LIGHT MODE OVERRIDES
    ======================================================== */
 html.light,
 html.light body,
-html.light #root {
-  background-color: #f3f4f6 !important;
+html.light #root,
+html.light main {
+  background-color: #ffffff !important;
   color: #0f172a !important;
 }
 
+/* Force All Containers, Cards, CLI Terminals, Header Bars, Modals, & Panels to Pure White */
 html.light .neumorphic-card,
 html.light .frameless-card,
-html.light .glass-panel {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03) !important;
-}
-
-html.light h1,
-html.light h2,
-html.light h3,
-html.light h4,
-html.light h5,
-html.light h6 {
-  color: #0f172a !important;
-}
-
-html.light p,
-html.light span,
-html.light label {
-  color: #334155;
-}
-
-/* Category Headers & Titles in Landing Hub */
-html.light .text-slate-900,
-html.light .text-slate-800,
-html.light .text-slate-700,
-html.light .text-slate-100,
-html.light .text-slate-200,
-html.light .text-slate-300,
-html.light .text-white,
-html.light .text-white\/95,
-html.light .text-white\/90,
-html.light .text-white\/80,
-html.light .text-white\/70 {
-  color: #0f172a !important;
-}
-
-/* Subtext & Muted Labels - Crisp Dark Slate in Light Mode */
-html.light .text-slate-400,
-html.light .text-slate-500,
-html.light .text-white\/60,
-html.light .text-white\/50,
-html.light .text-white\/40,
-html.light .text-gray-400,
-html.light .text-gray-300 {
-  color: #334155 !important;
-}
-
-html.light .bg-\[\#10121a\],
-html.light .bg-\[\#12151e\],
-html.light .bg-\[\#0e1017\],
+html.light .glass-panel,
+html.light header,
+html.light footer,
+html.light .bg-black,
+html.light .bg-gray-800,
+html.light .bg-gray-900,
+html.light .bg-gray-950,
 html.light .bg-slate-900,
 html.light .bg-slate-950,
+html.light .bg-slate-900\/90,
+html.light .bg-slate-950\/90,
+html.light .bg-slate-950\/80,
+html.light .bg-\[\#12151e\],
+html.light .bg-\[\#10121a\],
+html.light .bg-\[\#0e1017\],
+html.light .bg-\[\#090d16\],
 html.light .bg-black\/40,
 html.light .bg-black\/80 {
   background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08) !important;
 }
 
+/* Force ALL Text Elements to High Contrast Deep Navy Charcoal / Black */
+html.light h1, html.light h2, html.light h3, html.light h4, html.light h5, html.light h6,
+html.light p, html.light span, html.light div, html.light label, html.light code, html.light pre,
+html.light .text-slate-100, html.light .text-slate-200, html.light .text-slate-300,
+html.light .text-slate-400, html.light .text-slate-500, html.light .text-slate-600,
+html.light .text-slate-700, html.light .text-slate-800, html.light .text-slate-900,
+html.light .text-gray-100, html.light .text-gray-200, html.light .text-gray-300,
+html.light .text-gray-400, html.light .text-gray-500, html.light .text-gray-600,
+html.light .text-white, html.light .text-white\/95, html.light .text-white\/90,
+html.light .text-white\/80, html.light .text-white\/70, html.light .text-white\/60,
+html.light .text-white\/50, html.light .text-white\/40, html.light .text-white\/30 {
+  color: #0f172a !important;
+}
 
-/* Canvas Node IP & Subtext - High Contrast Bold Slate */
+/* Canvas SVG Device Node Text & IP Labels */
 html.light svg text {
   fill: #0f172a !important;
   font-weight: 700 !important;
 }
 
-/* Card Titles specifically inside Hub */
-html.light .neumorphic-card h3,
-html.light .frameless-card h3 {
-  color: #0f172a !important;
-}
-
-html.light .neumorphic-card p,
-html.light .frameless-card p {
-  color: #475569 !important;
-}
-
-/* Inputs & Placeholders */
+/* Inputs, Textareas, Selects & Placeholders in Light Mode */
 html.light input,
 html.light select,
 html.light textarea,
@@ -308,6 +276,38 @@ html.light .neumorphic-input {
 html.light input::placeholder,
 html.light textarea::placeholder {
   color: #64748b !important;
+}
+
+/* Command Tutorial Output Inset Box & Code Blocks */
+html.light .bg-slate-900\/90.p-2,
+html.light .bg-slate-900.p-2,
+html.light .bg-slate-950.p-2,
+html.light pre,
+html.light code {
+  background-color: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+/* CLI & Terminal Prompt Highlight Lines */
+html.light .font-mono .text-cyan-300,
+html.light .font-mono .text-cyan-400,
+html.light .font-mono .text-\[\#00f0ff\] {
+  color: #0284c7 !important;
+  font-weight: 700 !important;
+}
+
+html.light .font-mono .text-amber-300,
+html.light .font-mono .text-amber-400,
+html.light .font-mono .text-\[\#f59e0b\] {
+  color: #d97706 !important;
+  font-weight: 700 !important;
+}
+
+html.light .font-mono .text-emerald-300,
+html.light .font-mono .text-emerald-400 {
+  color: #059669 !important;
+  font-weight: 700 !important;
 }
 
 /* Tags & Badges */
@@ -341,30 +341,6 @@ html.light .neumorphic-card .bg-slate-200,
 html.light .neumorphic-card .bg-black\/40 {
   background-color: #f1f5f9 !important;
   box-shadow: inset 1px 1px 3px rgba(148, 163, 184, 0.3) !important;
-}
-
-/* ========================================================
-   PROFESSIONAL IDE TERMINAL & LOG CONSOLE IN LIGHT MODE
-   ======================================================== */
-html.light .terminal,
-html.light .console,
-html.light .glass-panel.h-48,
-html.light div[ref="containerRef"],
-html.light .bg-slate-950\/80 {
-  background-color: #0f172a !important; /* Sleek IDE Dark Navy */
-  border-color: #1e293b !important;
-}
-
-html.light .glass-panel.h-48 span,
-html.light .glass-panel.h-48 div,
-html.light .bg-slate-950\/80 span,
-html.light .bg-slate-950\/80 div {
-  color: #f8fafc !important; /* Crisp Bright Slate Text */
-}
-
-html.light .glass-panel.h-48 .text-slate-500,
-html.light .bg-slate-950\/80 .text-slate-500 {
-  color: #94a3b8 !important;
 }
 
 /* Scrollbars */
