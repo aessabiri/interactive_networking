@@ -1,474 +1,370 @@
 import React, { useState } from 'react';
-import { 
-  calculateVlsm, 
-  calculateFlsm 
-} from '../../utils/subnetCalculator';
-import { 
-  Calculator, 
-  Plus, 
-  Trash2, 
-  Globe, 
-  Layers, 
-  Sliders, 
-  Info,
-  CheckCircle2
-} from 'lucide-react';
+import { calculateVlsm, calculateFlsm, cidrToSubnetMask } from '../../utils/subnetCalculator';
+import { Globe, Plus, Trash2, RotateCcw, CheckCircle2, BookOpen, Sparkles, X } from 'lucide-react';
 
 export default function SubnettingModule() {
-  // Base Network Input (e.g., 172.16.0.0/18 or 192.168.1.0/24)
+  // Base Network Input & Mode
   const [networkInput, setNetworkInput] = useState('172.16.0.0/18');
   const [calcMode, setCalcMode] = useState('vlsm'); // 'vlsm' or 'flsm'
-  const [selectedSubnetId, setSelectedSubnetId] = useState(1);
 
-  // Dynamic VLAN / Subnet Requirements List
+  // Input Fields for Adding New Subnet Requirement
+  const [newSubnetName, setNewSubnetName] = useState('');
+  const [newSubnetHosts, setNewSubnetHosts] = useState('');
+
+  // Student Tutorial Step Progress (0 = Not started, 1+ = Revealing steps)
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+
+  // Active Subnets / VLAN Requirements List
   const [subnets, setSubnets] = useState([
     { id: 1, name: 'VLAN 10 - Sales', hosts: 900 },
     { id: 2, name: 'VLAN 20 - Engineering', hosts: 450 },
     { id: 3, name: 'VLAN 30 - Management', hosts: 300 },
-    { id: 4, name: 'VLAN 40 - Guest WiFi', hosts: 200 },
+    { id: 4, name: 'VLAN 40 - Guests', hosts: 200 },
   ]);
 
-  // Parse IP and CIDR prefix
-  const parseNetworkInput = () => {
-    const parts = networkInput.trim().split('/');
-    let ip = parts[0] || '192.168.1.0';
-    let cidr = parseInt(parts[1], 10);
+  // Parse IP & CIDR
+  const parseInput = () => {
+    const [rawIp, rawCidr] = networkInput.trim().split('/');
+    let ip = rawIp || '192.168.1.0';
+    let cidr = parseInt(rawCidr, 10);
+    if (isNaN(cidr) || cidr < 0 || cidr > 30) cidr = 24;
 
-    if (isNaN(cidr) || cidr < 0 || cidr > 30) {
-      cidr = 24;
-    }
-
-    const ipParts = ip.split('.').map(n => parseInt(n, 10));
-    if (ipParts.length !== 4 || ipParts.some(n => isNaN(n) || n < 0 || n > 255)) {
+    const parts = ip.split('.').map(n => parseInt(n, 10));
+    if (parts.length !== 4 || parts.some(n => isNaN(n) || n < 0 || n > 255)) {
       ip = '192.168.1.0';
     }
-
     return { ip, cidr };
   };
 
-  const { ip: baseIp, cidr: baseCidr } = parseNetworkInput();
+  const { ip: baseIp, cidr: baseCidr } = parseInput();
 
-  // Calculate results for VLSM or FLSM
-  const calcResults = calcMode === 'vlsm' 
+  // Run Subnet Engine
+  const results = calcMode === 'vlsm'
     ? calculateVlsm(baseIp, baseCidr, subnets)
     : calculateFlsm(baseIp, baseCidr, subnets);
 
-  // Subnet management
-  const handleAddVlan = () => {
+  // Add new subnet requirement
+  const handleAddSubnet = (e) => {
+    e.preventDefault();
+    const name = newSubnetName.trim() || `VLAN ${(subnets.length + 1) * 10}`;
+    const hosts = Math.max(1, parseInt(newSubnetHosts, 10) || 50);
+
     const nextId = subnets.length > 0 ? Math.max(...subnets.map(s => s.id)) + 1 : 1;
-    setSubnets([...subnets, { id: nextId, name: `VLAN ${nextId * 10}`, hosts: 50 }]);
+    setSubnets([...subnets, { id: nextId, name, hosts }]);
+    setNewSubnetName('');
+    setNewSubnetHosts('');
+    setCurrentStepIndex(0);
   };
 
-  const handleRemoveVlan = (id) => {
+  // Remove subnet requirement
+  const handleRemoveSubnet = (id) => {
     if (subnets.length <= 1) return;
     setSubnets(subnets.filter(s => s.id !== id));
+    setCurrentStepIndex(0);
   };
 
-  const handleUpdateVlan = (id, field, value) => {
-    setSubnets(subnets.map(s => {
-      if (s.id === id) {
-        return { 
-          ...s, 
-          [field]: field === 'hosts' ? Math.max(1, parseInt(value, 10) || 1) : value 
-        };
-      }
-      return s;
-    }));
-  };
+  // Total steps = Step 1 (Strategy) + 1 step per Subnet + Step Final (Summary)
+  const totalSteps = 2 + results.subnets.length;
 
-  // Preset exercises
-  const applyPreset = (type) => {
-    if (type === 'classroom') {
-      setNetworkInput('172.16.0.0/18');
-      setSubnets([
-        { id: 1, name: 'VLAN 10 - Sales', hosts: 900 },
-        { id: 2, name: 'VLAN 20 - Engineering', hosts: 450 },
-        { id: 3, name: 'VLAN 30 - Management', hosts: 300 },
-        { id: 4, name: 'VLAN 40 - Guest WiFi', hosts: 200 },
-      ]);
-    } else if (type === 'office') {
-      setNetworkInput('192.168.1.0/24');
-      setSubnets([
-        { id: 1, name: 'VLAN 10 - Desktops', hosts: 100 },
-        { id: 2, name: 'VLAN 20 - VoIP Phones', hosts: 50 },
-        { id: 3, name: 'VLAN 30 - Servers', hosts: 14 },
-        { id: 4, name: 'VLAN 99 - Mgmt', hosts: 6 },
-      ]);
-    } else if (type === 'campus') {
-      setNetworkInput('10.0.0.0/16');
-      setSubnets([
-        { id: 1, name: 'VLAN 100 - HQ Main', hosts: 2000 },
-        { id: 2, name: 'VLAN 200 - Data Center', hosts: 1000 },
-        { id: 3, name: 'VLAN 300 - Branch WAN', hosts: 250 },
-        { id: 4, name: 'VLAN 400 - DMZ', hosts: 60 },
-      ]);
+  const handleNextStep = () => {
+    if (currentStepIndex < totalSteps) {
+      setCurrentStepIndex(prev => prev + 1);
     }
   };
 
-  const selectedSubnetResult = calcResults.subnets.find(s => s.id === selectedSubnetId) || calcResults.subnets[0];
+  const handleResetLesson = () => {
+    setCurrentStepIndex(0);
+  };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto font-sans text-slate-100">
+    <div className="max-w-4xl mx-auto space-y-6 font-sans text-slate-100 pb-8">
       
-      {/* 🚀 TOP HEADER & PRESETS */}
-      <div className="frameless-card p-5 border border-white/[0.06] bg-[#0c1019]/80 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
-            <Calculator className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
-                SUBNETTING WORKBENCH
-              </span>
-              <h2 className="text-base font-semibold text-white/90 tracking-tight">
-                FLSM & VLSM Step-by-Step Calculator
-              </h2>
-            </div>
-            <p className="text-xs text-white/40 font-sans mt-0.5">
-              Enter your base IP & prefix, add your VLAN host requirements, and view step-by-step calculations (NA, BA, SM, Usable Range).
-            </p>
-          </div>
-        </div>
-
-        {/* Quick Presets */}
-        <div className="flex items-center gap-2 text-xs font-mono">
-          <span className="text-white/40 text-[11px] mr-1">Presets:</span>
-          <button
-            onClick={() => applyPreset('classroom')}
-            className="px-3 py-1.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] text-cyan-300 border border-white/[0.06] transition-all cursor-pointer"
-          >
-            Classroom (/18)
-          </button>
-          <button
-            onClick={() => applyPreset('office')}
-            className="px-3 py-1.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] text-emerald-300 border border-white/[0.06] transition-all cursor-pointer"
-          >
-            Office (/24)
-          </button>
-          <button
-            onClick={() => applyPreset('campus')}
-            className="px-3 py-1.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] text-purple-300 border border-white/[0.06] transition-all cursor-pointer"
-          >
-            Campus (/16)
-          </button>
-        </div>
-      </div>
-
-      {/* ⚙️ NETWORK INPUT & VLAN REQUIREMENT BUILDER */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      {/* TACTILE NEUMORPHIC CONTROL PANEL WITH DTS HERFORD COLORS */}
+      <div className="neumorphic-card p-6 space-y-5">
         
-        {/* LEFT (5 COLS): BASE IP & MODE TOGGLE */}
-        <div className="lg:col-span-5 frameless-card p-5 border border-white/[0.06] bg-[#0c1019]/70 space-y-4">
-          <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-            <h3 className="text-xs font-semibold text-white/80 uppercase tracking-wider flex items-center gap-2">
-              <Globe className="w-4 h-4 text-cyan-400" />
-              1. Base Network Input
-            </h3>
-            
-            {/* VLSM / FLSM Toggle */}
-            <div className="apple-segmented-control text-xs">
-              <button
-                onClick={() => setCalcMode('vlsm')}
-                className={`px-3 py-1 rounded-full font-medium transition-all cursor-pointer ${
-                  calcMode === 'vlsm'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm'
-                    : 'text-white/50 hover:text-white/80'
-                }`}
-              >
-                VLSM
-              </button>
-              <button
-                onClick={() => setCalcMode('flsm')}
-                className={`px-3 py-1 rounded-full font-medium transition-all cursor-pointer ${
-                  calcMode === 'flsm'
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-sm'
-                    : 'text-white/50 hover:text-white/80'
-                }`}
-              >
-                FLSM
-              </button>
+        {/* ROW 1: BASE IP, MODE SWITCH & LESSON CONTROLS */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          
+          {/* Base IP Input */}
+          <div className="flex items-center gap-3 flex-1 min-w-[240px]">
+            <div className="p-2 rounded-xl bg-[#11131c] shadow-[inset_2px_2px_5px_rgba(0,0,0,0.6),_inset_-2px_-2px_5px_rgba(255,255,255,0.03)] text-[#00a3ff]">
+              <Globe className="w-5 h-5 shrink-0" />
+            </div>
+            <div className="flex-1 space-y-1">
+              <label className="text-[11px] font-mono text-white/50 block leading-none">Base Network Address & Prefix</label>
+              <input
+                type="text"
+                value={networkInput}
+                onChange={(e) => {
+                  setNetworkInput(e.target.value);
+                  setCurrentStepIndex(0);
+                }}
+                placeholder="172.16.0.0/18 or 192.168.1.0/24"
+                className="w-full max-w-xs px-3.5 py-2 neumorphic-input font-mono text-xs text-[#00a3ff] font-semibold"
+              />
             </div>
           </div>
 
-          {/* Network IP / CIDR Input */}
-          <div className="space-y-1.5">
-            <label className="text-xs text-white/60 font-medium">Base Network Address / CIDR Prefix</label>
-            <input
-              type="text"
-              value={networkInput}
-              onChange={(e) => setNetworkInput(e.target.value)}
-              placeholder="e.g. 172.16.0.0/18 or 192.168.1.0/24"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/[0.08] text-cyan-300 font-mono text-sm focus:outline-none focus:border-cyan-500/50 transition-colors"
-            />
-            <p className="text-[11px] text-white/40 font-mono">
-              Total Block Size: <strong className="text-white/90">{calcResults.totalBlockIps.toLocaleString()} IPs</strong> ({baseIp}/{baseCidr})
-            </p>
-          </div>
-
-          {/* Info Card */}
-          <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-xs text-white/60 space-y-1">
-            <p className="font-semibold text-white/80 flex items-center gap-1.5">
-              <Info className="w-3.5 h-3.5 text-cyan-400" />
-              {calcMode === 'vlsm' ? 'VLSM Mode (Variable Length)' : 'FLSM Mode (Fixed Length)'}
-            </p>
-            <p className="text-[11px] leading-relaxed">
-              {calcMode === 'vlsm'
-                ? 'Subnets are sized dynamically from largest to smallest host count to eliminate IP waste.'
-                : 'All subnets share a fixed mask based on the largest host requirement.'}
-            </p>
-          </div>
-        </div>
-
-        {/* RIGHT (7 COLS): VLAN & HOST LIST */}
-        <div className="lg:col-span-7 frameless-card p-5 border border-white/[0.06] bg-[#0c1019]/70 space-y-4">
-          <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-            <h3 className="text-xs font-semibold text-white/80 uppercase tracking-wider flex items-center gap-2">
-              <Layers className="w-4 h-4 text-purple-400" />
-              2. VLAN Host Requirements ({subnets.length} Subnets)
-            </h3>
-
+          {/* Mode Switch (VLSM / FLSM) */}
+          <div className="apple-segmented-control text-xs">
             <button
-              onClick={handleAddVlan}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-medium transition-all cursor-pointer"
+              onClick={() => {
+                setCalcMode('vlsm');
+                setCurrentStepIndex(0);
+              }}
+              className={`px-4 py-1.5 rounded-full font-medium transition-all ${
+                calcMode === 'vlsm'
+                  ? 'bg-[#00a3ff] text-white shadow-[0_0_12px_rgba(0,163,255,0.4)]'
+                  : 'text-white/50 hover:text-white'
+              }`}
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add VLAN</span>
+              VLSM
+            </button>
+            <button
+              onClick={() => {
+                setCalcMode('flsm');
+                setCurrentStepIndex(0);
+              }}
+              className={`px-4 py-1.5 rounded-full font-medium transition-all ${
+                calcMode === 'flsm'
+                  ? 'bg-[#ff9f0a] text-white shadow-[0_0_12px_rgba(255,159,10,0.4)]'
+                  : 'text-white/50 hover:text-white'
+              }`}
+            >
+              FLSM
             </button>
           </div>
 
-          {/* Subnet Input Rows */}
-          <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
-            {subnets.map((sub, idx) => (
-              <div 
-                key={sub.id} 
-                className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:border-white/10 transition-colors"
+          {/* LESSON CONTROL BUTTON */}
+          <div className="flex items-center gap-2">
+            {currentStepIndex > 0 && (
+              <button
+                onClick={handleResetLesson}
+                className="p-2.5 rounded-full neumorphic-button text-white/60 hover:text-white"
+                title="Start Lesson Over"
               >
-                <div className="w-6 h-6 rounded-full bg-white/[0.05] text-white/50 text-xs font-mono flex items-center justify-center shrink-0">
-                  {idx + 1}
-                </div>
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            )}
 
-                <input
-                  type="text"
-                  value={sub.name}
-                  onChange={(e) => handleUpdateVlan(sub.id, 'name', e.target.value)}
-                  className="flex-1 px-3 py-1.5 rounded-lg bg-black/30 border border-white/[0.06] text-white/90 text-xs font-medium focus:outline-none focus:border-cyan-500/40"
-                  placeholder="VLAN Name"
-                />
+            <button
+              onClick={handleNextStep}
+              disabled={currentStepIndex >= totalSteps}
+              className={`px-4 py-2 text-xs font-semibold flex items-center gap-2 ${
+                currentStepIndex === 0
+                  ? 'neumorphic-button-primary'
+                  : currentStepIndex < totalSteps
+                  ? 'bg-[#30d158] text-white rounded-full shadow-[0_0_16px_rgba(48,209,88,0.4)] border border-white/20 hover:scale-[1.02] cursor-pointer'
+                  : 'neumorphic-card opacity-50 cursor-not-allowed text-white/40'
+              }`}
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>
+                {currentStepIndex === 0
+                  ? 'Start Step-by-Step Lesson'
+                  : currentStepIndex < totalSteps
+                  ? `Next Step (${currentStepIndex}/${totalSteps}) ➔`
+                  : 'Lesson Completed ✓'}
+              </span>
+            </button>
+          </div>
+        </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs text-white/40 font-mono">Hosts:</span>
-                  <input
-                    type="number"
-                    min="1"
-                    value={sub.hosts}
-                    onChange={(e) => handleUpdateVlan(sub.id, 'hosts', e.target.value)}
-                    className="w-24 px-3 py-1.5 rounded-lg bg-black/30 border border-white/[0.06] text-cyan-300 font-mono text-xs text-right font-semibold focus:outline-none focus:border-cyan-500/40"
-                  />
-                </div>
+        {/* ROW 2: ADD SUBNET REQUIREMENT INPUT FIELD & BUTTON */}
+        <form onSubmit={handleAddSubnet} className="pt-4 border-t border-white/[0.04] flex flex-wrap items-center gap-2 font-mono text-xs">
+          <span className="text-white/60 font-sans text-xs font-medium mr-1">Add Subnet Requirement:</span>
+          
+          <input
+            type="text"
+            value={newSubnetName}
+            onChange={(e) => setNewSubnetName(e.target.value)}
+            placeholder="Subnet Name (e.g. Sales)"
+            className="flex-1 min-w-[160px] px-3.5 py-2 neumorphic-input font-sans text-xs text-white"
+          />
 
+          <input
+            type="number"
+            min="1"
+            value={newSubnetHosts}
+            onChange={(e) => setNewSubnetHosts(e.target.value)}
+            placeholder="Hosts (e.g. 500)"
+            className="w-28 px-3 py-2 neumorphic-input font-mono text-xs text-[#00a3ff] text-right font-bold"
+          />
+
+          <button
+            type="submit"
+            className="px-4 py-2 neumorphic-button-primary text-xs flex items-center gap-1.5 shrink-0"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Subnet</span>
+          </button>
+        </form>
+
+        {/* ROW 3: TACTILE DISMISSIBLE SUBNET PILL TAGS */}
+        <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-xs">
+          <span className="text-white/40 text-[11px]">Configured Subnets:</span>
+          {subnets.map((s) => (
+            <div 
+              key={s.id}
+              className="px-3 py-1 rounded-full neumorphic-card text-white/80 flex items-center gap-1.5 text-[11px]"
+            >
+              <span>{s.name}</span>
+              <strong className="text-[#00a3ff]">({s.hosts}h)</strong>
+              {subnets.length > 1 && (
                 <button
-                  onClick={() => handleRemoveVlan(sub.id)}
-                  disabled={subnets.length <= 1}
-                  className="p-1.5 rounded-lg hover:bg-rose-500/20 text-rose-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                  onClick={() => handleRemoveSubnet(s.id)}
+                  className="hover:text-[#ff3b30] cursor-pointer ml-0.5 text-white/40 transition-colors"
                   title="Remove Subnet"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <X className="w-3 h-3" />
                 </button>
-              </div>
-            ))}
-          </div>
+              )}
+            </div>
+          ))}
         </div>
+
       </div>
 
-      {/* 📊 VISUAL BLOCK PARTITION BAR */}
-      <div className="frameless-card p-5 border border-white/[0.06] bg-[#0c1019]/70 space-y-3">
-        <div className="flex flex-wrap items-center justify-between text-xs font-mono">
-          <span className="font-semibold text-white/80 uppercase tracking-wider flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-cyan-400" />
-            3. Address Space Partitioning ({calcResults.baseIp}{calcResults.baseCidr})
-          </span>
-          <div className="text-white/50 flex items-center gap-4 text-[11px]">
-            <span>Total: <strong className="text-white">{calcResults.totalBlockIps.toLocaleString()} IPs</strong></span>
-            <span>Allocated: <strong className="text-cyan-300">{calcResults.totalAllocatedIps.toLocaleString()} IPs</strong></span>
-            <span>Free: <strong className="text-emerald-300">{calcResults.freeIps.toLocaleString()} IPs</strong></span>
-          </div>
-        </div>
-
-        {/* Visual Bar */}
-        <div className="h-9 w-full bg-black/40 rounded-xl border border-white/[0.06] p-1 flex items-center gap-1 overflow-hidden font-mono text-[10px]">
-          {calcResults.subnets.map((sub, idx) => {
-            const pct = (sub.blockSize / calcResults.totalBlockIps) * 100;
-            const isSelected = sub.id === selectedSubnetResult?.id;
-
-            return (
-              <button
-                key={sub.id || idx}
-                onClick={() => setSelectedSubnetId(sub.id)}
-                style={{ width: `${Math.max(pct, 4)}%` }}
-                className={`h-full rounded-lg transition-all cursor-pointer flex items-center justify-center px-2 truncate border font-medium ${
-                  idx % 4 === 0 ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-200' :
-                  idx % 4 === 1 ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-200' :
-                  idx % 4 === 2 ? 'bg-purple-500/20 border-purple-500/40 text-purple-200' :
-                  'bg-emerald-500/20 border-emerald-500/40 text-emerald-200'
-                } ${isSelected ? 'ring-2 ring-white/80 shadow-md font-semibold' : 'opacity-70 hover:opacity-100'}`}
-              >
-                <span>{sub.name} ({sub.prefix})</span>
-              </button>
-            );
-          })}
-
-          {/* Unallocated Space */}
-          {calcResults.freeIps > 0 && (
-            <div
-              style={{ width: `${(calcResults.freeIps / calcResults.totalBlockIps) * 100}%` }}
-              className="h-full rounded-lg bg-white/[0.02] border border-white/[0.04] text-white/40 font-mono text-[10px] flex items-center justify-center truncate px-2"
-            >
-              Unallocated ({calcResults.freeIps.toLocaleString()} IPs)
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 🛠️ STEP-BY-STEP CALCULATION GUIDE (NA, BA, SM, USABLE RANGE) */}
-      {selectedSubnetResult && (
-        <div className="frameless-card p-6 border border-white/[0.06] bg-[#0c1019]/80 space-y-5">
-          <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-            <div className="flex items-center gap-2 font-mono text-xs">
-              <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-medium">
-                4. STEP-BY-STEP CALCULATION GUIDE
-              </span>
-              <span className="text-white/90 font-semibold text-sm">{selectedSubnetResult.name} ({selectedSubnetResult.requestedHosts} Hosts)</span>
-            </div>
-            <div className="text-xs font-mono text-cyan-300 bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.06]">
-              Subnet Block: <strong>{selectedSubnetResult.networkAddress}{selectedSubnetResult.prefix}</strong>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
-            {/* STEP 1: HOST BITS (H) */}
-            <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05] space-y-2">
-              <div className="text-white/40 font-medium flex items-center justify-between text-[10px]">
-                <span>STEP 1: HOST BITS (H)</span>
-                <span className="text-cyan-400">2^H - 2 ≥ Hosts</span>
-              </div>
-              <div className="text-white/80 space-y-1">
-                <p>Req. Hosts: <strong className="text-white">{selectedSubnetResult.requestedHosts}</strong></p>
-                <p>Total needed (+2): <strong className="text-white">{selectedSubnetResult.requestedHosts + 2}</strong> IPs</p>
-                <p className="text-cyan-300">2^{selectedSubnetResult.hostBits} = {selectedSubnetResult.blockSize} ≥ {selectedSubnetResult.requestedHosts + 2}</p>
-                <p className="text-emerald-400 font-semibold pt-1 border-t border-white/[0.05]">⇒ H = {selectedSubnetResult.hostBits} Host Bits</p>
-              </div>
-            </div>
-
-            {/* STEP 2: SUBNET MASK (SM) & WILDCARD MASK (WM) */}
-            <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05] space-y-2">
-              <div className="text-white/40 font-medium flex items-center justify-between text-[10px]">
-                <span>STEP 2: MASKS (SM & WM)</span>
-                <span className="text-cyan-400">CIDR = 32 - H</span>
-              </div>
-              <div className="text-white/80 space-y-1">
-                <p>CIDR Prefix: 32 - {selectedSubnetResult.hostBits} = <strong className="text-cyan-300">/{selectedSubnetResult.cidr}</strong></p>
-                <p>Subnet Mask (SM):</p>
-                <p className="font-semibold text-emerald-300 text-xs">{selectedSubnetResult.subnetMask}</p>
-                <p>Wildcard Mask (WM):</p>
-                <p className="font-semibold text-amber-300 text-xs">{selectedSubnetResult.wildcardMask}</p>
-              </div>
-            </div>
-
-            {/* STEP 3: NETWORK ADDRESS (NA) & BROADCAST ADDRESS (BA) */}
-            <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05] space-y-2">
-              <div className="text-white/40 font-medium flex items-center justify-between text-[10px]">
-                <span>STEP 3: BOUNDARIES (NA & BA)</span>
-                <span className="text-cyan-400">Block Sizing</span>
-              </div>
-              <div className="text-white/80 space-y-1">
-                <p>Network Address (NA):</p>
-                <p className="font-semibold text-cyan-300 text-xs">{selectedSubnetResult.networkAddress}</p>
-                <p>Broadcast Address (BA):</p>
-                <p className="font-semibold text-indigo-300 text-xs">{selectedSubnetResult.broadcastAddress}</p>
-                <p className="text-white/40 text-[10px]">Block Size: {selectedSubnetResult.blockSize} IPs</p>
-              </div>
-            </div>
-
-            {/* STEP 4: USABLE HOST RANGE & DEFAULT GATEWAY (GW) */}
-            <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05] space-y-2">
-              <div className="text-white/40 font-medium flex items-center justify-between text-[10px]">
-                <span>STEP 4: USABLE RANGE & GW</span>
-                <span className="text-cyan-400">First to Last</span>
-              </div>
-              <div className="text-white/80 space-y-1">
-                <p>Gateway IP (GW): <strong className="text-emerald-300">{selectedSubnetResult.firstUsable}</strong></p>
-                <p>Last Usable IP: <strong className="text-emerald-300">{selectedSubnetResult.lastUsable}</strong></p>
-                <p className="text-cyan-300 font-semibold pt-1 border-t border-white/[0.05]">Usable Hosts: {selectedSubnetResult.totalUsable}</p>
-                <p className="text-amber-300/80 text-[10px]">Wasted Overhead: {selectedSubnetResult.wastedIps} IPs</p>
-              </div>
-            </div>
-          </div>
+      {/* INTRO INSTRUCTION WHEN LESSON NOT YET STARTED */}
+      {currentStepIndex === 0 && (
+        <div className="neumorphic-card p-6 text-center space-y-3">
+          <Sparkles className="w-8 h-8 text-[#00a3ff] mx-auto animate-pulse" />
+          <h3 className="text-sm font-bold text-white/90">Interactive Subnetting Student Guide</h3>
+          <p className="text-xs text-white/50 max-w-md mx-auto leading-relaxed font-sans">
+            Add your subnets above and click <strong className="text-[#00a3ff]">"Start Step-by-Step Lesson"</strong> to reveal calculations showing exactly how Host Bits, Subnet Masks (SM), Network Addresses (NA), and Broadcast Addresses (BA) are derived step by step.
+          </p>
         </div>
       )}
 
-      {/* 📋 CALCULATION MATRIX TABLE */}
-      <div className="frameless-card p-6 border border-white/[0.06] bg-[#0c1019]/80 space-y-4">
-        <div className="flex items-center justify-between font-mono text-xs border-b border-white/[0.06] pb-3">
-          <span className="font-semibold text-white/80 uppercase tracking-wider flex items-center gap-2">
-            <Layers className="w-4 h-4 text-cyan-400" />
-            5. Subnet Calculation Matrix ({calcMode.toUpperCase()})
-          </span>
-          <span className="text-white/40 text-[11px]">
-            Click any row to view step-by-step formula breakdown
-          </span>
-        </div>
+      {/* STEP-BY-STEP REVEALED LESSON CARDS (REVEALED ONE BY ONE UNDER TOP BAR) */}
+      <div className="space-y-4 font-mono text-xs">
+        
+        {/* STEP 1: UNDERSTAND THE GOAL & BASE NETWORK */}
+        {currentStepIndex >= 1 && (
+          <div className="neumorphic-card p-5 space-y-3 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between border-b border-white/[0.04] pb-2">
+              <span className="text-[#00a3ff] font-semibold flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full bg-[#00a3ff]/10 text-[#00a3ff] border border-[#00a3ff]/20 text-[10px]">STEP 1</span>
+                Understand Base Network Pool & Strategy
+              </span>
+              <span className="text-white/40 text-[10px] font-bold">{calcMode.toUpperCase()} Mode</span>
+            </div>
 
-        <div className="overflow-x-auto rounded-xl border border-white/[0.06]">
-          <table className="w-full text-left font-mono text-xs border-collapse">
-            <thead>
-              <tr className="bg-white/[0.02] border-b border-white/[0.06] text-white/40 font-semibold uppercase text-[10px]">
-                <th className="py-3 px-4">VLAN / Subnet</th>
-                <th className="py-3 px-4 text-right">Req. Hosts</th>
-                <th className="py-3 px-4">CIDR</th>
-                <th className="py-3 px-4">Subnet Mask (SM)</th>
-                <th className="py-3 px-4">Wildcard Mask (WM)</th>
-                <th className="py-3 px-4">Network Address (NA)</th>
-                <th className="py-3 px-4">Broadcast Address (BA)</th>
-                <th className="py-3 px-4">Usable Host Range</th>
-                <th className="py-3 px-4 text-right">Usable IPs</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.04] bg-transparent">
-              {calcResults.subnets.map((sub, idx) => {
-                const isSelected = sub.id === selectedSubnetResult?.id;
+            <div className="space-y-2.5 text-white/80 leading-relaxed font-sans text-xs">
+              <p>
+                First, we examine our allocated base network: <strong className="text-[#00a3ff] font-mono">{results.baseIp}{results.baseCidr}</strong>.
+              </p>
+              <div className="p-3.5 rounded-xl neumorphic-card-inset font-mono text-[11px] space-y-1.5">
+                <p>• CIDR Prefix: <strong className="text-white">{results.baseCidr}</strong> (Subnet Mask = {cidrToSubnetMask(baseCidr)})</p>
+                <p>• Host Bits: 32 - {baseCidr} = <strong className="text-[#30d158]">{32 - baseCidr} bits</strong></p>
+                <p>• Total IP Address Pool: 2^({32 - baseCidr}) = <strong className="text-[#00a3ff]">{results.totalBlockIps.toLocaleString()} IPs</strong></p>
+              </div>
 
-                return (
-                  <tr
-                    key={sub.id || idx}
-                    onClick={() => setSelectedSubnetId(sub.id)}
-                    className={`transition-colors cursor-pointer hover:bg-white/[0.04] ${
-                      isSelected ? 'bg-cyan-500/10 font-medium' : ''
-                    }`}
-                  >
-                    <td className="py-3 px-4 font-semibold flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${
-                        idx % 4 === 0 ? 'bg-cyan-400' :
-                        idx % 4 === 1 ? 'bg-indigo-400' :
-                        idx % 4 === 2 ? 'bg-purple-400' :
-                        'bg-emerald-400'
-                      }`} />
-                      <span className="text-white/90">{sub.name}</span>
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono text-cyan-300">{sub.requestedHosts}</td>
-                    <td className="py-3 px-4 text-cyan-400 font-semibold">{sub.prefix}</td>
-                    <td className="py-3 px-4 text-white/80">{sub.subnetMask}</td>
-                    <td className="py-3 px-4 text-amber-300/80">{sub.wildcardMask}</td>
-                    <td className="py-3 px-4 text-cyan-300 font-mono">{sub.networkAddress}</td>
-                    <td className="py-3 px-4 text-indigo-300 font-mono">{sub.broadcastAddress}</td>
-                    <td className="py-3 px-4 text-emerald-300/80">{sub.usableRange}</td>
-                    <td className="py-3 px-4 text-right font-semibold text-white/90">{sub.totalUsable}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+              {calcMode === 'vlsm' ? (
+                <p className="text-[#ff9f0a] text-[11px] pt-1">
+                  💡 <strong>VLSM Strategy Rule:</strong> We MUST sort all VLAN requirements by host count in <strong>descending order</strong> (Largest ➔ Smallest). This guarantees subnets fit tightly without overlapping or leaving fragmented gaps!
+                </p>
+              ) : (
+                <p className="text-[#ff9f0a] text-[11px] pt-1">
+                  💡 <strong>FLSM Strategy Rule:</strong> In Fixed Length Subnet Masking, every subnet is forced to match the size of the <strong>largest VLAN requirement ({Math.max(...subnets.map(v=>v.hosts))} hosts)</strong>.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* REVEAL EACH SUBNET CALCULATION STEP DYNAMICALLY */}
+        {results.subnets.map((sub, idx) => {
+          const stepNum = idx + 2; // Step 2, Step 3, Step 4, etc.
+          if (currentStepIndex < stepNum) return null;
+
+          return (
+            <div 
+              key={sub.id || idx}
+              className="neumorphic-card p-5 space-y-3 animate-in fade-in duration-300"
+            >
+              <div className="flex items-center justify-between border-b border-white/[0.04] pb-2">
+                <span className="text-[#00a3ff] font-semibold flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded-full bg-[#30d158]/10 text-[#30d158] border border-[#30d158]/20 text-[10px]">STEP {stepNum}</span>
+                  Subnetting {sub.name} ({sub.requestedHosts} Hosts Needed)
+                </span>
+                <span className="text-[#30d158] font-mono text-[11px] font-bold">
+                  Assigned: {sub.networkAddress}{sub.prefix}
+                </span>
+              </div>
+
+              <div className="space-y-3 font-sans text-xs text-white/80">
+                <p>Here is how we calculate the exact subnet parameters for <strong className="text-white">{sub.name}</strong>:</p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-[11px]">
+                  
+                  {/* Part A: Host Bits Formula */}
+                  <div className="p-3.5 rounded-xl neumorphic-card-inset space-y-1">
+                    <span className="text-white/40 font-semibold text-[10px] block">A. FIND HOST BITS (H)</span>
+                    <p>Hosts Needed: {sub.requestedHosts}</p>
+                    <p>Total (+2 for NA & BA): {sub.requestedHosts + 2} IPs</p>
+                    <p className="text-[#00a3ff]">Smallest Power: 2^{sub.hostBits} = {sub.blockSize} IPs</p>
+                    <p className="text-[#30d158] font-bold pt-1 border-t border-white/[0.05]">⇒ H = {sub.hostBits} Host Bits</p>
+                  </div>
+
+                  {/* Part B: CIDR & Subnet Mask */}
+                  <div className="p-3.5 rounded-xl neumorphic-card-inset space-y-1">
+                    <span className="text-white/40 font-semibold text-[10px] block">B. CALCULATE MASKS (SM & WM)</span>
+                    <p>CIDR Prefix: 32 - {sub.hostBits} = <strong className="text-[#00a3ff]">/{sub.cidr}</strong></p>
+                    <p>Subnet Mask (SM): <strong className="text-[#30d158]">{sub.subnetMask}</strong></p>
+                    <p>Wildcard Mask (WM): <strong className="text-[#ff9f0a]">{sub.wildcardMask}</strong></p>
+                  </div>
+
+                  {/* Part C: Network & Broadcast Addresses */}
+                  <div className="p-3.5 rounded-xl neumorphic-card-inset space-y-1">
+                    <span className="text-white/40 font-semibold text-[10px] block">C. BOUNDARIES (NA & BA)</span>
+                    <p>Network Address (NA): <strong className="text-[#00a3ff]">{sub.networkAddress}</strong></p>
+                    <p>Broadcast Address (BA): <strong className="text-[#7c4dff]">{sub.broadcastAddress}</strong></p>
+                    <p className="text-white/40 text-[10px]">Block Size: {sub.blockSize} IPs</p>
+                  </div>
+
+                  {/* Part D: Usable Range & Gateway */}
+                  <div className="p-3.5 rounded-xl neumorphic-card-inset space-y-1">
+                    <span className="text-white/40 font-semibold text-[10px] block">D. USABLE RANGE & GATEWAY</span>
+                    <p>Gateway IP (First): <strong className="text-[#30d158]">{sub.firstUsable}</strong></p>
+                    <p>Last Usable IP: <strong className="text-[#30d158]">{sub.lastUsable}</strong></p>
+                    <p className="text-[#00a3ff] font-bold pt-1 border-t border-white/[0.05]">Usable Hosts: {sub.totalUsable}</p>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* FINAL STEP: SUMMARY & OVERVIEW */}
+        {currentStepIndex >= totalSteps && (
+          <div className="neumorphic-card p-5 border border-[#30d158]/30 space-y-3 animate-in fade-in duration-300">
+            <div className="flex items-center gap-2 text-[#30d158] font-semibold text-sm border-b border-white/[0.04] pb-2">
+              <CheckCircle2 className="w-4 h-4 text-[#30d158]" />
+              <span>Final Lesson Summary ({calcMode.toUpperCase()} Subnetting Complete)</span>
+            </div>
+
+            <div className="space-y-2.5 text-white/80 font-sans text-xs leading-relaxed">
+              <p>
+                Congratulations! You have successfully calculated all subnets for your network:
+              </p>
+
+              <div className="p-3.5 rounded-xl neumorphic-card-inset font-mono text-[11px] space-y-1">
+                {results.subnets.map(s => (
+                  <p key={s.id}>
+                    • <strong>{s.name}</strong>: NA = <span className="text-[#00a3ff]">{s.networkAddress}{s.prefix}</span> | SM = <span className="text-[#30d158]">{s.subnetMask}</span> | Usable = {s.usableRange}
+                  </p>
+                ))}
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#30d158]/10 border border-[#30d158]/20 text-[#30d158] text-[11px] font-mono">
+                Total Allocated IPs: {results.totalAllocatedIps.toLocaleString()} IPs | Free Remaining IP Pool: {results.freeIps.toLocaleString()} IPs
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
 
     </div>

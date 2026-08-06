@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Navbar from './components/Navbar';
+import LandingPage from './components/landing/LandingPage';
 import EnterpriseModule from './components/enterprise/EnterpriseModule';
 import DTSCockpitModule from './components/dts/DTSCockpitModule';
 import DHCPModule from './components/dhcp/DHCPModule';
@@ -20,16 +21,19 @@ import RoutingProtocolModule from './components/routing/RoutingProtocolModule';
 import SubnettingModule from './components/subnetting/SubnettingModule';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('enterprise');
+  const [activeTab, setActiveTab] = useState('landing');
   const [appMode, setAppMode] = useState('clean'); // 'clean' or 'detailed'
 
   return (
     <div className="min-h-screen bg-[#080a10] text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
-      {/* Header Navbar */}
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} appMode={appMode} setAppMode={setAppMode} />
+      {/* Header Navbar (only visible inside active modules) */}
+      {activeTab !== 'landing' && (
+        <Navbar activeTab={activeTab} setActiveTab={setActiveTab} appMode={appMode} setAppMode={setAppMode} />
+      )}
 
       {/* Main Content Canvas Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+        {activeTab === 'landing' && <LandingPage setActiveTab={setActiveTab} />}
         {activeTab === 'enterprise' && <EnterpriseModule appMode={appMode} />}
         {activeTab === 'dts' && <DTSCockpitModule appMode={appMode} />}
         {activeTab === 'hardware' && <HardwareModule appMode={appMode} />}

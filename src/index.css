@@ -1,15 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --bg-dark: #080a10;
-  --bg-card: rgba(18, 24, 38, 0.45);
-  --border-card: rgba(255, 255, 255, 0.05);
-  --border-card-hover: rgba(255, 255, 255, 0.12);
-  --accent-cyan: #06b6d4;
-  --accent-blue: #3b82f6;
-  --accent-purple: #8b5cf6;
-  --accent-emerald: #10b981;
-  --accent-amber: #f59e0b;
+  --bg-dark: #151821;
+  --bg-surface: #181b26;
+  --bg-inset: #11131c;
+  
+  /* DTS Herford Enterprise Color Palette */
+  --dts-cyan: #00a3ff;
+  --dts-blue: #0066ff;
+  --dts-purple: #7c4dff;
+  --dts-emerald: #30d158;
+  --dts-amber: #ff9f0a;
+  --dts-crimson: #ff3b30;
+
+  /* Neumorphic Soft Dual Shadows */
+  --neu-flat: 6px 6px 16px rgba(9, 11, 16, 0.85), -6px -6px 16px rgba(255, 255, 255, 0.035);
+  --neu-hover: 9px 9px 22px rgba(7, 9, 14, 0.9), -8px -8px 20px rgba(255, 255, 255, 0.05);
+  --neu-pressed: inset 4px 4px 10px rgba(7, 9, 14, 0.85), inset -4px -4px 10px rgba(255, 255, 255, 0.035);
+  --neu-glow-cyan: 0 0 20px rgba(0, 163, 255, 0.35);
 }
 
 * {
@@ -26,11 +34,11 @@ body {
   padding: 0;
   background-color: var(--bg-dark);
   background-image: 
-    radial-gradient(circle at 15% 15%, rgba(6, 182, 212, 0.05) 0px, transparent 40%),
-    radial-gradient(circle at 85% 20%, rgba(139, 92, 246, 0.05) 0px, transparent 40%),
-    radial-gradient(circle at 50% 85%, rgba(16, 185, 129, 0.04) 0px, transparent 40%);
+    radial-gradient(circle at 10% 15%, rgba(0, 163, 255, 0.06) 0px, transparent 45%),
+    radial-gradient(circle at 90% 20%, rgba(124, 77, 255, 0.05) 0px, transparent 45%),
+    radial-gradient(circle at 50% 85%, rgba(48, 209, 88, 0.04) 0px, transparent 45%);
   background-attachment: fixed;
-  color: #f3f4f6;
+  color: #f1f5f9;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
   min-height: 100vh;
 }
@@ -40,62 +48,122 @@ body {
   min-height: 100vh;
 }
 
-/* Obsidian & Apple Frameless Card System */
+/* ========================================================
+   DARK NEUMORPHISM (TACTILE SOFT UI) DESIGN SYSTEM
+   ======================================================== */
+
+/* Neumorphic Extruded Tactile Card */
+.neumorphic-card,
 .frameless-card {
-  background: rgba(15, 20, 32, 0.45);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #181b26;
   border-radius: 1.25rem;
-  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--neu-flat);
+  border: 1px solid rgba(255, 255, 255, 0.03);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.neumorphic-card:hover,
 .frameless-card:hover {
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--neu-hover);
+  border-color: rgba(0, 163, 255, 0.15);
 }
 
-/* Glassmorphism Legacy Back-compat Utility */
+/* Neumorphic Inset (Recessed Cutout) */
+.neumorphic-card-inset {
+  background: #11131c;
+  border-radius: 1rem;
+  box-shadow: var(--neu-pressed);
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+/* Neumorphic Tactile Button */
+.neumorphic-button {
+  background: #181b26;
+  border-radius: 9999px;
+  box-shadow: var(--neu-flat);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  color: #f1f5f9;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.neumorphic-button:hover {
+  box-shadow: var(--neu-hover);
+  color: #00a3ff;
+  transform: translateY(-1px);
+}
+
+.neumorphic-button:active {
+  box-shadow: var(--neu-pressed);
+  transform: translateY(0);
+}
+
+/* Neumorphic Electric Accent Button */
+.neumorphic-button-primary {
+  background: linear-gradient(135deg, #00a3ff 0%, #0066ff 100%);
+  border-radius: 9999px;
+  box-shadow: 4px 4px 12px rgba(0, 102, 255, 0.4), -3px -3px 10px rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.neumorphic-button-primary:hover {
+  box-shadow: 0 0 20px rgba(0, 163, 255, 0.6), 6px 6px 16px rgba(0, 102, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.neumorphic-button-primary:active {
+  box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.6);
+  transform: translateY(0);
+}
+
+/* Neumorphic Recessed Input */
+.neumorphic-input {
+  background: #11131c;
+  border-radius: 0.85rem;
+  box-shadow: var(--neu-pressed);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  color: #00a3ff;
+  transition: all 0.2s ease-in-out;
+}
+
+.neumorphic-input:focus {
+  outline: none;
+  border-color: rgba(0, 163, 255, 0.5);
+  box-shadow: var(--neu-pressed), 0 0 12px rgba(0, 163, 255, 0.25);
+}
+
+/* Glassmorphism Legacy Compatibility */
 .glass-panel {
-  background: rgba(15, 20, 32, 0.55);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.4);
+  background: #181b26;
+  box-shadow: var(--neu-flat);
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
-.glass-panel-glow {
-  background: rgba(15, 20, 35, 0.7);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(6, 182, 212, 0.15);
-  box-shadow: 0 0 30px rgba(6, 182, 212, 0.1);
-}
-
-/* Monospace font */
+/* Monospace Font */
 .font-mono {
   font-family: 'SF Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace;
 }
 
-/* Apple-style Segmented Switch */
+/* Neumorphic Segmented Control */
 .apple-segmented-control {
-  background: rgba(10, 14, 23, 0.7);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 3px;
+  background: #11131c;
+  box-shadow: var(--neu-pressed);
+  padding: 4px;
   border-radius: 9999px;
   display: inline-flex;
   align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.4);
 }
 
-/* Animated Network Wire */
+/* Animated Wire Dash & Packet Pulse */
 @keyframes wirePulse {
-  0% {
-    stroke-dashoffset: 24;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
+  0% { stroke-dashoffset: 24; }
+  100% { stroke-dashoffset: 0; }
 }
 
 .animate-wire-dash {
@@ -103,34 +171,19 @@ body {
   animation: wirePulse 1.2s linear infinite;
 }
 
-@keyframes packetGlow {
-  0%, 100% {
-    filter: drop-shadow(0 0 8px currentColor);
-    transform: scale(1);
-  }
-  50% {
-    filter: drop-shadow(0 0 16px currentColor);
-    transform: scale(1.15);
-  }
-}
-
-.animate-packet-glow {
-  animation: packetGlow 1.5s ease-in-out infinite;
-}
-
-/* Minimal Custom Scrollbars */
+/* Minimal Tactile Scrollbars */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #11131c;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: #242938;
   border-radius: 9999px;
+  box-shadow: var(--neu-flat);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: #00a3ff;
 }
-
