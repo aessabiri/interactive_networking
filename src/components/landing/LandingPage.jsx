@@ -32,8 +32,8 @@ export default function LandingPage({ setActiveTab }) {
       title: 'Visualize',
       subtitle: 'Protocol animations, packet tracing & architecture maps',
       icon: Eye,
-      color: 'text-[#00a3ff]',
-      badgeBg: 'bg-[#00a3ff]/10 text-[#00a3ff] border border-[#00a3ff]/20',
+      color: 'text-[#f59e0b]',
+      badgeBg: 'bg-[#00f0ff]/10 text-[#00f0ff] border border-[#00f0ff]/20',
       items: [
         { id: 'osi', title: 'OSI & TCP/IP Reference', desc: '7-Layer, 5-Layer & 4-Layer models', icon: Layers, tag: 'Layers' },
         { id: 'subnetting', title: 'FLSM & VLSM Subnetting', desc: 'Step-by-step IP workbench', icon: Calculator, tag: 'IP Math' },
@@ -54,8 +54,8 @@ export default function LandingPage({ setActiveTab }) {
       title: 'Learn & Test',
       icon: GraduationCap,
       subtitle: 'Hands-on troubleshooting, CLI tutor & SOC playbooks',
-      color: 'text-[#ff9f0a]',
-      badgeBg: 'bg-[#ff9f0a]/10 text-[#ff9f0a] border border-[#ff9f0a]/20',
+      color: 'text-[#f59e0b]',
+      badgeBg: 'bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20',
       items: [
         { id: 'protocols', title: 'Protocol Catalog', desc: 'Field-by-field packet reference', icon: BookOpen, tag: 'Catalog' },
         { id: 'notebook', title: 'CLI Terminal Tutor', desc: 'Linux Bash & PowerShell guide', icon: Terminal, tag: 'CLI' },
@@ -90,12 +90,12 @@ export default function LandingPage({ setActiveTab }) {
   return (
     <div className="space-y-7 max-w-7xl mx-auto font-sans text-slate-100 pb-10 pt-4">
       
-      {/* BRAND BADGE & RECESSED NEUMORPHIC SEARCH BAR */}
+      {/* BRAND BADGE & RECESSED FROSTED SEARCH BAR */}
       <div className="max-w-xl mx-auto space-y-3 text-center">
         
-        {/* DTS Herford Brand Pill */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full neumorphic-card text-xs font-mono text-[#00a3ff]">
-          <Sparkles className="w-3.5 h-3.5 text-[#00a3ff]" />
+        {/* DTS Herford Brand Pill with Electric Cyan Glow */}
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full neumorphic-card text-xs font-mono text-[#f59e0b] font-semibold border border-[#00f0ff]/20">
+          <Sparkles className="w-3.5 h-3.5 text-[#00f0ff]" />
           <span>NetPulse • DTS Herford Enterprise Suite</span>
         </div>
 
@@ -103,19 +103,19 @@ export default function LandingPage({ setActiveTab }) {
         <div className="space-y-2">
           <label className="text-base font-bold text-white/95 tracking-tight block">What do you want to learn?</label>
           <div className="relative">
-            <Search className="w-4 h-4 text-[#00a3ff]/60 absolute left-4 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#00f0ff]/70 absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search OSI, Subnetting, DHCP, Firewall, Routing..."
-              className="w-full pl-11 pr-4 py-3.5 neumorphic-input font-sans text-sm placeholder:text-white/30 text-white font-medium"
+              className="w-full pl-11 pr-4 py-3.5 neumorphic-input font-sans text-sm placeholder:text-white/30 text-white font-medium focus:border-[#00f0ff]/40"
             />
           </div>
         </div>
       </div>
 
-      {/* CATEGORIES & TACTILE NEUMORPHIC CARDS GRID */}
+      {/* CATEGORIES & FROSTED NEUMORPHIC CARDS GRID */}
       {filteredCategories.map((cat) => {
         const CategoryIcon = cat.icon;
         return (
@@ -133,7 +133,7 @@ export default function LandingPage({ setActiveTab }) {
               <span className="text-[11px] text-white/40 hidden sm:inline font-sans">{cat.subtitle}</span>
             </div>
 
-            {/* HIGH-DENSITY TACTILE NEUMORPHIC GRID */}
+            {/* HIGH-DENSITY FROSTED NEUMORPHIC GRID */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5">
               {cat.items.map((item) => {
                 const ItemIcon = item.icon;
@@ -141,12 +141,12 @@ export default function LandingPage({ setActiveTab }) {
                   <div
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className="neumorphic-card p-3.5 cursor-pointer transition-all duration-200 group flex flex-col justify-between space-y-2.5 hover:border-[#00a3ff]/30 active:scale-[0.98]"
+                    className="neumorphic-card p-3.5 cursor-pointer transition-all duration-200 group flex flex-col justify-between space-y-2.5 active:scale-[0.98] hover:border-[#00f0ff]/30"
                   >
                     <div className="space-y-2">
                       {/* Top Row: Tactile Icon Container & Tag */}
                       <div className="flex items-center justify-between">
-                        <div className="p-2 rounded-xl bg-[#11131c] shadow-[inset_2px_2px_5px_rgba(0,0,0,0.6),_inset_-2px_-2px_5px_rgba(255,255,255,0.03)] text-[#00a3ff] group-hover:text-[#00a3ff] transition-colors">
+                        <div className="p-2 rounded-xl bg-black/40 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.65),_inset_-2px_-2px_5px_rgba(255,255,255,0.035)] text-[#f59e0b] group-hover:text-[#00f0ff] transition-colors">
                           <ItemIcon className="w-4 h-4" />
                         </div>
                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-medium ${cat.badgeBg}`}>
@@ -156,7 +156,7 @@ export default function LandingPage({ setActiveTab }) {
 
                       {/* Title & Desc */}
                       <div>
-                        <h3 className="text-xs font-bold text-white/90 group-hover:text-[#00a3ff] transition-colors line-clamp-1">
+                        <h3 className="text-xs font-bold text-white/90 group-hover:text-[#f59e0b] transition-colors line-clamp-1">
                           {item.title}
                         </h3>
                         <p className="text-[10px] text-white/40 mt-0.5 leading-snug line-clamp-1">
@@ -165,10 +165,10 @@ export default function LandingPage({ setActiveTab }) {
                       </div>
                     </div>
 
-                    {/* Launch Action */}
-                    <div className="pt-2 border-t border-white/[0.04] flex items-center justify-between text-[10px] font-mono text-[#00a3ff] font-medium">
+                    {/* OPEN LAB ACTION IN SECONDARY ACCENT (ELECTRIC CYAN #00f0ff) */}
+                    <div className="pt-2 border-t border-white/[0.04] flex items-center justify-between text-[10px] font-mono text-[#00f0ff] font-bold tracking-wide group-hover:text-cyan-300">
                       <span>Open Lab</span>
-                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1 text-[#00f0ff]" />
                     </div>
                   </div>
                 );

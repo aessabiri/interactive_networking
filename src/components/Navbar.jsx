@@ -16,8 +16,7 @@ import {
   Trophy, 
   Settings, 
   Network, 
-  ChevronDown,
-  Sparkles
+  ChevronDown
 } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode }) {
@@ -82,7 +81,7 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
   };
 
   return (
-    <header ref={navRef} className="sticky top-0 z-50 bg-[#151821] border-b border-white/[0.04] px-4 py-3 shadow-[0_8px_20px_rgba(0,0,0,0.6)]">
+    <header ref={navRef} className="sticky top-0 z-50 bg-[#12151e] border-b border-white/[0.04] px-4 py-3 shadow-[0_8px_20px_rgba(0,0,0,0.6)]">
       <div className="max-w-7xl mx-auto space-y-3">
         
         {/* TOP ROW: BRAND LOGO & MODE SWITCH */}
@@ -95,14 +94,14 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
               className="flex items-center gap-2.5 cursor-pointer group hover:opacity-90 transition-opacity"
               title="Return to Main Landing Page Hub"
             >
-              <div className="p-2 rounded-xl bg-[#11131c] shadow-[inset_2px_2px_5px_rgba(0,0,0,0.6),_inset_-2px_-2px_5px_rgba(255,255,255,0.03)] text-[#00a3ff]">
+              <div className="p-2 rounded-xl bg-[#0e1017] shadow-[inset_2px_2px_5px_rgba(0,0,0,0.65),_inset_-2px_-2px_5px_rgba(255,255,255,0.035)] text-[#f59e0b]">
                 <Cpu className="w-4 h-4" />
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-base tracking-tight text-white/95 group-hover:text-[#00a3ff] transition-colors">
+                <span className="font-bold text-base tracking-tight text-white/95 group-hover:text-[#f59e0b] transition-colors">
                   NetPulse
                 </span>
-                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full neumorphic-card text-[#00a3ff] font-semibold">
+                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full neumorphic-card text-[#f59e0b] font-bold">
                   Hub 🏠
                 </span>
               </div>
@@ -111,7 +110,7 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
 
           {/* ACTIVE TAB BREADCRUMB BADGE */}
           <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full neumorphic-card text-xs font-mono text-white/70">
-            <span className="text-[#00a3ff]">Active Lab:</span>
+            <span className="text-[#f59e0b] font-semibold">Active Lab:</span>
             <span className="text-white font-semibold">{getActiveTabTitle()}</span>
           </div>
 
@@ -119,9 +118,9 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
           <div className="apple-segmented-control text-xs">
             <button
               onClick={() => setAppMode('clean')}
-              className={`px-3.5 py-1 rounded-full font-medium transition-all ${
+              className={`px-3.5 py-1 rounded-full font-semibold transition-all ${
                 appMode === 'clean'
-                  ? 'bg-[#00a3ff] text-white shadow-[0_0_12px_rgba(0,163,255,0.4)]'
+                  ? 'bg-[#f59e0b] text-white shadow-[0_0_12px_rgba(245,158,11,0.4)]'
                   : 'text-white/50 hover:text-white'
               }`}
             >
@@ -129,7 +128,7 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
             </button>
             <button
               onClick={() => setAppMode('detailed')}
-              className={`px-3.5 py-1 rounded-full font-medium transition-all ${
+              className={`px-3.5 py-1 rounded-full font-semibold transition-all ${
                 appMode === 'detailed'
                   ? 'bg-[#7c4dff] text-white shadow-[0_0_12px_rgba(124,77,255,0.4)]'
                   : 'text-white/50 hover:text-white'
@@ -148,12 +147,12 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
                 onClick={() => setOpenDropdown(openDropdown === cat.id ? null : cat.id)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
                   openDropdown === cat.id || cat.items.some(i => i.id === activeTab)
-                    ? 'neumorphic-card text-[#00a3ff]'
+                    ? 'neumorphic-card text-[#f59e0b]'
                     : 'text-white/60 hover:text-white'
                 }`}
               >
                 <span>{cat.label}</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${openDropdown === cat.id ? 'rotate-180 text-[#00a3ff]' : ''}`} />
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${openDropdown === cat.id ? 'rotate-180 text-[#f59e0b]' : ''}`} />
               </button>
 
               {/* DROPDOWN MENU */}
@@ -170,11 +169,11 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
                         }}
                         className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center gap-2.5 font-medium transition-all ${
                           activeTab === item.id
-                            ? 'bg-[#00a3ff]/15 text-[#00a3ff] border border-[#00a3ff]/30'
+                            ? 'bg-[#f59e0b]/15 text-[#f59e0b] border border-[#f59e0b]/30 font-semibold'
                             : 'text-white/80 hover:bg-white/[0.04] hover:text-white'
                         }`}
                       >
-                        <ItemIcon className="w-4 h-4 text-[#00a3ff]" />
+                        <ItemIcon className="w-4 h-4 text-[#f59e0b]" />
                         <span>{item.label}</span>
                       </button>
                     );

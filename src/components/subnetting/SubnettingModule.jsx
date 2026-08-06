@@ -79,7 +79,7 @@ export default function SubnettingModule() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 font-sans text-slate-100 pb-8">
       
-      {/* TACTILE NEUMORPHIC CONTROL PANEL WITH DTS HERFORD COLORS */}
+      {/* TACTILE NEUMORPHIC CONTROL PANEL WITH DTS AMBER YELLOW STYLING */}
       <div className="neumorphic-card p-6 space-y-5">
         
         {/* ROW 1: BASE IP, MODE SWITCH & LESSON CONTROLS */}
@@ -87,7 +87,7 @@ export default function SubnettingModule() {
           
           {/* Base IP Input */}
           <div className="flex items-center gap-3 flex-1 min-w-[240px]">
-            <div className="p-2 rounded-xl bg-[#11131c] shadow-[inset_2px_2px_5px_rgba(0,0,0,0.6),_inset_-2px_-2px_5px_rgba(255,255,255,0.03)] text-[#00a3ff]">
+            <div className="p-2 rounded-xl bg-[#0e1017] shadow-[inset_2px_2px_5px_rgba(0,0,0,0.65),_inset_-2px_-2px_5px_rgba(255,255,255,0.035)] text-[#f59e0b]">
               <Globe className="w-5 h-5 shrink-0" />
             </div>
             <div className="flex-1 space-y-1">
@@ -100,7 +100,7 @@ export default function SubnettingModule() {
                   setCurrentStepIndex(0);
                 }}
                 placeholder="172.16.0.0/18 or 192.168.1.0/24"
-                className="w-full max-w-xs px-3.5 py-2 neumorphic-input font-mono text-xs text-[#00a3ff] font-semibold"
+                className="w-full max-w-xs px-3.5 py-2 neumorphic-input font-mono text-xs text-[#f59e0b] font-bold"
               />
             </div>
           </div>
@@ -114,7 +114,7 @@ export default function SubnettingModule() {
               }}
               className={`px-4 py-1.5 rounded-full font-medium transition-all ${
                 calcMode === 'vlsm'
-                  ? 'bg-[#00a3ff] text-white shadow-[0_0_12px_rgba(0,163,255,0.4)]'
+                  ? 'bg-[#f59e0b] text-white font-bold shadow-[0_0_12px_rgba(245,158,11,0.4)]'
                   : 'text-white/50 hover:text-white'
               }`}
             >
@@ -127,7 +127,7 @@ export default function SubnettingModule() {
               }}
               className={`px-4 py-1.5 rounded-full font-medium transition-all ${
                 calcMode === 'flsm'
-                  ? 'bg-[#ff9f0a] text-white shadow-[0_0_12px_rgba(255,159,10,0.4)]'
+                  ? 'bg-[#d97706] text-white font-bold shadow-[0_0_12px_rgba(217,119,6,0.4)]'
                   : 'text-white/50 hover:text-white'
               }`}
             >
@@ -154,7 +154,7 @@ export default function SubnettingModule() {
                 currentStepIndex === 0
                   ? 'neumorphic-button-primary'
                   : currentStepIndex < totalSteps
-                  ? 'bg-[#30d158] text-white rounded-full shadow-[0_0_16px_rgba(48,209,88,0.4)] border border-white/20 hover:scale-[1.02] cursor-pointer'
+                  ? 'bg-[#30d158] text-white rounded-full shadow-[0_0_16px_rgba(48,209,88,0.4)] hover:scale-[1.02] cursor-pointer'
                   : 'neumorphic-card opacity-50 cursor-not-allowed text-white/40'
               }`}
             >
@@ -188,7 +188,7 @@ export default function SubnettingModule() {
             value={newSubnetHosts}
             onChange={(e) => setNewSubnetHosts(e.target.value)}
             placeholder="Hosts (e.g. 500)"
-            className="w-28 px-3 py-2 neumorphic-input font-mono text-xs text-[#00a3ff] text-right font-bold"
+            className="w-28 px-3 py-2 neumorphic-input font-mono text-xs text-[#f59e0b] text-right font-bold"
           />
 
           <button
@@ -200,7 +200,7 @@ export default function SubnettingModule() {
           </button>
         </form>
 
-        {/* ROW 3: TACTILE DISMISSIBLE SUBNET PILL TAGS */}
+        {/* ROW 3: DISMISSIBLE SUBNET PILL TAGS */}
         <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-xs">
           <span className="text-white/40 text-[11px]">Configured Subnets:</span>
           {subnets.map((s) => (
@@ -209,7 +209,7 @@ export default function SubnettingModule() {
               className="px-3 py-1 rounded-full neumorphic-card text-white/80 flex items-center gap-1.5 text-[11px]"
             >
               <span>{s.name}</span>
-              <strong className="text-[#00a3ff]">({s.hosts}h)</strong>
+              <strong className="text-[#f59e0b]">({s.hosts}h)</strong>
               {subnets.length > 1 && (
                 <button
                   onClick={() => handleRemoveSubnet(s.id)}
@@ -228,10 +228,10 @@ export default function SubnettingModule() {
       {/* INTRO INSTRUCTION WHEN LESSON NOT YET STARTED */}
       {currentStepIndex === 0 && (
         <div className="neumorphic-card p-6 text-center space-y-3">
-          <Sparkles className="w-8 h-8 text-[#00a3ff] mx-auto animate-pulse" />
+          <Sparkles className="w-8 h-8 text-[#f59e0b] mx-auto animate-pulse" />
           <h3 className="text-sm font-bold text-white/90">Interactive Subnetting Student Guide</h3>
           <p className="text-xs text-white/50 max-w-md mx-auto leading-relaxed font-sans">
-            Add your subnets above and click <strong className="text-[#00a3ff]">"Start Step-by-Step Lesson"</strong> to reveal calculations showing exactly how Host Bits, Subnet Masks (SM), Network Addresses (NA), and Broadcast Addresses (BA) are derived step by step.
+            Add your subnets above and click <strong className="text-[#f59e0b]">"Start Step-by-Step Lesson"</strong> to reveal calculations showing exactly how Host Bits, Subnet Masks (SM), Network Addresses (NA), and Broadcast Addresses (BA) are derived step by step.
           </p>
         </div>
       )}
@@ -243,8 +243,8 @@ export default function SubnettingModule() {
         {currentStepIndex >= 1 && (
           <div className="neumorphic-card p-5 space-y-3 animate-in fade-in duration-300">
             <div className="flex items-center justify-between border-b border-white/[0.04] pb-2">
-              <span className="text-[#00a3ff] font-semibold flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-full bg-[#00a3ff]/10 text-[#00a3ff] border border-[#00a3ff]/20 text-[10px]">STEP 1</span>
+              <span className="text-[#f59e0b] font-semibold flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full bg-[#f59e0b]/10 text-[#f59e0b] text-[10px]">STEP 1</span>
                 Understand Base Network Pool & Strategy
               </span>
               <span className="text-white/40 text-[10px] font-bold">{calcMode.toUpperCase()} Mode</span>
@@ -252,20 +252,20 @@ export default function SubnettingModule() {
 
             <div className="space-y-2.5 text-white/80 leading-relaxed font-sans text-xs">
               <p>
-                First, we examine our allocated base network: <strong className="text-[#00a3ff] font-mono">{results.baseIp}{results.baseCidr}</strong>.
+                First, we examine our allocated base network: <strong className="text-[#f59e0b] font-mono">{results.baseIp}{results.baseCidr}</strong>.
               </p>
               <div className="p-3.5 rounded-xl neumorphic-card-inset font-mono text-[11px] space-y-1.5">
                 <p>• CIDR Prefix: <strong className="text-white">{results.baseCidr}</strong> (Subnet Mask = {cidrToSubnetMask(baseCidr)})</p>
                 <p>• Host Bits: 32 - {baseCidr} = <strong className="text-[#30d158]">{32 - baseCidr} bits</strong></p>
-                <p>• Total IP Address Pool: 2^({32 - baseCidr}) = <strong className="text-[#00a3ff]">{results.totalBlockIps.toLocaleString()} IPs</strong></p>
+                <p>• Total IP Address Pool: 2^({32 - baseCidr}) = <strong className="text-[#f59e0b]">{results.totalBlockIps.toLocaleString()} IPs</strong></p>
               </div>
 
               {calcMode === 'vlsm' ? (
-                <p className="text-[#ff9f0a] text-[11px] pt-1">
+                <p className="text-[#f59e0b] text-[11px] pt-1">
                   💡 <strong>VLSM Strategy Rule:</strong> We MUST sort all VLAN requirements by host count in <strong>descending order</strong> (Largest ➔ Smallest). This guarantees subnets fit tightly without overlapping or leaving fragmented gaps!
                 </p>
               ) : (
-                <p className="text-[#ff9f0a] text-[11px] pt-1">
+                <p className="text-[#f59e0b] text-[11px] pt-1">
                   💡 <strong>FLSM Strategy Rule:</strong> In Fixed Length Subnet Masking, every subnet is forced to match the size of the <strong>largest VLAN requirement ({Math.max(...subnets.map(v=>v.hosts))} hosts)</strong>.
                 </p>
               )}
@@ -284,8 +284,8 @@ export default function SubnettingModule() {
               className="neumorphic-card p-5 space-y-3 animate-in fade-in duration-300"
             >
               <div className="flex items-center justify-between border-b border-white/[0.04] pb-2">
-                <span className="text-[#00a3ff] font-semibold flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded-full bg-[#30d158]/10 text-[#30d158] border border-[#30d158]/20 text-[10px]">STEP {stepNum}</span>
+                <span className="text-[#f59e0b] font-semibold flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded-full bg-[#30d158]/10 text-[#30d158] text-[10px]">STEP {stepNum}</span>
                   Subnetting {sub.name} ({sub.requestedHosts} Hosts Needed)
                 </span>
                 <span className="text-[#30d158] font-mono text-[11px] font-bold">
@@ -303,22 +303,22 @@ export default function SubnettingModule() {
                     <span className="text-white/40 font-semibold text-[10px] block">A. FIND HOST BITS (H)</span>
                     <p>Hosts Needed: {sub.requestedHosts}</p>
                     <p>Total (+2 for NA & BA): {sub.requestedHosts + 2} IPs</p>
-                    <p className="text-[#00a3ff]">Smallest Power: 2^{sub.hostBits} = {sub.blockSize} IPs</p>
+                    <p className="text-[#f59e0b]">Smallest Power: 2^{sub.hostBits} = {sub.blockSize} IPs</p>
                     <p className="text-[#30d158] font-bold pt-1 border-t border-white/[0.05]">⇒ H = {sub.hostBits} Host Bits</p>
                   </div>
 
                   {/* Part B: CIDR & Subnet Mask */}
                   <div className="p-3.5 rounded-xl neumorphic-card-inset space-y-1">
                     <span className="text-white/40 font-semibold text-[10px] block">B. CALCULATE MASKS (SM & WM)</span>
-                    <p>CIDR Prefix: 32 - {sub.hostBits} = <strong className="text-[#00a3ff]">/{sub.cidr}</strong></p>
+                    <p>CIDR Prefix: 32 - {sub.hostBits} = <strong className="text-[#f59e0b]">/{sub.cidr}</strong></p>
                     <p>Subnet Mask (SM): <strong className="text-[#30d158]">{sub.subnetMask}</strong></p>
-                    <p>Wildcard Mask (WM): <strong className="text-[#ff9f0a]">{sub.wildcardMask}</strong></p>
+                    <p>Wildcard Mask (WM): <strong className="text-[#f59e0b]">{sub.wildcardMask}</strong></p>
                   </div>
 
                   {/* Part C: Network & Broadcast Addresses */}
                   <div className="p-3.5 rounded-xl neumorphic-card-inset space-y-1">
                     <span className="text-white/40 font-semibold text-[10px] block">C. BOUNDARIES (NA & BA)</span>
-                    <p>Network Address (NA): <strong className="text-[#00a3ff]">{sub.networkAddress}</strong></p>
+                    <p>Network Address (NA): <strong className="text-[#f59e0b]">{sub.networkAddress}</strong></p>
                     <p>Broadcast Address (BA): <strong className="text-[#7c4dff]">{sub.broadcastAddress}</strong></p>
                     <p className="text-white/40 text-[10px]">Block Size: {sub.blockSize} IPs</p>
                   </div>
@@ -328,7 +328,7 @@ export default function SubnettingModule() {
                     <span className="text-white/40 font-semibold text-[10px] block">D. USABLE RANGE & GATEWAY</span>
                     <p>Gateway IP (First): <strong className="text-[#30d158]">{sub.firstUsable}</strong></p>
                     <p>Last Usable IP: <strong className="text-[#30d158]">{sub.lastUsable}</strong></p>
-                    <p className="text-[#00a3ff] font-bold pt-1 border-t border-white/[0.05]">Usable Hosts: {sub.totalUsable}</p>
+                    <p className="text-[#f59e0b] font-bold pt-1 border-t border-white/[0.05]">Usable Hosts: {sub.totalUsable}</p>
                   </div>
 
                 </div>
@@ -353,7 +353,7 @@ export default function SubnettingModule() {
               <div className="p-3.5 rounded-xl neumorphic-card-inset font-mono text-[11px] space-y-1">
                 {results.subnets.map(s => (
                   <p key={s.id}>
-                    • <strong>{s.name}</strong>: NA = <span className="text-[#00a3ff]">{s.networkAddress}{s.prefix}</span> | SM = <span className="text-[#30d158]">{s.subnetMask}</span> | Usable = {s.usableRange}
+                    • <strong>{s.name}</strong>: NA = <span className="text-[#f59e0b]">{s.networkAddress}{s.prefix}</span> | SM = <span className="text-[#30d158]">{s.subnetMask}</span> | Usable = {s.usableRange}
                   </p>
                 ))}
               </div>

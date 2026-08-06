@@ -1,23 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --bg-dark: #151821;
-  --bg-surface: #181b26;
-  --bg-inset: #11131c;
+  --bg-dark: #10121a;
+  --bg-surface: rgba(22, 25, 36, 0.75);
+  --bg-inset: rgba(14, 16, 23, 0.85);
   
-  /* DTS Herford Enterprise Color Palette */
-  --dts-cyan: #00a3ff;
-  --dts-blue: #0066ff;
+  /* Dual Accent System: DTS Amber Yellow (Primary) + Electric Cyan (Secondary) */
+  --dts-yellow: #f59e0b;
+  --dts-yellow-dark: #d97706;
+  --accent-cyan: #00f0ff;
+  --accent-cyan-dark: #00b8d4;
   --dts-purple: #7c4dff;
   --dts-emerald: #30d158;
-  --dts-amber: #ff9f0a;
   --dts-crimson: #ff3b30;
 
-  /* Neumorphic Soft Dual Shadows */
-  --neu-flat: 6px 6px 16px rgba(9, 11, 16, 0.85), -6px -6px 16px rgba(255, 255, 255, 0.035);
-  --neu-hover: 9px 9px 22px rgba(7, 9, 14, 0.9), -8px -8px 20px rgba(255, 255, 255, 0.05);
-  --neu-pressed: inset 4px 4px 10px rgba(7, 9, 14, 0.85), inset -4px -4px 10px rgba(255, 255, 255, 0.035);
-  --neu-glow-cyan: 0 0 20px rgba(0, 163, 255, 0.35);
+  /* Neumorphic Dual Shadows */
+  --neu-flat: 6px 6px 16px rgba(5, 6, 11, 0.85), -6px -6px 16px rgba(255, 255, 255, 0.035);
+  --neu-hover: 9px 9px 22px rgba(4, 5, 9, 0.9), -8px -8px 20px rgba(255, 255, 255, 0.05);
+  --neu-pressed: inset 4px 4px 10px rgba(4, 5, 9, 0.85), inset -4px -4px 10px rgba(255, 255, 255, 0.035);
 }
 
 * {
@@ -34,9 +34,9 @@ body {
   padding: 0;
   background-color: var(--bg-dark);
   background-image: 
-    radial-gradient(circle at 10% 15%, rgba(0, 163, 255, 0.06) 0px, transparent 45%),
-    radial-gradient(circle at 90% 20%, rgba(124, 77, 255, 0.05) 0px, transparent 45%),
-    radial-gradient(circle at 50% 85%, rgba(48, 209, 88, 0.04) 0px, transparent 45%);
+    radial-gradient(circle at 15% 15%, rgba(245, 158, 11, 0.08) 0px, transparent 40%),
+    radial-gradient(circle at 85% 20%, rgba(0, 240, 255, 0.07) 0px, transparent 40%),
+    radial-gradient(circle at 50% 85%, rgba(124, 77, 255, 0.05) 0px, transparent 40%);
   background-attachment: fixed;
   color: #f1f5f9;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
@@ -49,13 +49,15 @@ body {
 }
 
 /* ========================================================
-   DARK NEUMORPHISM (TACTILE SOFT UI) DESIGN SYSTEM
+   NEUMORPHIC-GLASS HYBRID DESIGN SYSTEM
    ======================================================== */
 
-/* Neumorphic Extruded Tactile Card */
+/* Neumorphic Glass Extruded Card */
 .neumorphic-card,
 .frameless-card {
-  background: #181b26;
+  background: rgba(22, 25, 36, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 1.25rem;
   box-shadow: var(--neu-flat);
   border: 1px solid rgba(255, 255, 255, 0.03);
@@ -65,20 +67,23 @@ body {
 .neumorphic-card:hover,
 .frameless-card:hover {
   box-shadow: var(--neu-hover);
-  border-color: rgba(0, 163, 255, 0.15);
+  border-color: rgba(0, 240, 255, 0.18);
 }
 
-/* Neumorphic Inset (Recessed Cutout) */
+/* Neumorphic Glass Inset (Recessed Cutout) */
 .neumorphic-card-inset {
-  background: #11131c;
+  background: rgba(14, 16, 23, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: 1rem;
   box-shadow: var(--neu-pressed);
-  border: 1px solid rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.02);
 }
 
-/* Neumorphic Tactile Button */
+/* Neumorphic Glass Button */
 .neumorphic-button {
-  background: #181b26;
+  background: rgba(22, 25, 36, 0.8);
+  backdrop-filter: blur(16px);
   border-radius: 9999px;
   box-shadow: var(--neu-flat);
   border: 1px solid rgba(255, 255, 255, 0.04);
@@ -89,7 +94,7 @@ body {
 
 .neumorphic-button:hover {
   box-shadow: var(--neu-hover);
-  color: #00a3ff;
+  color: #f59e0b;
   transform: translateY(-1px);
 }
 
@@ -98,11 +103,11 @@ body {
   transform: translateY(0);
 }
 
-/* Neumorphic Electric Accent Button */
+/* Neumorphic Electric Primary Button (DTS Yellow) */
 .neumorphic-button-primary {
-  background: linear-gradient(135deg, #00a3ff 0%, #0066ff 100%);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   border-radius: 9999px;
-  box-shadow: 4px 4px 12px rgba(0, 102, 255, 0.4), -3px -3px 10px rgba(255, 255, 255, 0.1);
+  box-shadow: 4px 4px 14px rgba(245, 158, 11, 0.45), -3px -3px 10px rgba(255, 255, 255, 0.1);
   color: #ffffff;
   font-weight: 600;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -111,7 +116,7 @@ body {
 }
 
 .neumorphic-button-primary:hover {
-  box-shadow: 0 0 20px rgba(0, 163, 255, 0.6), 6px 6px 16px rgba(0, 102, 255, 0.5);
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.6), 6px 6px 16px rgba(245, 158, 11, 0.5);
   transform: translateY(-1px);
 }
 
@@ -122,26 +127,28 @@ body {
 
 /* Neumorphic Recessed Input */
 .neumorphic-input {
-  background: #11131c;
+  background: rgba(14, 16, 23, 0.9);
+  backdrop-filter: blur(16px);
   border-radius: 0.85rem;
   box-shadow: var(--neu-pressed);
-  border: 1px solid rgba(0, 0, 0, 0.5);
-  color: #00a3ff;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  color: #f59e0b;
   transition: all 0.2s ease-in-out;
 }
 
 .neumorphic-input:focus {
   outline: none;
-  border-color: rgba(0, 163, 255, 0.5);
-  box-shadow: var(--neu-pressed), 0 0 12px rgba(0, 163, 255, 0.25);
+  box-shadow: var(--neu-pressed), 0 0 14px rgba(245, 158, 11, 0.35);
+  border-color: rgba(245, 158, 11, 0.4);
 }
 
-/* Glassmorphism Legacy Compatibility */
+/* Legacy Glass Panel */
 .glass-panel {
-  background: #181b26;
+  background: rgba(22, 25, 36, 0.75);
+  backdrop-filter: blur(20px);
   box-shadow: var(--neu-flat);
   border-radius: 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 /* Monospace Font */
@@ -149,18 +156,19 @@ body {
   font-family: 'SF Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace;
 }
 
-/* Neumorphic Segmented Control */
+/* Segmented Control */
 .apple-segmented-control {
-  background: #11131c;
+  background: rgba(14, 16, 23, 0.9);
+  backdrop-filter: blur(16px);
   box-shadow: var(--neu-pressed);
   padding: 4px;
   border-radius: 9999px;
   display: inline-flex;
   align-items: center;
-  border: 1px solid rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
-/* Animated Wire Dash & Packet Pulse */
+/* Animated Wire Dash */
 @keyframes wirePulse {
   0% { stroke-dashoffset: 24; }
   100% { stroke-dashoffset: 0; }
@@ -171,19 +179,19 @@ body {
   animation: wirePulse 1.2s linear infinite;
 }
 
-/* Minimal Tactile Scrollbars */
+/* Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #11131c;
+  background: #0e1017;
 }
 ::-webkit-scrollbar-thumb {
-  background: #242938;
+  background: #202434;
   border-radius: 9999px;
   box-shadow: var(--neu-flat);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #00a3ff;
+  background: #00f0ff;
 }
