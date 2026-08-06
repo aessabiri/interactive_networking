@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+@variant light (&:where(.light, .light *));
+
 :root {
   --bg-dark: #10121a;
   --bg-surface: rgba(22, 25, 36, 0.75);
@@ -27,22 +30,22 @@
    ULTRA-MODERN HIGH-CONTRAST LIGHT MODE DESIGN SYSTEM
    ======================================================== */
 html.light {
-  --bg-dark: #f1f5f9;
-  --bg-surface: rgba(255, 255, 255, 0.95);
-  --bg-inset: rgba(241, 245, 249, 0.95);
+  --bg-dark: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-inset: #f1f5f9;
   
   --dts-yellow: #d97706;
   --dts-yellow-dark: #b45309;
   --accent-cyan: #0284c7;
   --accent-cyan-dark: #0369a1;
 
-  /* Light Tactile Neumorphic Dual Shadows */
-  --neu-flat: 0 4px 16px rgba(15, 23, 42, 0.08);
-  --neu-hover: 0 10px 25px rgba(15, 23, 42, 0.12);
-  --neu-pressed: inset 4px 4px 10px rgba(148, 163, 184, 0.35), inset -4px -4px 10px rgba(255, 255, 255, 0.95);
+  /* Soft Ambient Light Elevation Shadows */
+  --neu-flat: 0 4px 20px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --neu-hover: 0 10px 30px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+  --neu-pressed: inset 2px 2px 6px rgba(148, 163, 184, 0.35), inset -2px -2px 6px rgba(255, 255, 255, 0.95);
   --text-main: #0f172a;
-  --text-muted: #64748b;
-  --card-border: #e2e8f0;
+  --text-muted: #475569;
+  --card-border: #cbd5e1;
 }
 
 * {
@@ -100,7 +103,7 @@ html.light body {
 .neumorphic-card:hover,
 .frameless-card:hover {
   box-shadow: var(--neu-hover);
-  border-color: rgba(217, 119, 6, 0.4);
+  border-color: rgba(217, 119, 6, 0.5);
 }
 
 .neumorphic-card-inset {
@@ -205,31 +208,120 @@ html.light body {
 }
 
 /* ========================================================
-   LIGHT MODE CONTRAST OVERRIDES & UTILITY MAPS
+   LIGHT MODE MANDATORY CONTRAST OVERRIDES
    ======================================================== */
+html.light,
+html.light body,
+html.light #root {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
 
-/* Light mode specific element text colors */
-html.light .text-white { color: #0f172a !important; }
-html.light .text-white\/95 { color: #0f172a !important; }
-html.light .text-white\/90 { color: #1e293b !important; }
-html.light .text-white\/80 { color: #334155 !important; }
-html.light .text-white\/70 { color: #475569 !important; }
-html.light .text-white\/60 { color: #475569 !important; }
-html.light .text-white\/50 { color: #64748b !important; }
-html.light .text-white\/40 { color: #475569 !important; }
-html.light .text-white\/30 { color: #94a3b8 !important; }
+html.light .neumorphic-card,
+html.light .frameless-card,
+html.light .glass-panel {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04) !important;
+}
 
-html.light .text-slate-100 { color: #1e293b !important; }
-html.light .text-cyan-400 { color: #0284c7 !important; }
-html.light .text-\[\#00f0ff\] { color: #0284c7 !important; }
-html.light .text-\[\#f59e0b\] { color: #d97706 !important; }
+html.light h1,
+html.light h2,
+html.light h3,
+html.light h4,
+html.light h5,
+html.light h6 {
+  color: #0f172a !important;
+}
 
-html.light .placeholder\:text-white\/30::placeholder { color: #94a3b8 !important; }
+html.light p,
+html.light span,
+html.light label {
+  color: #334155;
+}
 
-html.light .bg-black\/40 { background-color: rgba(226, 232, 240, 0.8) !important; }
-html.light .bg-\[\#12151e\] { background-color: #f8fafc !important; }
-html.light .bg-\[\#10121a\] { background-color: #f1f5f9 !important; }
-html.light .bg-\[\#0e1017\] { background-color: #e2e8f0 !important; }
+/* Category Headers & Titles in Landing Hub */
+html.light .text-slate-900,
+html.light .text-slate-800,
+html.light .text-slate-700,
+html.light .text-slate-100,
+html.light .text-slate-200,
+html.light .text-slate-300,
+html.light .text-white,
+html.light .text-white\/95,
+html.light .text-white\/90,
+html.light .text-white\/80,
+html.light .text-white\/70 {
+  color: #0f172a !important;
+}
+
+html.light .text-slate-400,
+html.light .text-slate-500,
+html.light .text-white\/60,
+html.light .text-white\/50,
+html.light .text-white\/40 {
+  color: #475569 !important;
+}
+
+/* Card Titles specifically inside Hub */
+html.light .neumorphic-card h3,
+html.light .frameless-card h3 {
+  color: #0f172a !important;
+}
+
+html.light .neumorphic-card p,
+html.light .frameless-card p {
+  color: #475569 !important;
+}
+
+/* Inputs & Placeholders */
+html.light input,
+html.light select,
+html.light textarea,
+html.light .neumorphic-input {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: inset 2px 2px 6px rgba(148, 163, 184, 0.2) !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Tags & Badges */
+html.light .bg-\[\#00f0ff\]\/10,
+html.light .bg-cyan-500\/10 {
+  background-color: #e0f2fe !important;
+  color: #0369a1 !important;
+  border-color: #bae6fd !important;
+}
+
+html.light .text-\[\#00f0ff\],
+html.light .text-cyan-400,
+html.light .text-cyan-300 {
+  color: #0284c7 !important;
+}
+
+html.light .text-\[\#f59e0b\],
+html.light .text-amber-400,
+html.light .text-yellow-500 {
+  color: #d97706 !important;
+}
+
+/* Open Lab Action Button Text */
+html.light .neumorphic-card .border-t span,
+html.light .neumorphic-card .border-t svg {
+  color: #0284c7 !important;
+}
+
+/* Icon Container Inset Box inside Cards */
+html.light .neumorphic-card .bg-slate-200,
+html.light .neumorphic-card .bg-black\/40 {
+  background-color: #f1f5f9 !important;
+  box-shadow: inset 1px 1px 3px rgba(148, 163, 184, 0.3) !important;
+}
 
 /* Scrollbars */
 ::-webkit-scrollbar {
