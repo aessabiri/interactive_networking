@@ -24,11 +24,11 @@ export default function App() {
   const [appMode, setAppMode] = useState('clean'); // 'clean' or 'detailed'
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950">
+    <div className="min-h-screen bg-[#080a10] text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
       {/* Header Navbar */}
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} appMode={appMode} setAppMode={setAppMode} />
 
-      {/* Main Content Area */}
+      {/* Main Content Canvas Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
         {activeTab === 'enterprise' && <EnterpriseModule appMode={appMode} />}
         {activeTab === 'dts' && <DTSCockpitModule appMode={appMode} />}
@@ -51,10 +51,10 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950/80 px-4 py-4 text-center text-xs text-slate-500 font-mono">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>NetPulse Enterprise Network Infra Visualizer & Sandbox</span>
-          <span className="text-slate-600">DTS Herford Enterprise Training • Standalone Zero-Install HTML/JS</span>
+      <footer className="border-t border-white/[0.04] bg-[#080a10]/60 backdrop-blur-md px-6 py-4 text-xs text-white/40 font-sans">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <span className="font-medium">NetPulse • Frameless Architecture & Security Suite</span>
+          <span className="text-white/30 text-[11px]">DTS Herford Enterprise Training</span>
         </div>
       </footer>
     </div>
