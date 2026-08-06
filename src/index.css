@@ -208,8 +208,6 @@ html.light body {
    LIGHT MODE CONTRAST OVERRIDES & UTILITY MAPS
    ======================================================== */
 
-/* Amber/Yellow accent high contrast in light mode */
-html.light .text-amber-400,
 /* Light mode specific element text colors */
 html.light .text-white { color: #0f172a !important; }
 html.light .text-white\/95 { color: #0f172a !important; }
