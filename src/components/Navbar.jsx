@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
 import { 
   Cpu, 
   Layers, 
@@ -20,6 +21,7 @@ import {
 } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode }) {
+  const { lang, toggleLanguage, t } = useLanguage();
   const [openDropdown, setOpenDropdown] = useState(null);
   const navRef = useRef(null);
 
@@ -36,38 +38,38 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
   const navCategories = [
     {
       id: 'visualize',
-      label: 'Visualize',
+      label: t('catVisualize'),
       items: [
-        { id: 'osi', label: 'OSI & TCP/IP Reference', icon: Layers },
-        { id: 'subnetting', label: 'FLSM & VLSM Subnetting', icon: Calculator },
-        { id: 'hardware', label: 'Hardware & RAID', icon: HardDrive },
-        { id: 'topology', label: 'Network Topologies', icon: Share2 },
-        { id: 'enterprise', label: 'Enterprise Infra', icon: Building2 },
-        { id: 'dhcp', label: 'DHCP Protocol', icon: Zap },
-        { id: 'dns', label: 'DNS Resolver', icon: Globe },
-        { id: 'ad', label: 'Active Directory', icon: ShieldCheck },
-        { id: 'lan', label: 'LAN & VLAN Trunking', icon: Layers },
-        { id: 'mail', label: 'Mail Server', icon: Mail },
-        { id: 'firewall', label: 'Firewall & IPsec VPN', icon: ShieldAlert },
-        { id: 'routing', label: 'Routing Protocols', icon: Share2 },
+        { id: 'osi', label: t('modOsi'), icon: Layers },
+        { id: 'subnetting', label: t('modSubnetting'), icon: Calculator },
+        { id: 'hardware', label: t('modHardware'), icon: HardDrive },
+        { id: 'topology', label: t('modTopology'), icon: Share2 },
+        { id: 'enterprise', label: t('modEnterprise'), icon: Building2 },
+        { id: 'dhcp', label: t('modDhcp'), icon: Zap },
+        { id: 'dns', label: t('modDns'), icon: Globe },
+        { id: 'ad', label: t('modAd'), icon: ShieldCheck },
+        { id: 'lan', label: t('modLan'), icon: Layers },
+        { id: 'mail', label: t('modMail'), icon: Mail },
+        { id: 'firewall', label: t('modFirewall'), icon: ShieldAlert },
+        { id: 'routing', label: t('modRouting'), icon: Share2 },
       ]
     },
     {
       id: 'learn',
-      label: 'Learn & Test',
+      label: t('catLearn'),
       items: [
-        { id: 'protocols', label: 'Protocol Catalog', icon: BookOpen },
-        { id: 'notebook', label: 'CLI Terminal Tutor', icon: Terminal },
-        { id: 'labs', label: 'Lab Scenarios', icon: Trophy },
-        { id: 'dts', label: 'DTS Cockpit SOC', icon: ShieldCheck },
-        { id: 'configure', label: 'Cisco Configurator', icon: Settings },
+        { id: 'protocols', label: t('modProtocols'), icon: BookOpen },
+        { id: 'notebook', label: t('modNotebook'), icon: Terminal },
+        { id: 'labs', label: t('modLabs'), icon: Trophy },
+        { id: 'dts', label: t('modDts'), icon: ShieldCheck },
+        { id: 'configure', label: t('modConfigure'), icon: Settings },
       ]
     },
     {
       id: 'sandbox',
-      label: 'Sandbox',
+      label: t('catSandbox'),
       items: [
-        { id: 'sandbox', label: 'Freeform Topology Sandbox', icon: Network },
+        { id: 'sandbox', label: t('modSandbox'), icon: Network },
       ]
     }
   ];
@@ -81,10 +83,10 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
   };
 
   return (
-    <header ref={navRef} className="sticky top-0 z-50 bg-[#12151e] border-b border-white/[0.04] px-4 py-3 shadow-[0_8px_20px_rgba(0,0,0,0.6)]">
+    <header ref={navRef} className="sticky top-0 z-50 bg-[#12151e]/90 backdrop-blur-2xl border-b border-white/[0.04] px-4 py-3 shadow-[0_8px_20px_rgba(0,0,0,0.6)]">
       <div className="max-w-7xl mx-auto space-y-3">
         
-        {/* TOP ROW: BRAND LOGO & MODE SWITCH */}
+        {/* TOP ROW: BRAND LOGO, BREADCRUMB, LANGUAGE TOGGLE & MODE SWITCH */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           
           {/* Brand Logo & Hub Button */}
@@ -92,17 +94,17 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
             <button
               onClick={() => setActiveTab('landing')}
               className="flex items-center gap-2.5 cursor-pointer group hover:opacity-90 transition-opacity"
-              title="Return to Main Landing Page Hub"
+              title={t('returnToHub')}
             >
               <div className="p-2 rounded-xl bg-[#0e1017] shadow-[inset_2px_2px_5px_rgba(0,0,0,0.65),_inset_-2px_-2px_5px_rgba(255,255,255,0.035)] text-[#f59e0b]">
                 <Cpu className="w-4 h-4" />
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-base tracking-tight text-white/95 group-hover:text-[#f59e0b] transition-colors">
-                  NetPulse
+                  {t('brandName')}
                 </span>
                 <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full neumorphic-card text-[#f59e0b] font-bold">
-                  Hub 🏠
+                  {t('hubTitle')} 🏠
                 </span>
               </div>
             </button>
@@ -110,33 +112,48 @@ export default function Navbar({ activeTab, setActiveTab, appMode, setAppMode })
 
           {/* ACTIVE TAB BREADCRUMB BADGE */}
           <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full neumorphic-card text-xs font-mono text-white/70">
-            <span className="text-[#f59e0b] font-semibold">Active Lab:</span>
+            <span className="text-[#f59e0b] font-semibold">{t('activeLab')}:</span>
             <span className="text-white font-semibold">{getActiveTabTitle()}</span>
           </div>
 
-          {/* MODE SEGMENTED CONTROL */}
-          <div className="apple-segmented-control text-xs">
+          {/* RIGHT SIDE CONTROLS: LANGUAGE SWITCHER & MODE SWITCH */}
+          <div className="flex items-center gap-3">
+            
+            {/* LANGUAGE SWITCHER BUTTON (EN | DE 🇩🇪) */}
             <button
-              onClick={() => setAppMode('clean')}
-              className={`px-3.5 py-1 rounded-full font-semibold transition-all ${
-                appMode === 'clean'
-                  ? 'bg-[#f59e0b] text-white shadow-[0_0_12px_rgba(245,158,11,0.4)]'
-                  : 'text-white/50 hover:text-white'
-              }`}
+              onClick={toggleLanguage}
+              className="px-3 py-1 rounded-full neumorphic-card text-xs font-mono font-bold flex items-center gap-1.5 cursor-pointer hover:border-[#f59e0b]/40 transition-all text-white"
+              title={t('switchLangTip')}
             >
-              Clean Mode
+              <span>{lang === 'en' ? '🇬🇧 EN' : '🇩🇪 DE'}</span>
+              <span className="text-[10px] text-[#f59e0b] font-normal">({lang === 'en' ? 'DE ➔' : 'EN ➔'})</span>
             </button>
-            <button
-              onClick={() => setAppMode('detailed')}
-              className={`px-3.5 py-1 rounded-full font-semibold transition-all ${
-                appMode === 'detailed'
-                  ? 'bg-[#7c4dff] text-white shadow-[0_0_12px_rgba(124,77,255,0.4)]'
-                  : 'text-white/50 hover:text-white'
-              }`}
-            >
-              Detailed Mode
-            </button>
+
+            {/* MODE SEGMENTED CONTROL */}
+            <div className="apple-segmented-control text-xs">
+              <button
+                onClick={() => setAppMode('clean')}
+                className={`px-3.5 py-1 rounded-full font-semibold transition-all ${
+                  appMode === 'clean'
+                    ? 'bg-[#f59e0b] text-white shadow-[0_0_12px_rgba(245,158,11,0.4)]'
+                    : 'text-white/50 hover:text-white'
+                }`}
+              >
+                {t('modeClean')}
+              </button>
+              <button
+                onClick={() => setAppMode('detailed')}
+                className={`px-3.5 py-1 rounded-full font-semibold transition-all ${
+                  appMode === 'detailed'
+                    ? 'bg-[#7c4dff] text-white shadow-[0_0_12px_rgba(124,77,255,0.4)]'
+                    : 'text-white/50 hover:text-white'
+                }`}
+              >
+                {t('modeDetailed')}
+              </button>
+            </div>
           </div>
+
         </div>
 
         {/* BOTTOM NAVIGATION DROPDOWNS BAR */}

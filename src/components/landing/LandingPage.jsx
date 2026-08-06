@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { 
   Eye, 
   GraduationCap, 
@@ -24,13 +25,14 @@ import {
 } from 'lucide-react';
 
 export default function LandingPage({ setActiveTab }) {
+  const { lang, toggleLanguage, t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
 
   const categories = [
     {
       id: 'visualize',
-      title: 'Visualize',
-      subtitle: 'Protocol animations, packet tracing & architecture maps',
+      title: t('catVisualize'),
+      subtitle: t('catVisualizeDesc'),
       icon: Eye,
       color: 'text-[#f59e0b]',
       badgeBg: 'bg-[#00f0ff]/10 text-[#00f0ff] border border-[#00f0ff]/20',
@@ -51,9 +53,9 @@ export default function LandingPage({ setActiveTab }) {
     },
     {
       id: 'learn_test',
-      title: 'Learn & Test',
+      title: t('catLearn'),
       icon: GraduationCap,
-      subtitle: 'Hands-on troubleshooting, CLI tutor & SOC playbooks',
+      subtitle: t('catLearnDesc'),
       color: 'text-[#f59e0b]',
       badgeBg: 'bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20',
       items: [
@@ -66,9 +68,9 @@ export default function LandingPage({ setActiveTab }) {
     },
     {
       id: 'sandbox',
-      title: 'Sandbox',
+      title: t('catSandbox'),
       icon: Palette,
-      subtitle: 'Multi-device topology builder',
+      subtitle: t('catSandboxDesc'),
       color: 'text-[#7c4dff]',
       badgeBg: 'bg-[#7c4dff]/10 text-[#7c4dff] border border-[#7c4dff]/20',
       items: [
@@ -90,32 +92,42 @@ export default function LandingPage({ setActiveTab }) {
   return (
     <div className="space-y-7 max-w-7xl mx-auto font-sans text-slate-100 pb-10 pt-4">
       
-      {/* BRAND BADGE & RECESSED FROSTED SEARCH BAR */}
+      {/* BRAND BADGE & RECESSED SEARCH BAR WITH LANGUAGE SWITCHER */}
       <div className="max-w-xl mx-auto space-y-3 text-center">
         
-        {/* DTS Herford Brand Pill with Electric Cyan Glow */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full neumorphic-card text-xs font-mono text-[#f59e0b] font-semibold border border-[#00f0ff]/20">
-          <Sparkles className="w-3.5 h-3.5 text-[#00f0ff]" />
-          <span>NetPulse • DTS Herford Enterprise Suite</span>
+        {/* DTS Herford Brand Pill & Language Toggle */}
+        <div className="flex items-center justify-center gap-2">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full neumorphic-card text-xs font-mono text-[#f59e0b] font-semibold border border-[#00f0ff]/20">
+            <Sparkles className="w-3.5 h-3.5 text-[#00f0ff]" />
+            <span>{t('suiteTitle')}</span>
+          </div>
+
+          <button
+            onClick={toggleLanguage}
+            className="px-3 py-1 rounded-full neumorphic-card text-xs font-mono font-bold flex items-center gap-1 cursor-pointer hover:border-[#f59e0b]/40 transition-all text-white"
+            title="Switch Language / Sprache wechseln"
+          >
+            <span>{lang === 'en' ? '🇬🇧 EN' : '🇩🇪 DE'}</span>
+          </button>
         </div>
 
         {/* Search Title & Input */}
         <div className="space-y-2">
-          <label className="text-base font-bold text-white/95 tracking-tight block">What do you want to learn?</label>
+          <label className="text-base font-bold text-white/95 tracking-tight block">{t('searchLabel')}</label>
           <div className="relative">
             <Search className="w-4 h-4 text-[#00f0ff]/70 absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search OSI, Subnetting, DHCP, Firewall, Routing..."
+              placeholder={t('searchPlaceholder')}
               className="w-full pl-11 pr-4 py-3.5 neumorphic-input font-sans text-sm placeholder:text-white/30 text-white font-medium focus:border-[#00f0ff]/40"
             />
           </div>
         </div>
       </div>
 
-      {/* CATEGORIES & FROSTED NEUMORPHIC CARDS GRID */}
+      {/* CATEGORIES & TACTILE NEUMORPHIC CARDS GRID */}
       {filteredCategories.map((cat) => {
         const CategoryIcon = cat.icon;
         return (
@@ -133,7 +145,7 @@ export default function LandingPage({ setActiveTab }) {
               <span className="text-[11px] text-white/40 hidden sm:inline font-sans">{cat.subtitle}</span>
             </div>
 
-            {/* HIGH-DENSITY FROSTED NEUMORPHIC GRID */}
+            {/* HIGH-DENSITY TACTILE NEUMORPHIC GRID */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5">
               {cat.items.map((item) => {
                 const ItemIcon = item.icon;
@@ -167,7 +179,7 @@ export default function LandingPage({ setActiveTab }) {
 
                     {/* OPEN LAB ACTION IN SECONDARY ACCENT (ELECTRIC CYAN #00f0ff) */}
                     <div className="pt-2 border-t border-white/[0.04] flex items-center justify-between text-[10px] font-mono text-[#00f0ff] font-bold tracking-wide group-hover:text-cyan-300">
-                      <span>Open Lab</span>
+                      <span>{t('openLab')}</span>
                       <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1 text-[#00f0ff]" />
                     </div>
                   </div>

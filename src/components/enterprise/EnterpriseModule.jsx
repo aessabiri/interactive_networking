@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { 
   ShieldCheck, 
   Globe, 
@@ -23,6 +24,7 @@ import TerminalLog from '../common/TerminalLog';
 import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
 
 export default function EnterpriseModule({ appMode = 'clean' }) {
+  const { lang, t } = useLanguage();
   const [showAnimation, setShowAnimation] = useState(true);
   const [ecosystem, setEcosystem] = useState('windows'); // 'windows' or 'linux'
   const [speed, setSpeed] = useState(0.5); // Default 0.5x speed (Blue - Slowest)
@@ -315,8 +317,8 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
       
       {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
       <CleanWidget
-        title="Enterprise Infrastructure & Multi-Hop Workflow Simulator"
-        subtitle="Watch packets traverse real network wire paths: DHCP Lease ➔ Domain Auth ➔ DNS ➔ Web/SQL DB ➔ Mail ➔ SAN Backup ➔ LAN Print."
+        title={lang === 'de' ? 'Enterprise-Infrastruktur & Multi-Hop-Workflow-Simulator' : 'Enterprise Infrastructure & Multi-Hop Workflow Simulator'}
+        subtitle={lang === 'de' ? 'Beobachten Sie, wie Pakete echte Netzwerkpfade durchqueren: DHCP-Lease ➔ Domänenauthentifizierung ➔ DNS ➔ Web/SQL DB ➔ Mail ➔ SAN Backup ➔ LAN Print.' : 'Watch packets traverse real network wire paths: DHCP Lease ➔ Domain Auth ➔ DNS ➔ Web/SQL DB ➔ Mail ➔ SAN Backup ➔ LAN Print.'}
         icon={Building2}
         ip="192.168.1.105 (Sales) → 192.168.1.0/24 Subnet"
         protocol={activeStep === 1 ? 'DHCP (UDP 67/68)' : activeStep === 2 ? (ecosystem === 'windows' ? 'Kerberos (Port 88)' : 'LDAP / FreeIPA') : activeStep === 3 ? 'DNS (UDP 53)' : activeStep === 4 ? 'SQL Query (Port 5432)' : activeStep === 5 ? 'SMTP/IMAP' : activeStep === 6 ? 'iSCSI SAN / Snapshot' : activeStep === 7 ? 'LPR/RAW (Port 9100)' : 'Enterprise LAN'}
@@ -340,7 +342,7 @@ export default function EnterpriseModule({ appMode = 'clean' }) {
       <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 px-4 py-2.5 rounded-2xl border border-slate-800 font-mono text-xs shadow-lg">
         <div className="flex items-center gap-2">
           <Building2 className="w-4 h-4 text-cyan-400" />
-          <span className="text-slate-300 font-extrabold">Enterprise Stack Ecosystem:</span>
+          <span className="text-slate-300 font-extrabold">{lang === 'de' ? 'Unternehmens-Stack-Ökosystem:' : 'Enterprise Stack Ecosystem:'}</span>
         </div>
         <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
           <button

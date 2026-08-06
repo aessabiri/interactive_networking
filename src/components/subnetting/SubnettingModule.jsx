@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { calculateVlsm, calculateFlsm, cidrToSubnetMask } from '../../utils/subnetCalculator';
 import { Globe, Plus, Trash2, RotateCcw, CheckCircle2, BookOpen, Sparkles, X } from 'lucide-react';
 
 export default function SubnettingModule() {
+  const { lang, t } = useLanguage();
+
   // Base Network Input & Mode
   const [networkInput, setNetworkInput] = useState('172.16.0.0/18');
   const [calcMode, setCalcMode] = useState('vlsm'); // 'vlsm' or 'flsm'
@@ -91,7 +94,7 @@ export default function SubnettingModule() {
               <Globe className="w-5 h-5 shrink-0" />
             </div>
             <div className="flex-1 space-y-1">
-              <label className="text-[11px] font-mono text-white/50 block leading-none">Base Network Address & Prefix</label>
+              <label className="text-[11px] font-mono text-white/50 block leading-none">{t('baseNetworkLabel')}</label>
               <input
                 type="text"
                 value={networkInput}
@@ -99,7 +102,7 @@ export default function SubnettingModule() {
                   setNetworkInput(e.target.value);
                   setCurrentStepIndex(0);
                 }}
-                placeholder="172.16.0.0/18 or 192.168.1.0/24"
+                placeholder={t('baseNetworkPlaceholder')}
                 className="w-full max-w-xs px-3.5 py-2 neumorphic-input font-mono text-xs text-[#f59e0b] font-bold"
               />
             </div>
@@ -118,7 +121,7 @@ export default function SubnettingModule() {
                   : 'text-white/50 hover:text-white'
               }`}
             >
-              VLSM
+              {t('modeVlsm')}
             </button>
             <button
               onClick={() => {
@@ -131,7 +134,7 @@ export default function SubnettingModule() {
                   : 'text-white/50 hover:text-white'
               }`}
             >
-              FLSM
+              {t('modeFlsm')}
             </button>
           </div>
 
@@ -141,7 +144,7 @@ export default function SubnettingModule() {
               <button
                 onClick={handleResetLesson}
                 className="p-2.5 rounded-full neumorphic-button text-white/60 hover:text-white"
-                title="Start Lesson Over"
+                title={t('resetLesson')}
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
@@ -161,10 +164,10 @@ export default function SubnettingModule() {
               <BookOpen className="w-4 h-4" />
               <span>
                 {currentStepIndex === 0
-                  ? 'Start Step-by-Step Lesson'
+                  ? t('startLesson')
                   : currentStepIndex < totalSteps
-                  ? `Next Step (${currentStepIndex}/${totalSteps}) ➔`
-                  : 'Lesson Completed ✓'}
+                  ? `${t('nextStep')} (${currentStepIndex}/${totalSteps}) ➔`
+                  : t('lessonCompleted')}
               </span>
             </button>
           </div>
@@ -172,13 +175,13 @@ export default function SubnettingModule() {
 
         {/* ROW 2: ADD SUBNET REQUIREMENT INPUT FIELD & BUTTON */}
         <form onSubmit={handleAddSubnet} className="pt-4 border-t border-white/[0.04] flex flex-wrap items-center gap-2 font-mono text-xs">
-          <span className="text-white/60 font-sans text-xs font-medium mr-1">Add Subnet Requirement:</span>
+          <span className="text-white/60 font-sans text-xs font-medium mr-1">{t('addSubnetLabel')}</span>
           
           <input
             type="text"
             value={newSubnetName}
             onChange={(e) => setNewSubnetName(e.target.value)}
-            placeholder="Subnet Name (e.g. Sales)"
+            placeholder={t('subnetNamePlaceholder')}
             className="flex-1 min-w-[160px] px-3.5 py-2 neumorphic-input font-sans text-xs text-white"
           />
 
@@ -187,7 +190,7 @@ export default function SubnettingModule() {
             min="1"
             value={newSubnetHosts}
             onChange={(e) => setNewSubnetHosts(e.target.value)}
-            placeholder="Hosts (e.g. 500)"
+            placeholder={t('subnetHostsPlaceholder')}
             className="w-28 px-3 py-2 neumorphic-input font-mono text-xs text-[#f59e0b] text-right font-bold"
           />
 
@@ -196,13 +199,13 @@ export default function SubnettingModule() {
             className="px-4 py-2 neumorphic-button-primary text-xs flex items-center gap-1.5 shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Add Subnet</span>
+            <span>{t('addSubnetBtn')}</span>
           </button>
         </form>
 
         {/* ROW 3: DISMISSIBLE SUBNET PILL TAGS */}
         <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-xs">
-          <span className="text-white/40 text-[11px]">Configured Subnets:</span>
+          <span className="text-white/40 text-[11px]">{t('configuredSubnets')}</span>
           {subnets.map((s) => (
             <div 
               key={s.id}
@@ -229,9 +232,9 @@ export default function SubnettingModule() {
       {currentStepIndex === 0 && (
         <div className="neumorphic-card p-6 text-center space-y-3">
           <Sparkles className="w-8 h-8 text-[#f59e0b] mx-auto animate-pulse" />
-          <h3 className="text-sm font-bold text-white/90">Interactive Subnetting Student Guide</h3>
+          <h3 className="text-sm font-bold text-white/90">{t('guideTitle')}</h3>
           <p className="text-xs text-white/50 max-w-md mx-auto leading-relaxed font-sans">
-            Add your subnets above and click <strong className="text-[#f59e0b]">"Start Step-by-Step Lesson"</strong> to reveal calculations showing exactly how Host Bits, Subnet Masks (SM), Network Addresses (NA), and Broadcast Addresses (BA) are derived step by step.
+            {t('guideDesc')}
           </p>
         </div>
       )}
@@ -245,28 +248,28 @@ export default function SubnettingModule() {
             <div className="flex items-center justify-between border-b border-white/[0.04] pb-2">
               <span className="text-[#f59e0b] font-semibold flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded-full bg-[#f59e0b]/10 text-[#f59e0b] text-[10px]">STEP 1</span>
-                Understand Base Network Pool & Strategy
+                {t('step1Title')}
               </span>
               <span className="text-white/40 text-[10px] font-bold">{calcMode.toUpperCase()} Mode</span>
             </div>
 
             <div className="space-y-2.5 text-white/80 leading-relaxed font-sans text-xs">
               <p>
-                First, we examine our allocated base network: <strong className="text-[#f59e0b] font-mono">{results.baseIp}{results.baseCidr}</strong>.
+                {lang === 'de' ? 'Zuerst untersuchen wir unser zugewiesenes Basis-Netzwerk:' : 'First, we examine our allocated base network:'} <strong className="text-[#f59e0b] font-mono">{results.baseIp}{results.baseCidr}</strong>.
               </p>
               <div className="p-3.5 rounded-xl neumorphic-card-inset font-mono text-[11px] space-y-1.5">
-                <p>• CIDR Prefix: <strong className="text-white">{results.baseCidr}</strong> (Subnet Mask = {cidrToSubnetMask(baseCidr)})</p>
-                <p>• Host Bits: 32 - {baseCidr} = <strong className="text-[#30d158]">{32 - baseCidr} bits</strong></p>
-                <p>• Total IP Address Pool: 2^({32 - baseCidr}) = <strong className="text-[#f59e0b]">{results.totalBlockIps.toLocaleString()} IPs</strong></p>
+                <p>• {t('cidrPrefix')}: <strong className="text-white">{results.baseCidr}</strong> ({t('subnetMask')} = {cidrToSubnetMask(baseCidr)})</p>
+                <p>• {t('hostBits')}: 32 - {baseCidr} = <strong className="text-[#30d158]">{32 - baseCidr} bits</strong></p>
+                <p>• {t('totalPool')}: 2^({32 - baseCidr}) = <strong className="text-[#f59e0b]">{results.totalBlockIps.toLocaleString()} IPs</strong></p>
               </div>
 
               {calcMode === 'vlsm' ? (
                 <p className="text-[#f59e0b] text-[11px] pt-1">
-                  💡 <strong>VLSM Strategy Rule:</strong> We MUST sort all VLAN requirements by host count in <strong>descending order</strong> (Largest ➔ Smallest). This guarantees subnets fit tightly without overlapping or leaving fragmented gaps!
+                  💡 {t('vlsmRule')}
                 </p>
               ) : (
                 <p className="text-[#f59e0b] text-[11px] pt-1">
-                  💡 <strong>FLSM Strategy Rule:</strong> In Fixed Length Subnet Masking, every subnet is forced to match the size of the <strong>largest VLAN requirement ({Math.max(...subnets.map(v=>v.hosts))} hosts)</strong>.
+                  💡 {t('flsmRule')}
                 </p>
               )}
             </div>
@@ -286,49 +289,49 @@ export default function SubnettingModule() {
               <div className="flex items-center justify-between border-b border-white/[0.04] pb-2">
                 <span className="text-[#f59e0b] font-semibold flex items-center gap-2">
                   <span className="px-2 py-0.5 rounded-full bg-[#30d158]/10 text-[#30d158] text-[10px]">STEP {stepNum}</span>
-                  Subnetting {sub.name} ({sub.requestedHosts} Hosts Needed)
+                  Subnetting {sub.name} ({sub.requestedHosts} {t('usableHosts')})
                 </span>
                 <span className="text-[#30d158] font-mono text-[11px] font-bold">
-                  Assigned: {sub.networkAddress}{sub.prefix}
+                  {lang === 'de' ? 'Zugewiesen' : 'Assigned'}: {sub.networkAddress}{sub.prefix}
                 </span>
               </div>
 
               <div className="space-y-3 font-sans text-xs text-white/80">
-                <p>Here is how we calculate the exact subnet parameters for <strong className="text-white">{sub.name}</strong>:</p>
+                <p>{lang === 'de' ? `Hier ist die exakte Berechnung für ${sub.name}:` : `Here is how we calculate the exact subnet parameters for ${sub.name}:`}</p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-[11px]">
                   
                   {/* Part A: Host Bits Formula */}
                   <div className="p-3.5 rounded-xl neumorphic-card-inset space-y-1">
-                    <span className="text-white/40 font-semibold text-[10px] block">A. FIND HOST BITS (H)</span>
-                    <p>Hosts Needed: {sub.requestedHosts}</p>
-                    <p>Total (+2 for NA & BA): {sub.requestedHosts + 2} IPs</p>
-                    <p className="text-[#f59e0b]">Smallest Power: 2^{sub.hostBits} = {sub.blockSize} IPs</p>
-                    <p className="text-[#30d158] font-bold pt-1 border-t border-white/[0.05]">⇒ H = {sub.hostBits} Host Bits</p>
+                    <span className="text-white/40 font-semibold text-[10px] block">{t('partA')}</span>
+                    <p>{t('hostsNeeded')}: {sub.requestedHosts}</p>
+                    <p>{t('totalWithBoundaries')}: {sub.requestedHosts + 2} IPs</p>
+                    <p className="text-[#f59e0b]">{t('smallestPower')}: 2^{sub.hostBits} = {sub.blockSize} IPs</p>
+                    <p className="text-[#30d158] font-bold pt-1 border-t border-white/[0.05]">⇒ H = {sub.hostBits} {t('hostBits')}</p>
                   </div>
 
                   {/* Part B: CIDR & Subnet Mask */}
                   <div className="p-3.5 rounded-xl neumorphic-card-inset space-y-1">
-                    <span className="text-white/40 font-semibold text-[10px] block">B. CALCULATE MASKS (SM & WM)</span>
-                    <p>CIDR Prefix: 32 - {sub.hostBits} = <strong className="text-[#f59e0b]">/{sub.cidr}</strong></p>
-                    <p>Subnet Mask (SM): <strong className="text-[#30d158]">{sub.subnetMask}</strong></p>
-                    <p>Wildcard Mask (WM): <strong className="text-[#f59e0b]">{sub.wildcardMask}</strong></p>
+                    <span className="text-white/40 font-semibold text-[10px] block">{t('partB')}</span>
+                    <p>{t('cidrPrefix')}: 32 - {sub.hostBits} = <strong className="text-[#f59e0b]">/{sub.cidr}</strong></p>
+                    <p>{t('subnetMask')}: <strong className="text-[#30d158]">{sub.subnetMask}</strong></p>
+                    <p>{t('wildcardMask')}: <strong className="text-[#f59e0b]">{sub.wildcardMask}</strong></p>
                   </div>
 
                   {/* Part C: Network & Broadcast Addresses */}
                   <div className="p-3.5 rounded-xl neumorphic-card-inset space-y-1">
-                    <span className="text-white/40 font-semibold text-[10px] block">C. BOUNDARIES (NA & BA)</span>
-                    <p>Network Address (NA): <strong className="text-[#f59e0b]">{sub.networkAddress}</strong></p>
-                    <p>Broadcast Address (BA): <strong className="text-[#7c4dff]">{sub.broadcastAddress}</strong></p>
-                    <p className="text-white/40 text-[10px]">Block Size: {sub.blockSize} IPs</p>
+                    <span className="text-white/40 font-semibold text-[10px] block">{t('partC')}</span>
+                    <p>{t('networkAddress')}: <strong className="text-[#f59e0b]">{sub.networkAddress}</strong></p>
+                    <p>{t('broadcastAddress')}: <strong className="text-[#7c4dff]">{sub.broadcastAddress}</strong></p>
+                    <p className="text-white/40 text-[10px]">{t('blockSize')}: {sub.blockSize} IPs</p>
                   </div>
 
                   {/* Part D: Usable Range & Gateway */}
                   <div className="p-3.5 rounded-xl neumorphic-card-inset space-y-1">
-                    <span className="text-white/40 font-semibold text-[10px] block">D. USABLE RANGE & GATEWAY</span>
-                    <p>Gateway IP (First): <strong className="text-[#30d158]">{sub.firstUsable}</strong></p>
-                    <p>Last Usable IP: <strong className="text-[#30d158]">{sub.lastUsable}</strong></p>
-                    <p className="text-[#f59e0b] font-bold pt-1 border-t border-white/[0.05]">Usable Hosts: {sub.totalUsable}</p>
+                    <span className="text-white/40 font-semibold text-[10px] block">{t('partD')}</span>
+                    <p>{t('gatewayIp')}: <strong className="text-[#30d158]">{sub.firstUsable}</strong></p>
+                    <p>{t('lastUsableIp')}: <strong className="text-[#30d158]">{sub.lastUsable}</strong></p>
+                    <p className="text-[#f59e0b] font-bold pt-1 border-t border-white/[0.05]">{t('usableHosts')}: {sub.totalUsable}</p>
                   </div>
 
                 </div>
@@ -342,24 +345,22 @@ export default function SubnettingModule() {
           <div className="neumorphic-card p-5 border border-[#30d158]/30 space-y-3 animate-in fade-in duration-300">
             <div className="flex items-center gap-2 text-[#30d158] font-semibold text-sm border-b border-white/[0.04] pb-2">
               <CheckCircle2 className="w-4 h-4 text-[#30d158]" />
-              <span>Final Lesson Summary ({calcMode.toUpperCase()} Subnetting Complete)</span>
+              <span>{t('summaryTitle')} ({calcMode.toUpperCase()})</span>
             </div>
 
             <div className="space-y-2.5 text-white/80 font-sans text-xs leading-relaxed">
-              <p>
-                Congratulations! You have successfully calculated all subnets for your network:
-              </p>
+              <p>{t('congratsMessage')}</p>
 
               <div className="p-3.5 rounded-xl neumorphic-card-inset font-mono text-[11px] space-y-1">
                 {results.subnets.map(s => (
                   <p key={s.id}>
-                    • <strong>{s.name}</strong>: NA = <span className="text-[#f59e0b]">{s.networkAddress}{s.prefix}</span> | SM = <span className="text-[#30d158]">{s.subnetMask}</span> | Usable = {s.usableRange}
+                    • <strong>{s.name}</strong>: NA = <span className="text-[#f59e0b]">{s.networkAddress}{s.prefix}</span> | SM = <span className="text-[#30d158]">{s.subnetMask}</span> | Range = {s.usableRange}
                   </p>
                 ))}
               </div>
 
               <div className="p-3 rounded-xl bg-[#30d158]/10 border border-[#30d158]/20 text-[#30d158] text-[11px] font-mono">
-                Total Allocated IPs: {results.totalAllocatedIps.toLocaleString()} IPs | Free Remaining IP Pool: {results.freeIps.toLocaleString()} IPs
+                {t('totalAllocated')}: {results.totalAllocatedIps.toLocaleString()} IPs | {t('freeRemaining')}: {results.freeIps.toLocaleString()} IPs
               </div>
             </div>
           </div>

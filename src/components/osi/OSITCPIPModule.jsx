@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { Layers, Crosshair, Grid, Play, Zap, Mail, Globe, Server, Radio, Key, Activity, RotateCcw } from 'lucide-react';
 
 export default function OSITCPIPModule({ appMode = 'clean' }) {
+  const { lang, t } = useLanguage();
   const [selectedAction, setSelectedAction] = useState('mail'); // Default 'mail'
   const [encapsulationStep, setEncapsulationStep] = useState(7); // Starts at 7 (L7 App) down to 1 (L1 Physical)
   const [isAnimating, setIsAnimating] = useState(false);
@@ -120,12 +122,14 @@ export default function OSITCPIPModule({ appMode = 'clean' }) {
           <div>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black bg-indigo-950 text-indigo-300 border border-indigo-800 flex items-center gap-1">
-                <Grid className="w-3 h-3 text-cyan-400" /> COORDINATE GRID ACTIVE
+                <Grid className="w-3 h-3 text-cyan-400" /> {lang === 'de' ? 'KOORDINATENRASTER AKTIV' : 'COORDINATE GRID ACTIVE'}
               </span>
-              <h2 className="text-xl font-black text-slate-100 tracking-tight">OSI Layer-by-Layer Encapsulation Engine</h2>
+              <h2 className="text-xl font-black text-slate-100 tracking-tight">
+                {lang === 'de' ? 'OSI-Schicht-für-Schicht Kapselungs-Engine' : 'OSI Layer-by-Layer Encapsulation Engine'}
+              </h2>
             </div>
             <p className="text-xs text-slate-400 font-mono mt-0.5">
-              Click "Start Next Action" to watch payload encapsulate step-by-step down through the OSI stack.
+              {lang === 'de' ? 'Klicken Sie auf "Nächste Aktion starten", um zu sehen, wie die Nutzlast schrittweise durch den OSI-Stack gekapselt wird.' : 'Click "Start Next Action" to watch payload encapsulate step-by-step down through the OSI stack.'}
             </p>
           </div>
         </div>
@@ -147,7 +151,7 @@ export default function OSITCPIPModule({ appMode = 'clean' }) {
         {/* SELECT ACTION BUTTONS */}
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-slate-400 font-bold flex items-center gap-1 text-[11px]">
-            <Zap className="w-3.5 h-3.5 text-amber-400" /> Select Service:
+            <Zap className="w-3.5 h-3.5 text-amber-400" /> {lang === 'de' ? 'Dienst auswählen:' : 'Select Service:'}
           </span>
           {appActions.map((action) => {
             const IconComp = action.icon;
@@ -185,7 +189,7 @@ export default function OSITCPIPModule({ appMode = 'clean' }) {
             }`}
           >
             {isAnimating ? <Zap className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-slate-950" />}
-            <span>{isAnimating ? 'Encapsulating...' : 'Start Next Action'}</span>
+            <span>{isAnimating ? (lang === 'de' ? 'Kapselung läuft...' : 'Encapsulating...') : (lang === 'de' ? 'Nächste Aktion starten' : 'Start Next Action')}</span>
           </button>
 
           <button
@@ -193,7 +197,7 @@ export default function OSITCPIPModule({ appMode = 'clean' }) {
             className="px-3.5 py-2.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-cyan-500 text-slate-300 font-bold text-xs flex items-center gap-1 transition-all cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
-            <span>Reset</span>
+            <span>{lang === 'de' ? 'Zurücksetzen' : 'Reset'}</span>
           </button>
         </div>
 

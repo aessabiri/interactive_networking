@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import {
   HardDrive,
   Cpu,
@@ -27,6 +28,7 @@ import {
 import { EasyCard } from '../common/EasyCard';
 
 export default function HardwareModule({ appMode = 'clean' }) {
+  const { lang, t } = useLanguage();
   // --- RAID SIMULATOR STATE ---
   const [raidLevel, setRaidLevel] = useState('5'); // '0', '1', '5', '6', '10'
   const [diskSize, setDiskSize] = useState(2); // TB per disk
@@ -125,41 +127,41 @@ export default function HardwareModule({ appMode = 'clean' }) {
     case '0':
       usableCapacity = activeDiskCount * diskSize;
       faultTolerance = 0;
-      raidDescription = 'Data is split (striped) evenly across all disks. Maximum speed, but ZERO fault tolerance.';
-      readSpeed = `${activeDiskCount}x (Fastest)`;
-      writeSpeed = `${activeDiskCount}x (Fastest)`;
+      raidDescription = lang === 'de' ? 'Daten werden gleichmäßig auf alle Festplatten verteilt (Striping). Maximale Geschwindigkeit, aber KEINE Fehlertoleranz.' : 'Data is split (striped) evenly across all disks. Maximum speed, but ZERO fault tolerance.';
+      readSpeed = lang === 'de' ? `${activeDiskCount}x (Am schnellsten)` : `${activeDiskCount}x (Fastest)`;
+      writeSpeed = lang === 'de' ? `${activeDiskCount}x (Am schnellsten)` : `${activeDiskCount}x (Fastest)`;
       break;
 
     case '1':
       usableCapacity = (activeDiskCount / 2) * diskSize;
       faultTolerance = Math.floor(activeDiskCount / 2);
-      raidDescription = 'Data is mirrored (duplicated) across drive pairs. 100% redundancy, 50% usable space.';
-      readSpeed = `${activeDiskCount}x (Fast)`;
-      writeSpeed = '1x (Standard)';
+      raidDescription = lang === 'de' ? 'Daten werden auf Laufwerkspaare gespiegelt (dupliziert). 100% Redundanz, 50% nutzbarer Speicher.' : 'Data is mirrored (duplicated) across drive pairs. 100% redundancy, 50% usable space.';
+      readSpeed = lang === 'de' ? `${activeDiskCount}x (Schnell)` : `${activeDiskCount}x (Fast)`;
+      writeSpeed = lang === 'de' ? '1x (Standard)' : '1x (Standard)';
       break;
 
     case '5':
       usableCapacity = (activeDiskCount - 1) * diskSize;
       faultTolerance = 1;
-      raidDescription = 'Block striping with single distributed parity. Sustains 1 drive failure with min 3 disks.';
-      readSpeed = `${activeDiskCount - 1}x (High)`;
-      writeSpeed = 'Parity Overhead';
+      raidDescription = lang === 'de' ? 'Block-Striping mit einfacher verteilter Parität. Übersteht 1 Laufwerksausfall mit min. 3 Festplatten.' : 'Block striping with single distributed parity. Sustains 1 drive failure with min 3 disks.';
+      readSpeed = lang === 'de' ? `${activeDiskCount - 1}x (Hoch)` : `${activeDiskCount - 1}x (High)`;
+      writeSpeed = lang === 'de' ? 'Paritätsaufwand' : 'Parity Overhead';
       break;
 
     case '6':
       usableCapacity = (activeDiskCount - 2) * diskSize;
       faultTolerance = 2;
-      raidDescription = 'Block striping with dual distributed parity (P+Q). Sustains 2 simultaneous drive failures.';
-      readSpeed = `${activeDiskCount - 2}x (High)`;
-      writeSpeed = 'Dual Parity Overhead';
+      raidDescription = lang === 'de' ? 'Block-Striping mit doppelter verteilter Parität (P+Q). Übersteht 2 gleichzeitige Laufwerksausfälle.' : 'Block striping with dual distributed parity (P+Q). Sustains 2 simultaneous drive failures.';
+      readSpeed = lang === 'de' ? `${activeDiskCount - 2}x (Hoch)` : `${activeDiskCount - 2}x (High)`;
+      writeSpeed = lang === 'de' ? 'Doppelter Paritätsaufwand' : 'Dual Parity Overhead';
       break;
 
     case '10':
       usableCapacity = (activeDiskCount / 2) * diskSize;
       faultTolerance = Math.floor(activeDiskCount / 2);
-      raidDescription = 'RAID 1+0 (Striped Mirror). High speed and high reliability for enterprise databases.';
-      readSpeed = `${activeDiskCount}x (High)`;
-      writeSpeed = `${activeDiskCount / 2}x (High)`;
+      raidDescription = lang === 'de' ? 'RAID 1+0 (Gespiegelte Stripes). Hohe Geschwindigkeit und Zuverlässigkeit für Unternehmensdatenbanken.' : 'RAID 1+0 (Striped Mirror). High speed and high reliability for enterprise databases.';
+      readSpeed = lang === 'de' ? `${activeDiskCount}x (Hoch)` : `${activeDiskCount}x (High)`;
+      writeSpeed = lang === 'de' ? `${activeDiskCount / 2}x (Hoch)` : `${activeDiskCount / 2}x (High)`;
       break;
 
     default:
@@ -178,10 +180,10 @@ export default function HardwareModule({ appMode = 'clean' }) {
 
   if (failedActiveDisks > 0) {
     if (failedActiveDisks > faultTolerance) {
-      arrayStatus = 'FAILED (CRITICAL DATA LOSS)';
+      arrayStatus = lang === 'de' ? 'FEHLGESCHLAGEN (KRITISCHER DATENVERLUST)' : 'FAILED (CRITICAL DATA LOSS)';
       arrayStatusColor = 'border-rose-500/50 bg-rose-950/40 text-rose-400 animate-pulse';
     } else {
-      arrayStatus = isRebuilding ? 'REBUILDING' : 'DEGRADED (FAULT TOLERANT)';
+      arrayStatus = isRebuilding ? (lang === 'de' ? 'WIEDERHERSTELLUNG' : 'REBUILDING') : (lang === 'de' ? 'DEGRADIERT (FEHLERTOLERANT)' : 'DEGRADED (FAULT TOLERANT)');
       arrayStatusColor = isRebuilding
         ? 'border-cyan-500/50 bg-cyan-950/40 text-cyan-400'
         : 'border-amber-500/50 bg-amber-950/40 text-amber-400';
@@ -246,17 +248,21 @@ export default function HardwareModule({ appMode = 'clean' }) {
   // Scenario Descriptions per RAID Type
   const scenariosInfo = {
     '0': {
-      title: 'RAID 0 — 1 Drive Failure Scenario',
-      statusType: 'CRITICAL LOSS',
+      title: lang === 'de' ? 'RAID 0 — 1 Festplattenausfall Szenario' : 'RAID 0 — 1 Drive Failure Scenario',
+      statusType: lang === 'de' ? 'KRITISCHER VERLUST' : 'CRITICAL LOSS',
       statusColor: 'text-rose-400 bg-rose-950/50 border-rose-800',
       dataIntact: false,
-      summary: 'Total Array Collapse. All data across ALL drives is permanently lost.',
-      details: [
+      summary: lang === 'de' ? 'Totaler Array-Zusammenbruch. Alle Daten auf ALLEN Festplatten sind dauerhaft verloren.' : 'Total Array Collapse. All data across ALL drives is permanently lost.',
+      details: lang === 'de' ? [
+        'Daten werden sequenziell verteilt (Block A1 auf Disk 1, Block A2 auf Disk 2).',
+        'Wenn Disk 1 ausfällt, fehlt die Hälfte jeder Datei ohne Parität oder Backup.',
+        'Array-Zustand wird UNWIEDERHERSTELLBAR. Vollständige Wiederherstellung aus externen Backups erforderlich.'
+      ] : [
         'Data is stripped sequentially (Block A1 on Disk 1, Block A2 on Disk 2).',
         'If Disk 1 fails, half of every file is missing with NO parity or backup to reconstruct it.',
         'Array state becomes UNRECOVERABLE. Full restore from external backups is required.'
       ],
-      action: 'Restore from off-site / cloud backups.'
+      action: lang === 'de' ? 'Wiederherstellung aus Off-Site / Cloud-Backups.' : 'Restore from off-site / cloud backups.'
     },
     '1': {
       title: 'RAID 1 — 1 Drive Failure Scenario',
@@ -327,14 +333,14 @@ export default function HardwareModule({ appMode = 'clean' }) {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-black tracking-tight text-white">
-                  Server RAID Storage & Data Flow Workbench
+                  {lang === 'de' ? 'Server RAID-Speicher & Datenfluss-Workbench' : 'Server RAID Storage & Data Flow Workbench'}
                 </h1>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-cyan-950 text-cyan-400 border border-cyan-800">
-                  Data Flow & 1-Drive Failures
+                  {lang === 'de' ? 'Datenfluss & 1-Laufwerk-Ausfälle' : 'Data Flow & 1-Drive Failures'}
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-1">
-                Visualizing data block striping, parity distribution, and single hard drive failure scenarios across RAID 0, 1, 5, 6 & 10.
+                {lang === 'de' ? 'Visualisierung von Daten-Striping, Paritätsverteilung und Szenarien für den Ausfall einzelner Festplatten über RAID 0, 1, 5, 6 & 10.' : 'Visualizing data block striping, parity distribution, and single hard drive failure scenarios across RAID 0, 1, 5, 6 & 10.'}
               </p>
             </div>
           </div>

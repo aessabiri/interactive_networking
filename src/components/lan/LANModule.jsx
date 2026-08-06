@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { Layers, Network, Router, Play, Pause, RotateCcw, CheckCircle2, Gauge, Mail, ChevronDown, ChevronUp, HelpCircle, FileCode, Terminal, SkipForward, Globe, XCircle, Info, X, Cpu, Hash, Activity, Zap, Laptop, Radio, ShieldCheck, Server, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
 
 export default function LANModule({ appMode = 'clean' }) {
+  const { lang, t } = useLanguage();
   const [showAnimation, setShowAnimation] = useState(true);
   const [activeStep, setActiveStep] = useState(0); // 0: Idle, 1: ARP Broadcast Request, 2: Switch CAM Learn, 3: Unicast ARP Reply, 4: ICMP Ping Active
   const [isPlaying, setIsPlaying] = useState(false);
@@ -299,13 +301,13 @@ export default function LANModule({ appMode = 'clean' }) {
 
       {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
       <CleanWidget
-        title="Local Area Network (LAN) & ARP Switching Analyzer"
-        subtitle="Learn how network switches connect computers inside an office using MAC addresses and ARP resolution"
+        title={lang === 'de' ? 'Local Area Network (LAN) & ARP-Switching-Analysator' : 'Local Area Network (LAN) & ARP Switching Analyzer'}
+        subtitle={lang === 'de' ? 'Erfahren Sie, wie Netzwerk-Switches Computer innerhalb eines Büros mithilfe von MAC-Adressen und ARP-Auflösung verbinden' : 'Learn how network switches connect computers inside an office using MAC addresses and ARP resolution'}
         icon={Layers}
         ip="192.168.1.105 → 192.168.1.200"
         protocol="ARP / ICMP Ping"
-        port="Ethernet Layer 2"
-        status={activeStep >= 3 ? "MAC Address Resolved" : "Unresolved ARP"}
+        port={lang === 'de' ? 'Ethernet-Schicht 2' : 'Ethernet Layer 2'}
+        status={activeStep >= 3 ? (lang === 'de' ? 'MAC-Adresse aufgelöst' : 'MAC Address Resolved') : (lang === 'de' ? 'Ungelöstes ARP' : 'Unresolved ARP')}
         actionTitle={currentMeta.title}
         actionDesc={currentMeta.subtitle}
         stepNumber={activeStep}
@@ -731,7 +733,7 @@ export default function LANModule({ appMode = 'clean' }) {
       </div>
 
       {/* CAM TABLE SUMMARY & LOGS */}
-      <SlideOutInspector title="Technical Deep Dive & Switch CAM / ARP Table Logs">
+      <SlideOutInspector title={lang === 'de' ? 'Technischer Deep Dive & Switch-CAM-/ARP-Tabellen-Protokolle' : 'Technical Deep Dive & Switch CAM / ARP Table Logs'}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
             
             {/* LEFT: SWITCH CAM TABLE & HOST ARP TABLE */}
@@ -739,13 +741,13 @@ export default function LANModule({ appMode = 'clean' }) {
               <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
                 <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-sm">
                   <Network className="w-4 h-4 text-cyan-400" />
-                  <span>Switch CAM Table & Host ARP Table</span>
+                  <span>{lang === 'de' ? 'Switch-CAM-Tabelle & Host-ARP-Tabelle' : 'Switch CAM Table & Host ARP Table'}</span>
                 </div>
                 <button
                   onClick={handleReset}
                   className="px-2 py-0.5 rounded text-[10px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 cursor-pointer"
                 >
-                  Clear Tables (arp -d *)
+                  {lang === 'de' ? 'Tabellen löschen (arp -d *)' : 'Clear Tables (arp -d *)'}
                 </button>
               </div>
 

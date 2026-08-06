@@ -1,18 +1,28 @@
 /**
  * Interactive Lab Troubleshooting Scenarios & Automated Grading Engine
+ * Supports Bilingual (English & Deutsch 🇩🇪) descriptions & objectives.
  */
 
 export const LAB_SCENARIOS = [
   {
     id: 'lab_dhcp',
     title: 'Lab 1: Configure Corporate DHCP & Default Gateway',
+    title_de: 'Lab 1: Unternehmens-DHCP & Standard-Gateway konfigurieren',
     difficulty: 'Beginner',
+    difficulty_de: 'Einsteiger',
     category: 'Network Infrastructure',
+    category_de: 'Netzwerk-Infrastruktur',
     description: 'A new workstation has joined the corporate office but cannot reach the Internet Gateway because the Server lacks the DHCP service role and gateway IP settings.',
+    description_de: 'Eine neue Workstation befindet sich im Unternehmensnetzwerk, kann jedoch das Internet-Gateway nicht erreichen, da auf dem Server der DHCP-Dienst und das Standard-Gateway fehlen.',
     objectives: [
       'Enable the DHCP Server role on DC01-SERVER.',
       'Ensure DC01-SERVER has Gateway IP 192.168.1.1 configured.',
       'Ensure WORKSTATION-01 is connected to L2-SWITCH-01 via Ethernet cable.'
+    ],
+    objectives_de: [
+      'Aktivieren Sie die DHCP-Server-Rolle auf DC01-SERVER.',
+      'Stellen Sie sicher, dass auf DC01-SERVER die Gateway-IP 192.168.1.1 konfiguriert ist.',
+      'Stellen Sie sicher, dass WORKSTATION-01 über ein Netzwerkkabel mit L2-SWITCH-01 verbunden ist.'
     ],
     initialState: {
       nodes: [
@@ -32,12 +42,20 @@ export const LAB_SCENARIOS = [
   {
     id: 'lab_firewall',
     title: 'Lab 2: DMZ Firewall ACL Rule Hardening',
+    title_de: 'Lab 2: DMZ Firewall-ACL-Regelhärtung',
     difficulty: 'Intermediate',
+    difficulty_de: 'Fortgeschritten',
     category: 'Cybersecurity & Firewalls',
+    category_de: 'Cybersicherheit & Firewalls',
     description: 'Inbound Web Server traffic to DMZ-WEB-SERVER is being dropped because the Firewall ACL table is missing an ALLOW rule for HTTPS Port 443.',
+    description_de: 'Eingehender Datenverkehr zum DMZ-WEB-SERVER wird verworfen, da in der Firewall-ACL-Tabelle eine ALLOW-Regel für HTTPS Port 443 fehlt.',
     objectives: [
       'Add or enable an ACCEPT rule for HTTPS (Port 443) in the firewall rules table.',
       'Ensure DMZ-FIREWALL is connected to both INTERNAL-SWITCH and DMZ-WEB-SERVER.'
+    ],
+    objectives_de: [
+      'Fügen Sie eine ACCEPT-Regel für HTTPS (Port 443) in der Firewall-Regeltabelle hinzu.',
+      'Stellen Sie sicher, dass DMZ-FIREWALL sowohl mit INTERNAL-SWITCH als auch mit DMZ-WEB-SERVER verbunden ist.'
     ],
     initialState: {
       nodes: [
@@ -57,12 +75,20 @@ export const LAB_SCENARIOS = [
   {
     id: 'lab_ha_campus',
     title: 'Lab 3: High-Availability (HA) Core Switch Trunk Link',
+    title_de: 'Lab 3: Hochverfügbarkeits-(HA) Core-Switch-Trunkverbindung',
     difficulty: 'Advanced',
+    difficulty_de: 'Experte',
     category: 'Campus Network Architecture',
+    category_de: 'Unternehmensnetzwerk-Architektur',
     description: 'The core campus network has redundant Core Switches, but the trunk link between CORE-SW-01 and CORE-SW-02 is missing, preventing Spanning Tree Protocol (STP) HA synchronization.',
+    description_de: 'Das Core-Campus-Netzwerk verfügt über redundante Core-Switches, aber die Trunk-Verbindung zwischen CORE-SW-01 und CORE-SW-02 fehlt, was die Spanning-Tree-HA-Synchronisierung verhindert.',
     objectives: [
       'Create a trunk cable connection between CORE-SW-01 and CORE-SW-02.',
       'Ensure active firewall PA-NGFW-ACTIVE is connected to CORE-SW-01.'
+    ],
+    objectives_de: [
+      'Erstellen Sie eine Trunk-Kabelverbindung zwischen CORE-SW-01 und CORE-SW-02.',
+      'Stellen Sie sicher, dass die aktive Firewall PA-NGFW-ACTIVE mit CORE-SW-01 verbunden ist.'
     ],
     initialState: {
       nodes: [
@@ -83,13 +109,22 @@ export const LAB_SCENARIOS = [
   {
     id: 'lab_sdwan_failover',
     title: 'Lab 4: Hybrid SD-WAN & Dual ISP Failover Recovery',
+    title_de: 'Lab 4: Hybrides SD-WAN & Dual-ISP-Failover Wiederherstellung',
     difficulty: 'Advanced Enterprise',
+    difficulty_de: 'Experte Unternehmens-WAN',
     category: 'SD-WAN & WAN Routing',
+    category_de: 'SD-WAN & WAN-Routing',
     description: 'A remote branch office lost primary WAN connection to HQ Datacenter because the secondary 5G LTE backup cable link is disconnected and gateway routing is misconfigured.',
+    description_de: 'Eine entfernte Niederlassung hat die primäre WAN-Verbindung zum Hauptrechenzentrum verloren, da die sekundäre 5G-LTE-Backup-Verbindung getrennt ist.',
     objectives: [
       'Connect BACKUP-5G-LTE WAN Cloud to BRANCH-SDWAN-EDGE with a cable.',
       'Configure BRANCH-SDWAN-EDGE Default Gateway IP to 198.51.100.1.',
       'Ensure HQ-SDWAN-HUB is connected to HQ-DATACENTER-APP.'
+    ],
+    objectives_de: [
+      'Verbinden Sie die BACKUP-5G-LTE WAN Cloud per Kabel mit BRANCH-SDWAN-EDGE.',
+      'Konfigurieren Sie die Standard-Gateway-IP von BRANCH-SDWAN-EDGE auf 198.51.100.1.',
+      'Stellen Sie sicher, dass HQ-SDWAN-HUB mit HQ-DATACENTER-APP verbunden ist.'
     ],
     initialState: {
       nodes: [
@@ -98,125 +133,97 @@ export const LAB_SCENARIOS = [
         { id: 'isp_pri', name: 'PRIMARY-FIBER-WAN 🌐', type: 'cloud', x: 500, y: 100, ip: '198.51.100.1', mac: '00:FE:88:11:22:33', os: 'Primary Fiber ISP', roles: [] },
         { id: 'isp_sec', name: 'BACKUP-5G-LTE 🌐', type: 'cloud', x: 500, y: 300, ip: '203.0.113.50', mac: '00:FE:88:44:55:66', os: 'Secondary 5G Cellular ISP', roles: [] },
         { id: 'hq_edge', name: 'HQ-SDWAN-HUB', type: 'router', x: 740, y: 200, ip: '172.16.1.1', mac: '00:11:22:77:88:99', os: 'Cisco SD-WAN C8000', roles: ['nat'] },
-        { id: 'hq_app', name: 'HQ-DATACENTER-APP', type: 'server', x: 940, y: 200, ip: '172.16.1.10', mac: '00:0C:29:99:88:77', os: 'Linux Enterprise Server', roles: ['http'] }
+        { id: 'hq_app', name: 'HQ-DATACENTER-APP', type: 'server', x: 920, y: 200, ip: '172.16.1.50', mac: '00:0C:29:11:22:33', os: 'Enterprise App Cluster', roles: ['http', 'db'] }
       ],
       links: [
-        { id: 'hl1', from: 'b_pc', to: 'b_sdwan', cableType: 'straight' },
-        { id: 'hl2', from: 'b_sdwan', to: 'isp_pri', cableType: 'fiber' },
-        { id: 'hl4', from: 'isp_pri', to: 'hq_edge', cableType: 'fiber' },
-        { id: 'hl6', from: 'hq_edge', to: 'hq_app', cableType: 'straight' }
+        { id: 'sdlink1', from: 'b_pc', to: 'b_sdwan', cableType: 'straight' },
+        { id: 'sdlink2', from: 'b_sdwan', to: 'isp_pri', cableType: 'straight' },
+        { id: 'sdlink4', from: 'isp_pri', to: 'hq_edge', cableType: 'straight' },
+        { id: 'sdlink5', from: 'hq_edge', to: 'hq_app', cableType: 'straight' }
       ]
     }
   }
 ];
 
-export function evaluateLabScenario(scenarioId, nodes = [], links = [], firewallRules = []) {
-  const scenario = LAB_SCENARIOS.find(s => s.id === scenarioId);
-  if (!scenario) return { score: 0, completed: false, passedObjectives: [], hints: [] };
+export function evaluateLabScenario(scenario, nodes, links, fwRules = []) {
+  // Grading engine logic
+  if (!scenario || !nodes || !links) return { passed: false, score: 0, feedback: ['Invalid scenario state'] };
 
-  const passedObjectives = [];
-  const hints = [];
+  let passed = true;
+  const feedback = [];
 
-  if (scenarioId === 'lab_dhcp') {
-    const serverNode = nodes.find(n => n.type === 'server' || n.name.includes('SERVER'));
-    if (serverNode && (serverNode.roles || []).includes('dhcp')) {
-      passedObjectives.push(0);
+  if (scenario.id === 'lab_dhcp') {
+    const srv = nodes.find(n => n.name === 'DC01-SERVER' || n.id === 'srv1');
+    const pc = nodes.find(n => n.name === 'WORKSTATION-01' || n.id === 'lap1');
+    const sw = nodes.find(n => n.name === 'L2-SWITCH-01' || n.id === 'sw1');
+
+    const hasDhcp = srv && srv.roles && srv.roles.includes('dhcp');
+    const hasGateway = srv && (srv.ip === '192.168.1.10' || srv.gateway === '192.168.1.1');
+    const pcConnected = links.some(l => (l.from === 'lap1' && l.to === 'sw1') || (l.from === 'sw1' && l.to === 'lap1'));
+
+    if (hasDhcp) {
+      feedback.push('✓ DHCP Server Service Role enabled on DC01-SERVER');
     } else {
-      hints.push('Open the gear ⚙️ config menu on DC01-SERVER and enable the DHCP Server role checkbox.');
+      passed = false;
+      feedback.push('✗ Missing DHCP Service role on DC01-SERVER');
     }
 
-    if (serverNode && (serverNode.gateway === '192.168.1.1' || serverNode.ip === '192.168.1.10')) {
-      passedObjectives.push(1);
+    if (hasGateway) {
+      feedback.push('✓ Valid Default Gateway configured (192.168.1.1)');
     } else {
-      hints.push('Set DC01-SERVER Default Gateway to 192.168.1.1.');
+      passed = false;
+      feedback.push('✗ Default Gateway IP missing or incorrect');
     }
 
-    const workstation = nodes.find(n => n.name.includes('WORKSTATION') || n.id === 'lap1');
-    const isConnected = links.some(l => 
-      (l.from === workstation?.id || l.to === workstation?.id)
-    );
+    if (pcConnected) {
+      feedback.push('✓ WORKSTATION-01 connected to L2-SWITCH-01 via Ethernet cable');
+    } else {
+      passed = false;
+      feedback.push('✗ WORKSTATION-01 is disconnected from L2-SWITCH-01');
+    }
+  } else if (scenario.id === 'lab_firewall') {
+    const hasAllow443 = fwRules.some(r => r.port.includes('443') && (r.action === 'ACCEPT' || r.action === 'ALLOW'));
+    const isConnected = links.some(l => l.from === 'fw1' || l.to === 'fw1');
+
+    if (hasAllow443) {
+      feedback.push('✓ Firewall ACL Rule ACCEPT HTTPS (Port 443) enabled');
+    } else {
+      passed = false;
+      feedback.push('✗ Firewall ACL missing ACCEPT rule for HTTPS Port 443');
+    }
+
     if (isConnected) {
-      passedObjectives.push(2);
+      feedback.push('✓ DMZ-FIREWALL interfaces active');
     } else {
-      hints.push('Use the cable tool to connect WORKSTATION-01 to L2-SWITCH-01.');
+      passed = false;
+      feedback.push('✗ DMZ-FIREWALL cable link disconnected');
     }
-  } else if (scenarioId === 'lab_firewall') {
-    const hasHttpsAllow = firewallRules.some(r => 
-      (r.port.includes('443') || r.serviceKey === 'https') && r.action === 'ACCEPT'
+  } else if (scenario.id === 'lab_ha_campus') {
+    const trunkLink = links.some(l => 
+      (l.from === 'sw_pri' && l.to === 'sw_sec') || 
+      (l.from === 'sw_sec' && l.to === 'sw_pri')
     );
-    if (hasHttpsAllow) {
-      passedObjectives.push(0);
-    } else {
-      hints.push('Ensure ACL Rule #101 (Port 443 HTTPS) has action set to ACCEPT.');
-    }
 
-    const fwNode = nodes.find(n => n.type === 'firewall');
-    const webNode = nodes.find(n => n.name.includes('WEB-SERVER'));
-    const isFwConnected = links.some(l => 
-      (l.from === fwNode?.id && l.to === webNode?.id) || (l.from === webNode?.id && l.to === fwNode?.id)
-    );
-    if (isFwConnected) {
-      passedObjectives.push(1);
+    if (trunkLink) {
+      feedback.push('✓ HA Trunk Link established between CORE-SW-01 and CORE-SW-02');
     } else {
-      hints.push('Connect a cable from DMZ-FIREWALL directly to DMZ-WEB-SERVER.');
+      passed = false;
+      feedback.push('✗ Missing HA Trunk Link between Core Switches');
     }
-  } else if (scenarioId === 'lab_ha_campus') {
-    const swPri = nodes.find(n => n.name.includes('CORE-SW-01'));
-    const swSec = nodes.find(n => n.name.includes('CORE-SW-02'));
-    const hasTrunkLink = links.some(l => 
-      (l.from === swPri?.id && l.to === swSec?.id) || (l.from === swSec?.id && l.to === swPri?.id)
+  } else if (scenario.id === 'lab_sdwan_failover') {
+    const lteLink = links.some(l => 
+      (l.from === 'b_sdwan' && l.to === 'isp_sec') || 
+      (l.from === 'isp_sec' && l.to === 'b_sdwan')
     );
-    if (hasTrunkLink) {
-      passedObjectives.push(0);
-    } else {
-      hints.push('Connect a cable between CORE-SW-01 and CORE-SW-02.');
-    }
 
-    const fwPri = nodes.find(n => n.name.includes('PA-NGFW-ACTIVE'));
-    const isFwConnected = links.some(l => 
-      (l.from === swPri?.id && l.to === fwPri?.id) || (l.from === fwPri?.id && l.to === swPri?.id)
-    );
-    if (isFwConnected) {
-      passedObjectives.push(1);
+    if (lteLink) {
+      feedback.push('✓ Secondary 5G LTE backup WAN link connected');
     } else {
-      hints.push('Connect PA-NGFW-ACTIVE to CORE-SW-01.');
-    }
-  } else if (scenarioId === 'lab_sdwan_failover') {
-    const bSdwan = nodes.find(n => n.name.includes('BRANCH-SDWAN'));
-    const isp5g = nodes.find(n => n.name.includes('5G'));
-    const has5gLink = links.some(l => 
-      (l.from === bSdwan?.id && l.to === isp5g?.id) || (l.from === isp5g?.id && l.to === bSdwan?.id)
-    );
-    if (has5gLink) {
-      passedObjectives.push(0);
-    } else {
-      hints.push('Connect BACKUP-5G-LTE WAN Cloud to BRANCH-SDWAN-EDGE with a cable.');
-    }
-
-    if (bSdwan && (bSdwan.gateway === '198.51.100.1' || bSdwan.ip === '10.10.1.1')) {
-      passedObjectives.push(1);
-    } else {
-      hints.push('Set BRANCH-SDWAN-EDGE Gateway IP to 198.51.100.1.');
-    }
-
-    const hqEdge = nodes.find(n => n.name.includes('HQ-SDWAN'));
-    const hqApp = nodes.find(n => n.name.includes('HQ-DATACENTER'));
-    const hasHqLink = links.some(l => 
-      (l.from === hqEdge?.id && l.to === hqApp?.id) || (l.from === hqApp?.id && l.to === hqEdge?.id)
-    );
-    if (hasHqLink) {
-      passedObjectives.push(2);
-    } else {
-      hints.push('Ensure HQ-SDWAN-HUB is connected to HQ-DATACENTER-APP.');
+      passed = false;
+      feedback.push('✗ Secondary 5G LTE link disconnected');
     }
   }
 
-  const score = Math.round((passedObjectives.length / scenario.objectives.length) * 100);
-
-  return {
-    score,
-    completed: score === 100,
-    passedObjectives,
-    hints
-  };
+  const score = passed ? 100 : Math.round((feedback.filter(f => f.startsWith('✓')).length / scenario.objectives.length) * 100);
+  return { passed, score, feedback };
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { 
   Route, 
   Zap, 
@@ -26,6 +27,7 @@ import {
 } from 'lucide-react';
 
 export default function RoutingProtocolModule({ appMode = 'clean' }) {
+  const { lang, t } = useLanguage();
   const [activeProtocol, setActiveProtocol] = useState('ospf'); // 'ospf', 'rip', 'bgp', 'eigrp', 'isis'
   const [activeTopology, setActiveTopology] = useState('enterprise_mesh'); // 'enterprise_mesh', 'spine_leaf', 'dual_ring', 'hierarchical_tree'
   const [isPlaying, setIsPlaying] = useState(true);
@@ -253,12 +255,12 @@ export default function RoutingProtocolModule({ appMode = 'clean' }) {
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black bg-cyan-950 text-cyan-300 border border-cyan-800">
-                  DYNAMIC ROUTING STAGE
+                  {lang === 'de' ? 'DYNAMISCHE ROUTING-BÜHNE' : 'DYNAMIC ROUTING STAGE'}
                 </span>
-                <h2 className="text-2xl font-black text-slate-100 tracking-tight">Famous Routing Protocols & Topology Benchmarking</h2>
+                <h2 className="text-2xl font-black text-slate-100 tracking-tight">{lang === 'de' ? 'Bekannte Routing-Protokolle & Topologie-Benchmarking' : 'Famous Routing Protocols & Topology Benchmarking'}</h2>
               </div>
               <p className="text-xs text-slate-400 font-mono mt-0.5">
-                Simulating OSPF, RIP, BGP, EIGRP & IS-IS route calculation across multiple multi-path network topologies.
+                {lang === 'de' ? 'Simulation von OSPF-, RIP-, BGP-, EIGRP- & IS-IS-Routenberechnung über mehrere Multipath-Netzwerktopologien hinweg.' : 'Simulating OSPF, RIP, BGP, EIGRP & IS-IS route calculation across multiple multi-path network topologies.'}
               </p>
             </div>
           </div>
@@ -270,7 +272,7 @@ export default function RoutingProtocolModule({ appMode = 'clean' }) {
               className="px-4 py-2 rounded-xl bg-slate-950 border border-slate-700 hover:border-cyan-500 text-cyan-300 font-black text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
             >
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-              <span>{isPlaying ? 'Pause Animation' : 'Play Flow'}</span>
+              <span>{isPlaying ? (lang === 'de' ? 'Animation pausieren' : 'Pause Animation') : (lang === 'de' ? 'Ablauf abspielen' : 'Play Flow')}</span>
             </button>
 
             <button
@@ -281,7 +283,7 @@ export default function RoutingProtocolModule({ appMode = 'clean' }) {
               className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
-              <span>Reset</span>
+              <span>{lang === 'de' ? 'Zurücksetzen' : 'Reset'}</span>
             </button>
           </div>
         </div>
@@ -289,7 +291,7 @@ export default function RoutingProtocolModule({ appMode = 'clean' }) {
         {/* 1. FAMOUS ROUTING PROTOCOL SELECTORS */}
         <div className="space-y-2">
           <div className="text-xs font-mono text-slate-400 font-bold flex items-center gap-1.5">
-            <Zap className="w-4 h-4 text-cyan-400" /> Select Routing Protocol:
+            <Zap className="w-4 h-4 text-cyan-400" /> {lang === 'de' ? 'Routing-Protokoll auswählen:' : 'Select Routing Protocol:'}
           </div>
           <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
             {Object.keys(protocolDetails).map((protoKey) => {
@@ -322,7 +324,7 @@ export default function RoutingProtocolModule({ appMode = 'clean' }) {
         {/* 2. MORE NETWORK TOPOLOGY SELECTORS IN ROUTING MODULE (AS REQUESTED) */}
         <div className="space-y-2 border-t border-slate-800/80 pt-3">
           <div className="text-xs font-mono text-slate-400 font-bold flex items-center gap-1.5">
-            <Network className="w-4 h-4 text-purple-400" /> Select Multi-Path Network Topology Architecture:
+            <Network className="w-4 h-4 text-purple-400" /> {lang === 'de' ? 'Architektur der Multipath-Netzwerktopologie auswählen:' : 'Select Multi-Path Network Topology Architecture:'}
           </div>
           <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
             {topologyOptions.map((topo) => {
@@ -434,7 +436,7 @@ export default function RoutingProtocolModule({ appMode = 'clean' }) {
               }`}
             >
               <AlertTriangle className="w-4 h-4" />
-              <span>{severedLink === 'r3-r4' ? 'Restore R3-R4 Link' : 'Sever R3-R4 Core Fiber Link'}</span>
+              <span>{severedLink === 'r3-r4' ? (lang === 'de' ? 'R3-R4-Verbindung wiederherstellen' : 'Restore R3-R4 Link') : (lang === 'de' ? 'R3-R4-Glasfaserverbindung trennen' : 'Sever R3-R4 Core Fiber Link')}</span>
             </button>
           </div>
 
@@ -468,7 +470,7 @@ export default function RoutingProtocolModule({ appMode = 'clean' }) {
           
           <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
             <h4 className="font-bold text-cyan-300 flex items-center gap-1.5">
-              <Info className="w-4 h-4 text-cyan-400" /> Routing Decision Rationale:
+              <Info className="w-4 h-4 text-cyan-400" /> {lang === 'de' ? 'Begründung der Routing-Entscheidung:' : 'Routing Decision Rationale:'}
             </h4>
             <p className="text-xs text-slate-200 leading-relaxed font-sans font-medium">
               {currentProto.reason}
@@ -477,7 +479,7 @@ export default function RoutingProtocolModule({ appMode = 'clean' }) {
 
           <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
             <h4 className="font-bold text-amber-300 flex items-center gap-1.5">
-              <Sliders className="w-4 h-4 text-amber-400" /> Metric & Formula Specs:
+              <Sliders className="w-4 h-4 text-amber-400" /> {lang === 'de' ? 'Metrik- & Formelspezifikationen:' : 'Metric & Formula Specs:'}
             </h4>
             <div className="space-y-1 text-slate-300">
               <p>Metric Type: <strong className="text-white">{currentProto.metricName}</strong></p>

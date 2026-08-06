@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { 
   BookOpen, 
   Search, 
@@ -27,6 +28,7 @@ import {
 import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
 
 export default function ProtocolsModule({ appMode = 'clean' }) {
+  const { lang, t } = useLanguage();
   const [selectedSection, setSelectedSection] = useState('all'); // 'all', 'network', 'transport', 'application', 'datalink'
   const [searchQuery, setSearchQuery] = useState('');
   const [activeProtocolModal, setActiveProtocolModal] = useState(null);

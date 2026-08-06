@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { Network, Laptop, Server, Router, ShieldCheck, Globe, Play, Square, Trash2, Plus, Zap, Gauge, CheckCircle2, Settings, Cpu, FileCode, Terminal, X, Radio, HardDrive, Mail, Layers, Activity, Printer, Wifi, Database, Download, Upload, FileJson, Sparkles, RotateCcw } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
@@ -10,6 +11,7 @@ import { calculateSubnet } from '../../utils/subnetCalculator';
 import CiscoTerminalModal from './CiscoTerminalModal';
 
 export default function NetworkSandbox({ appMode = 'clean' }) {
+  const { lang, t } = useLanguage();
   const [showAnimation, setShowAnimation] = useState(true);
   const [zoom, setZoom] = useState(1); // Canvas Zoom Level (0.75x to 1.5x)
   const [showCamModal, setShowCamModal] = useState(false); // Switch CAM Table Inspector

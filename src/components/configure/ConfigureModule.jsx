@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { Settings, Layers, ChevronRight, CheckCircle2, ArrowRight, ArrowUp, ArrowDown, FileCode, Terminal, HelpCircle, RefreshCw, Sliders, Shield, Zap, Server, Router, Globe, Lock } from 'lucide-react';
 import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
 

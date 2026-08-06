@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { BookOpen, CheckCircle2, XCircle, Trophy, HelpCircle, ArrowRight, ShieldCheck, Zap, RefreshCw, Settings, Trash2, Plus, Laptop, Server, Router, Shield, Layers, Cable, Globe, Printer } from 'lucide-react';
 import { LAB_SCENARIOS, evaluateLabScenario } from '../../data/labScenarios';
-import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
+import { CleanWidget } from '../common/EasyCard';
 
 export default function LabScenarioModule({ appMode = 'clean' }) {
+  const { lang, t } = useLanguage();
   const [selectedLabId, setSelectedLabId] = useState('lab_dhcp');
   const activeLab = LAB_SCENARIOS.find(s => s.id === selectedLabId) || LAB_SCENARIOS[0];
 
@@ -18,7 +20,6 @@ export default function LabScenarioModule({ appMode = 'clean' }) {
   const [connectingFromId, setConnectingFromId] = useState(null);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [editingNodeId, setEditingNodeId] = useState(null);
-  const editingNode = currentNodes.find(n => n.id === editingNodeId);
 
   const canvasRef = useRef(null);
   const [draggingNodeId, setDraggingNodeId] = useState(null);
@@ -49,7 +50,6 @@ export default function LabScenarioModule({ appMode = 'clean' }) {
       if (!connectingFromId) {
         setConnectingFromId(nodeId);
       } else if (connectingFromId !== nodeId) {
-        // Connect cable between 1st and 2nd clicked node
         const linkExists = currentLinks.some(l => 
           (l.from === connectingFromId && l.to === nodeId) || (l.from === nodeId && l.to === connectingFromId)
         );
@@ -95,21 +95,6 @@ export default function LabScenarioModule({ appMode = 'clean' }) {
     setCurrentLinks(currentLinks.filter(l => l.from !== nodeId && l.to !== nodeId));
   };
 
-  const handleToggleRole = (role) => {
-    if (!editingNode) return;
-    const currentRoles = editingNode.roles || [];
-    const newRoles = currentRoles.includes(role)
-      ? currentRoles.filter(r => r !== role)
-      : [...currentRoles, role];
-
-    setCurrentNodes(currentNodes.map(n => n.id === editingNode.id ? { ...n, roles: newRoles } : n));
-  };
-
-  const handleUpdateNode = (field, value) => {
-    if (!editingNode) return;
-    setCurrentNodes(currentNodes.map(n => n.id === editingNode.id ? { ...n, [field]: value } : n));
-  };
-
   const handleToggleRule = (ruleId) => {
     setCurrentFwRules(currentFwRules.map(r => 
       r.id === ruleId ? { ...r, action: r.action === 'ACCEPT' ? 'DROP' : 'ACCEPT' } : r
@@ -128,15 +113,19 @@ export default function LabScenarioModule({ appMode = 'clean' }) {
     }
   };
 
+  const activeTitle = lang === 'de' ? (activeLab.title_de || activeLab.title) : activeLab.title;
+  const activeDesc = lang === 'de' ? (activeLab.description_de || activeLab.description) : activeLab.description;
+  const activeObjectives = lang === 'de' ? (activeLab.objectives_de || activeLab.objectives) : activeLab.objectives;
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-sans">
       {/* Header Widget */}
       <CleanWidget
-        title="🎓 Enterprise Topology Lab Challenges & Visual Canvas Engine"
-        subtitle="Interact with complex enterprise network topologies on a live graph canvas. Wire devices, configure router gateways, and pass real-world outage assessments."
+        title={lang === 'de' ? '🎓 Enterprise Topologie Lab-Herausforderungen & Interaktive Engine' : '🎓 Enterprise Topology Lab Challenges & Visual Canvas Engine'}
+        subtitle={lang === 'de' ? 'Interagieren Sie mit komplexen Unternehmens-Netzwerktopologien. Verkabeln Sie Geräte, konfigurieren Sie Router-Gateways und bestehen Sie reale Ausfallszenarien.' : 'Interact with complex enterprise network topologies on a live graph canvas. Wire devices, configure router gateways, and pass real-world outage assessments.'}
         icon={Trophy}
-        protocol="VISUAL LAB ASSESSMENT"
-        status={`${evalResult.score}% COMPLETED`}
+        protocol={lang === 'de' ? 'VISUELLE LAB-BEWERTUNG' : 'VISUAL LAB ASSESSMENT'}
+        status={`${evalResult.score}% ${lang === 'de' ? 'ABGESCHLOSSEN' : 'COMPLETED'}`}
       />
 
       {/* Lab Selector Tabs */}
@@ -144,6 +133,10 @@ export default function LabScenarioModule({ appMode = 'clean' }) {
         {LAB_SCENARIOS.map((lab) => {
           const isSelected = lab.id === selectedLabId;
           const labEval = evaluateLabScenario(lab.id, isSelected ? currentNodes : lab.initialState.nodes, isSelected ? currentLinks : lab.initialState.links, currentFwRules);
+          const labTitle = lang === 'de' ? (lab.title_de || lab.title) : lab.title;
+          const labDesc = lang === 'de' ? (lab.description_de || lab.description) : lab.description;
+          const labCat = lang === 'de' ? (lab.category_de || lab.category) : lab.category;
+          const labDiff = lang === 'de' ? (lab.difficulty_de || lab.difficulty) : lab.difficulty;
 
           return (
             <div
@@ -158,28 +151,28 @@ export default function LabScenarioModule({ appMode = 'clean' }) {
               <div>
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase ${
-                    lab.difficulty.includes('Beginner') ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
-                    lab.difficulty.includes('Intermediate') ? 'bg-amber-950 text-amber-300 border border-amber-800' :
+                    lab.difficulty.includes('Beginner') || lab.difficulty.includes('Einsteiger') ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
+                    lab.difficulty.includes('Intermediate') || lab.difficulty.includes('Fortgeschritten') ? 'bg-amber-950 text-amber-300 border border-amber-800' :
                     'bg-purple-950 text-purple-300 border border-purple-800'
                   }`}>
-                    {lab.difficulty}
+                    {labDiff}
                   </span>
 
                   <span className={`text-[11px] font-black font-mono px-2 py-0.5 rounded-full ${
-                    labEval.completed ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-cyan-400'
+                    labEval.passed ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-cyan-400'
                   }`}>
-                    {labEval.score}% Score
+                    {labEval.score}% {lang === 'de' ? 'Punktzahl' : 'Score'}
                   </span>
                 </div>
 
-                <h3 className="text-xs font-extrabold text-slate-100 tracking-tight leading-snug mb-1">{lab.title}</h3>
-                <p className="text-[11px] text-slate-400 leading-relaxed font-sans line-clamp-2">{lab.description}</p>
+                <h3 className="text-xs font-extrabold text-slate-100 tracking-tight leading-snug mb-1">{labTitle}</h3>
+                <p className="text-[11px] text-slate-400 leading-relaxed font-sans line-clamp-2">{labDesc}</p>
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
-                <span className="text-slate-500 font-bold text-[10px]">{lab.category}</span>
+                <span className="text-slate-500 font-bold text-[10px]">{labCat}</span>
                 <span className="text-cyan-400 font-bold text-[10px] flex items-center gap-1">
-                  Start Scenario <ArrowRight className="w-3 h-3" />
+                  {lang === 'de' ? 'Szenario starten' : 'Start Scenario'} <ArrowRight className="w-3 h-3" />
                 </span>
               </div>
             </div>
@@ -194,276 +187,193 @@ export default function LabScenarioModule({ appMode = 'clean' }) {
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-black text-slate-100">{activeLab.title}</h2>
-              {evalResult.completed ? (
-                <span className="px-3 py-1 rounded-full bg-emerald-500 text-slate-950 font-black text-xs flex items-center gap-1 shadow-lg shadow-emerald-500/30 animate-bounce">
-                  <CheckCircle2 className="w-4 h-4 fill-current" /> PASSED 100%!
+              <h2 className="text-lg font-black text-slate-100">{activeTitle}</h2>
+              {evalResult.passed ? (
+                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> {lang === 'de' ? 'GELÖST ✓' : 'PASSED ✓'}
                 </span>
               ) : (
-                <span className="px-3 py-1 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800 font-black text-xs">
-                  Progress: {evalResult.score}%
+                <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-bold flex items-center gap-1">
+                  <Zap className="w-3.5 h-3.5" /> {lang === 'de' ? 'IN BEARBEITUNG' : 'IN PROGRESS'}
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-400 mt-1 font-sans">{activeLab.description}</p>
+            <p className="text-xs text-slate-400 font-sans mt-1">{activeDesc}</p>
           </div>
 
-          <button
-            onClick={() => handleResetLab(activeLab)}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
-          >
-            <RefreshCw className="w-3.5 h-3.5 text-cyan-400" /> Reset Scenario State
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleResetLab(activeLab)}
+              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> {lang === 'de' ? 'Szenario zurücksetzen' : 'Reset Scenario'}
+            </button>
+          </div>
         </div>
 
-        {/* Tasks Progress & Hints Bar */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-2 space-y-2">
-            <h4 className="text-xs font-black text-cyan-400 uppercase tracking-wider flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-cyan-400" /> Tasks Checklist ({evalResult.passedObjectives.length} / {activeLab.objectives.length} Met)
+        {/* Objectives Box & Control Buttons */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-sans">
+          
+          {/* Objectives Column */}
+          <div className="md:col-span-2 p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
+            <h4 className="font-mono text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Trophy className="w-4 h-4 text-amber-400" /> {lang === 'de' ? 'Lab-Ziele & Anforderungen:' : 'Lab Objectives & Task Rules:'}
             </h4>
-
-            <div className="space-y-1.5">
-              {activeLab.objectives.map((obj, idx) => {
-                const isMet = evalResult.passedObjectives.includes(idx);
-                return (
-                  <div
-                    key={idx}
-                    className={`p-3 rounded-2xl border transition-all flex items-start gap-2.5 text-xs ${
-                      isMet
-                        ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-200'
-                        : 'bg-slate-950 border-slate-800 text-slate-300'
-                    }`}
-                  >
-                    <div className="mt-0.5">
-                      {isMet ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <XCircle className="w-4 h-4 text-slate-500" />}
-                    </div>
-                    <span className="font-bold flex-1">{obj}</span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {evalResult.hints.length > 0 && (
-              <div className="p-3 rounded-2xl bg-amber-950/30 border border-amber-500/30 text-amber-200 text-xs space-y-1 font-sans">
-                <div className="flex items-center gap-1.5 font-bold text-amber-400 text-xs">
-                  <HelpCircle className="w-4 h-4" /> Recommendation:
-                </div>
-                <p className="text-amber-300">{evalResult.hints[0]}</p>
-              </div>
-            )}
+            <ul className="space-y-1.5 text-slate-300 text-xs">
+              {activeObjectives.map((obj, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-cyan-400 font-mono font-bold">•</span>
+                  <span>{obj}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="p-4 rounded-3xl bg-slate-950 border border-slate-800 flex flex-col justify-between items-center text-center">
-            <div>
-              <span className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest block">Live Scorecard</span>
-              <div className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent mt-1">
-                {evalResult.score}%
-              </div>
-            </div>
+          {/* Interactive Controls Column */}
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 flex flex-col justify-between space-y-3">
+            <span className="font-mono text-xs font-bold text-slate-400">{lang === 'de' ? 'Canvas-Werkzeuge:' : 'Interactive Wiring Tools:'}</span>
 
-            <div className="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-800 mt-2">
-              <div className="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full transition-all duration-500" style={{ width: `${evalResult.score}%` }}></div>
-            </div>
-          </div>
-        </div>
+            <button
+              onClick={() => {
+                setIsCableMode(!isCableMode);
+                setConnectingFromId(null);
+              }}
+              className={`w-full py-2.5 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                isCableMode
+                  ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-200'
+              }`}
+            >
+              <Cable className="w-4 h-4" />
+              <span>
+                {isCableMode
+                  ? (lang === 'de' ? 'Verkabelung abbrechen' : 'Cancel Wiring Mode')
+                  : (lang === 'de' ? 'Kabel verbinden' : 'Connect Ethernet Cable')}
+              </span>
+            </button>
 
-        {/* VISUAL TOPOLOGY GRAPH CANVAS STAGE */}
-        <div className="space-y-3 pt-4 border-t border-slate-800">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-2">
-              <Cable className="w-4 h-4 text-amber-400" /> Interactive Enterprise Topology Canvas
-            </h3>
-            
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => { setIsCableMode(!isCableMode); setConnectingFromId(null); }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-black border transition-all cursor-pointer flex items-center gap-1.5 ${
-                  isCableMode
-                    ? 'bg-cyan-500 text-slate-950 border-cyan-300 animate-pulse'
-                    : 'bg-slate-900 hover:bg-slate-800 text-cyan-300 border-slate-700'
-                }`}
-              >
-                <span>{isCableMode ? (connectingFromId ? '⚡ Click 2nd Device...' : '⚡ Click 1st Device...') : '🔌 Cable Wire Tool'}</span>
-              </button>
-
+            {selectedNodeId && (
               <button
                 onClick={() => handleDisconnectNode(selectedNodeId)}
-                disabled={!selectedNodeId}
-                className={`px-3 py-1.5 rounded-xl text-xs font-black border transition-all ${
-                  selectedNodeId
-                    ? 'bg-rose-950 hover:bg-rose-900 text-rose-300 border-rose-700 cursor-pointer'
-                    : 'bg-slate-950 text-slate-600 border-slate-800 cursor-not-allowed'
-                }`}
+                className="w-full py-2 rounded-xl bg-rose-950/50 hover:bg-rose-900/60 text-rose-300 border border-rose-800/50 font-mono text-xs font-bold flex items-center justify-center gap-1.5"
               >
-                ✂️ Cut Wires
+                <Trash2 className="w-3.5 h-3.5" /> {lang === 'de' ? 'Kabel von ausgewähltem Gerät trennen' : 'Disconnect Selected Node Cables'}
               </button>
+            )}
+          </div>
+        </div>
+
+        {/* FIREWALL RULES EDITING SUB-PANEL (FOR LAB 2 FIREWALL) */}
+        {activeLab.id === 'lab_firewall' && (
+          <div className="p-4 rounded-2xl bg-rose-950/20 border border-rose-800/40 space-y-3 font-sans text-xs">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs font-bold text-rose-400 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-rose-400" /> {lang === 'de' ? 'DMZ-Firewall Regelanzeige:' : 'DMZ Firewall ACL Rule Table Inspector:'}
+              </span>
+              <span className="text-[11px] text-slate-400 font-mono">{lang === 'de' ? 'Klicken Sie auf Aktion zum Umschalten (ACCEPT / DROP)' : 'Click action to toggle ACCEPT / DROP'}</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+              {currentFwRules.map(rule => (
+                <div key={rule.id} className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
+                  <div>
+                    <span className="text-slate-200 font-bold block">{rule.port}</span>
+                    <span className="text-slate-400 text-[10px]">{rule.desc}</span>
+                  </div>
+                  <button
+                    onClick={() => handleToggleRule(rule.id)}
+                    className={`px-3 py-1 rounded-lg text-xs font-black cursor-pointer transition-all ${
+                      rule.action === 'ACCEPT'
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                    }`}
+                  >
+                    {rule.action}
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
+        )}
 
-          {/* Interactive Canvas Canvas Area */}
-          <div
-            ref={canvasRef}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            className="rounded-3xl border border-slate-800 min-h-[460px] h-[480px] relative overflow-hidden bg-[radial-gradient(#1e293b_1.5px,transparent_1.5px)] [background-size:20px_20px] bg-slate-950/90 select-none"
-          >
-            {/* SVG Cable Wires Layer */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none">
-              {currentLinks.map((link) => {
-                const n1 = currentNodes.find(n => n.id === link.from);
-                const n2 = currentNodes.find(n => n.id === link.to);
-                if (!n1 || !n2) return null;
+        {/* GRAPH CANVAS FOR TOPOLOGY NODES */}
+        <div
+          ref={canvasRef}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          className="relative w-full h-[420px] rounded-2xl bg-slate-950 border border-slate-800/80 overflow-hidden cursor-crosshair shadow-inner"
+        >
+          {/* Grid lines */}
+          <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
 
-                return (
-                  <line
-                    key={link.id}
-                    x1={n1.x + 55}
-                    y1={n1.y + 40}
-                    x2={n2.x + 55}
-                    y2={n2.y + 40}
-                    stroke={link.cableType === 'fiber' ? '#10b981' : '#3b82f6'}
-                    strokeWidth="4"
-                    strokeDasharray={link.cableType === 'fiber' ? '8 4' : '6 4'}
-                    className="animate-wire-dash"
-                  />
-                );
-              })}
-            </svg>
-
-            {/* Interactive Node Elements on Canvas */}
-            {currentNodes.map((node) => {
-              const isSelected = selectedNodeId === node.id;
-              const isConnectingSource = connectingFromId === node.id;
-              const isCloudISP = node.type === 'cloud';
+          {/* SVG Cable Lines */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
+            {currentLinks.map((link) => {
+              const fromNode = currentNodes.find(n => n.id === link.from);
+              const toNode = currentNodes.find(n => n.id === link.to);
+              if (!fromNode || !toNode) return null;
 
               return (
-                <div
-                  key={node.id}
-                  onMouseDown={(e) => handleMouseDown(e, node.id)}
-                  style={{ left: `${node.x}px`, top: `${node.y}px` }}
-                  className={`absolute p-3 rounded-2xl border-2 transition-all cursor-move flex flex-col items-center gap-1.5 shadow-2xl z-10 w-28 text-center ${
-                    isConnectingSource
-                      ? 'bg-cyan-500 border-cyan-200 text-slate-950 scale-110 animate-bounce'
-                      : isSelected
-                      ? 'bg-slate-900 border-amber-400 ring-2 ring-amber-400/50 scale-105'
-                      : isCloudISP
-                      ? 'bg-emerald-950/90 border-emerald-500 text-emerald-300'
-                      : 'bg-slate-900/90 border-slate-700 text-slate-200 hover:border-slate-500'
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <div className="p-1.5 rounded-xl bg-slate-950/80 border border-slate-800">
-                      {getNodeIcon(node.type)}
-                    </div>
-
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setEditingNodeId(node.id); }}
-                      className="p-1 rounded-lg bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-amber-700 cursor-pointer"
-                      title="Configure Device"
-                    >
-                      <Settings className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  <div>
-                    <h4 className="text-[11px] font-black leading-tight text-slate-100 truncate w-24">{node.name}</h4>
-                    <p className="text-[9px] text-cyan-300 font-mono font-bold mt-0.5 truncate w-24">{node.ip || 'N/A'}</p>
-                  </div>
-                </div>
+                <line
+                  key={link.id}
+                  x1={fromNode.x + 40}
+                  y1={fromNode.y + 40}
+                  x2={toNode.x + 40}
+                  y2={toNode.y + 40}
+                  stroke="#00f0ff"
+                  strokeWidth="3"
+                  strokeDasharray="6 4"
+                  className="animate-pulse"
+                />
               );
             })}
-          </div>
+          </svg>
 
-          {/* Quick Firewall ACL Table for Lab 2 */}
-          {activeLab.id === 'lab_firewall' && (
-            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-              <span className="text-xs font-extrabold text-rose-400 block">🛡️ DMZ Firewall Rule Table (Click Action Badge to Toggle Rule)</span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {currentFwRules.map(rule => (
-                  <div key={rule.id} className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between text-xs">
-                    <div>
-                      <span className="font-extrabold text-amber-300">{rule.port}</span>
-                      <p className="text-[10px] text-slate-400">{rule.desc}</p>
-                    </div>
-                    <button
-                      onClick={() => handleToggleRule(rule.id)}
-                      className={`px-3 py-1 rounded-full font-black text-xs border cursor-pointer ${
-                        rule.action === 'ACCEPT' ? 'bg-emerald-950 text-emerald-300 border-emerald-500' : 'bg-rose-950 text-rose-300 border-rose-500'
-                      }`}
-                    >
-                      {rule.action === 'ACCEPT' ? '🟢 ACCEPT' : '🔴 DROP'}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+          {/* Nodes */}
+          {currentNodes.map((node) => {
+            const isSelected = node.id === selectedNodeId;
 
-      {/* CONFIGURATION MODAL POPUP */}
-      {editingNode && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="glass-panel max-w-lg w-full p-6 rounded-3xl border border-slate-700 space-y-4 bg-slate-900/95 font-mono text-xs text-slate-100">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-black text-amber-400">Configure {editingNode.name}</h3>
-              <button onClick={() => setEditingNodeId(null)} className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">✕</button>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Default Gateway IP</label>
-                <input
-                  type="text"
-                  value={editingNode.gateway || ''}
-                  onChange={(e) => handleUpdateNode('gateway', e.target.value)}
-                  placeholder="e.g. 198.51.100.1"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-cyan-300 font-bold focus:outline-none focus:border-cyan-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Server Service Roles</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {['dhcp', 'dns', 'ad', 'http'].map(role => {
-                    const hasRole = (editingNode.roles || []).includes(role);
-                    return (
-                      <button
-                        key={role}
-                        onClick={() => handleToggleRole(role)}
-                        className={`p-2 rounded-xl border font-bold text-xs flex items-center justify-between cursor-pointer ${
-                          hasRole ? 'bg-amber-950 text-amber-300 border-amber-500' : 'bg-slate-950 text-slate-400 border-slate-800'
-                        }`}
-                      >
-                        <span className="uppercase">{role} Server</span>
-                        <span>{hasRole ? '✓' : '+'}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-slate-800 flex justify-end">
-              <button
-                onClick={() => setEditingNodeId(null)}
-                className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-xs cursor-pointer"
+            return (
+              <div
+                key={node.id}
+                onMouseDown={(e) => handleMouseDown(e, node.id)}
+                style={{ left: node.x, top: node.y }}
+                className={`absolute z-20 p-3 rounded-2xl bg-slate-900 border transition-transform cursor-grab active:cursor-grabbing flex flex-col items-center justify-center space-y-1 shadow-xl select-none ${
+                  isSelected ? 'border-cyan-400 ring-2 ring-cyan-400/40 scale-105' : 'border-slate-800 hover:border-slate-700'
+                }`}
               >
-                Save & Update Scorecard
-              </button>
-            </div>
+                {getNodeIcon(node.type)}
+                <span className="text-[11px] font-bold text-slate-200">{node.name}</span>
+                <span className="text-[9px] font-mono text-cyan-400 font-medium">{node.ip}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* EVALUATION RESULTS BANNER */}
+        <div className={`p-4 rounded-2xl border font-sans text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+          evalResult.passed
+            ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300'
+            : 'bg-amber-950/40 border-amber-500/30 text-amber-300'
+        }`}>
+          <div className="space-y-1">
+            <span className="font-mono font-bold text-xs block">
+              {evalResult.passed ? (lang === 'de' ? '🎉 GRATULATION! LAB BESTANDEN' : '🎉 CONGRATULATIONS! LAB PASSED') : (lang === 'de' ? '⚠️ LAB AUSWERTUNG & BEWERTUNG' : '⚠️ LAB EVALUATION & FEEDBACK')}
+            </span>
+            <ul className="space-y-0.5 text-[11px]">
+              {evalResult.feedback.map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="font-mono text-right shrink-0">
+            <span className="text-2xl font-black">{evalResult.score}%</span>
+            <span className="text-[10px] text-slate-400 block">{lang === 'de' ? 'Erreichte Punktzahl' : 'Overall Score'}</span>
           </div>
         </div>
-      )}
 
-      <SlideOutInspector title="Technical Deep Dive — Scenario Evaluation Spec">
-        <div className="space-y-2 text-xs text-slate-300">
-          <p><span className="text-cyan-400 font-bold">Evaluation Engine:</span> Automated condition validation inspects state tree objects every tick.</p>
-          <p><span className="text-amber-400 font-bold">Current Target ID:</span> {activeLab.id}</p>
-          <p><span className="text-purple-400 font-bold">Objectives Total:</span> {activeLab.objectives.length}</p>
-        </div>
-      </SlideOutInspector>
+      </div>
     </div>
   );
 }

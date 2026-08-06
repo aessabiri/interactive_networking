@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { Play, Pause, RotateCcw, Server, Laptop, Router, CheckCircle2, Zap, Gauge, Mail, HelpCircle, Radio, Database, Terminal, SkipForward, Globe, XCircle, Info, FileCode, X, Layers, Cpu, Hash, Activity, Sparkles, Settings, Sliders, ShieldCheck } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 import PacketInspector from '../common/PacketInspector';
 import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
 
 export default function DHCPModule({ appMode = 'clean' }) {
+  const { lang, t } = useLanguage();
   const [showAnimation, setShowAnimation] = useState(true);
   const [activeStep, setActiveStep] = useState(0); // 0: Idle, 1: Discover, 2: Offer, 3: Request, 4: Ack
   const [isPlaying, setIsPlaying] = useState(false);
@@ -38,10 +40,10 @@ export default function DHCPModule({ appMode = 'clean' }) {
   // Enhanced DORA Steps Metadata & Dynamic Scope Payloads
   const stepMeta = {
     0: {
-      title: 'Ready to Start DORA Handshake',
+      title: lang === 'de' ? 'Bereit für DORA-Ablauf' : 'Ready to Start DORA Handshake',
       subtitle: isRelayMode 
-        ? 'Mode: Multi-Subnet L3 Router DHCP Relay Agent (ip helper-address 10.20.1.50) with Option 82'
-        : 'Mode: Single-Subnet L2 Switch Broadcast (VLAN 1)',
+        ? (lang === 'de' ? 'Modus: Multi-Subnetz L3 Router DHCP-Relay-Agent (ip helper-address 10.20.1.50) mit Option 82' : 'Mode: Multi-Subnet L3 Router DHCP Relay Agent (ip helper-address 10.20.1.50) with Option 82')
+        : (lang === 'de' ? 'Modus: Einzel-Subnetz L2-Switch Broadcast (VLAN 1)' : 'Mode: Single-Subnet L2 Switch Broadcast (VLAN 1)'),
       badge: 'STATE: UNCONFIGURED (0.0.0.0)',
       badgeColor: 'bg-slate-800 text-slate-400 border-slate-700',
       transmissionType: 'NONE',
@@ -50,10 +52,12 @@ export default function DHCPModule({ appMode = 'clean' }) {
       dstIp: '0.0.0.0',
     },
     1: {
-      title: isRelayMode ? '📢 STEP 1: DHCP DISCOVER & L3 RELAY (OPTION 82)' : '📢 STEP 1: DHCP DISCOVER (BROADCAST FLOODING)',
+      title: isRelayMode 
+        ? (lang === 'de' ? '📢 SCHRITT 1: DHCP DISCOVER & L3 RELAY (OPTION 82)' : '📢 STEP 1: DHCP DISCOVER & L3 RELAY (OPTION 82)')
+        : (lang === 'de' ? '📢 SCHRITT 1: DHCP DISCOVER (BROADCAST FLOODING)' : '📢 STEP 1: DHCP DISCOVER (BROADCAST FLOODING)'),
       subtitle: isRelayMode
-        ? 'PC-01 broadcasts locally. L3 Router intercepts, appends Option 82 (Circuit ID), and UNICASTS to DHCP Server (10.20.1.50) across WAN!'
-        : 'PC-01 broadcasts. The central L2 Switch FLOODS the packet to ALL ports in VLAN 1!',
+        ? (lang === 'de' ? 'PC-01 sendet lokalen Broadcast. L3 Router fängt Paket ab, fügt Option 82 hinzu und sendet UNICAST an DHCP-Server (10.20.1.50) über WAN!' : 'PC-01 broadcasts locally. L3 Router intercepts, appends Option 82 (Circuit ID), and UNICASTS to DHCP Server (10.20.1.50) across WAN!')
+        : (lang === 'de' ? 'PC-01 sendet Broadcast. Der L2-Switch FLOODET das Paket an ALLE Ports in VLAN 1!' : 'PC-01 broadcasts. The central L2 Switch FLOODS the packet to ALL ports in VLAN 1!'),
       badge: isRelayMode ? 'L3 ROUTER RELAY: OPTION 82 INJECTED' : 'L2 TRANSMISSION: BROADCAST FLOODING',
       badgeColor: isRelayMode ? 'bg-purple-950 text-purple-300 border-purple-500 animate-pulse' : 'bg-amber-950 text-amber-400 border-amber-500 animate-pulse',
       transmissionType: isRelayMode ? 'RELAY' : 'BROADCAST',

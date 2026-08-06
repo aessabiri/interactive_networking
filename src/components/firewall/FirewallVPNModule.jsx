@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { 
   ShieldCheck, 
   ShieldAlert, 
@@ -39,6 +40,7 @@ import TerminalLog from '../common/TerminalLog';
 import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
 
 export default function FirewallVPNModule({ appMode = 'clean' }) {
+  const { lang, t } = useLanguage();
   const [showAnimation, setShowAnimation] = useState(true);
   const [activeSubTab, setActiveSubTab] = useState('stateful'); // 'stateful', 'nat', 'vpn', 'tls'
   const [speed, setSpeed] = useState(0.5); // Default 0.5x speed (Blue - Slowest)
@@ -279,8 +281,8 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
       <div className="glass-panel p-4 rounded-3xl border border-slate-800 space-y-3 shadow-2xl bg-slate-900/90 font-mono text-xs">
         {/* TOP ROW: CLEAN WIDGET HEADER */}
         <CleanWidget
-          title="Stateful Firewall, NAT & VPN Security Lab"
-          subtitle="L4-L7 Deep Packet Inspection & Security Rules"
+          title={lang === 'de' ? 'Stateful Firewall, NAT & VPN-Sicherheitslabor' : 'Stateful Firewall, NAT & VPN Security Lab'}
+          subtitle={lang === 'de' ? 'L4-L7 Deep Packet Inspection & Sicherheitsregeln' : 'L4-L7 Deep Packet Inspection & Security Rules'}
           icon={ShieldCheck}
           ip={activeSubTab === 'stateful' ? '192.168.1.105 (LAN) → 8.8.8.8' : activeSubTab === 'nat' ? '192.168.1.10 ➔ 203.0.113.1 (PAT)' : activeSubTab === 'vpn' ? '192.168.10.1 ➔ 172.16.0.1 (IPsec)' : '192.168.1.105 ➔ 93.184.216.34'}
           protocol={activeSubTab === 'stateful' ? selectedService.toUpperCase() : activeSubTab === 'nat' ? 'PAT Overload' : activeSubTab === 'vpn' ? 'IPsec ESP (AES-256)' : 'TLS 1.3 (ECDHE)'}
@@ -303,10 +305,10 @@ export default function FirewallVPNModule({ appMode = 'clean' }) {
           {/* Mode Selector Tabs */}
           <div className="flex flex-wrap items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
             {[
-              { id: 'stateful', label: 'Stateful Firewall (SPI)', icon: ShieldCheck },
-              { id: 'nat', label: 'NAT / PAT Engine', icon: Router },
-              { id: 'vpn', label: 'IPsec VPN Tunnel', icon: Lock },
-              { id: 'tls', label: 'TLS 1.3 Handshake', icon: Key },
+              { id: 'stateful', label: lang === 'de' ? 'Stateful Firewall (SPI)' : 'Stateful Firewall (SPI)', icon: ShieldCheck },
+              { id: 'nat', label: lang === 'de' ? 'NAT-/PAT-Engine' : 'NAT / PAT Engine', icon: Router },
+              { id: 'vpn', label: lang === 'de' ? 'IPsec-VPN-Tunnel' : 'IPsec VPN Tunnel', icon: Lock },
+              { id: 'tls', label: lang === 'de' ? 'TLS 1.3-Handshake' : 'TLS 1.3 Handshake', icon: Key },
             ].map(tab => {
               const Icon = tab.icon;
               const isActive = activeSubTab === tab.id;

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { Mail, Server, Laptop, ShieldCheck, Play, Pause, RotateCcw, CheckCircle2, Gauge, HelpCircle, FileCode, Terminal, SkipForward, Radio, Layers, Cpu, ArrowRight, X, Activity, Zap, HardDrive, Lock, RefreshCw, Send, Check, Inbox, Globe, Building2, Router, Search, Sparkles, Cloud } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
 
 export default function MailModule({ appMode = 'clean' }) {
+  const { lang, t } = useLanguage();
   const [showAnimation, setShowAnimation] = useState(true);
   const [activeStep, setActiveStep] = useState(0); // 0: Idle, 1: Submission (587), 2: DNS MX Query (Cross-domain only), 3: MTA Relay (25), 4: MRA Retrieval (993/995)
   const [isPlaying, setIsPlaying] = useState(false);
@@ -33,22 +35,30 @@ export default function MailModule({ appMode = 'clean' }) {
   // Step Metadata for Same-Domain vs Cross-Domain Mail Flow
   const stepMetaCross = {
     0: {
-      title: 'Ready for Enterprise Mail Traversal (PC & Exchange ➔ Switch ➔ Router ➔ ISP ➔ DNS)',
-      subtitle: `Watch packet: 1. MUA Submission ➔ 2. DNS MX Query via ISP (8.8.8.8) ➔ 3. MTA Relay over ISP WAN ➔ 4. MRA Retrieval!`,
+      title: lang === 'de'
+        ? 'Bereit für Unternehmens-E-Mail Übertragung (PC & Exchange ➔ Switch ➔ Router ➔ ISP ➔ DNS)'
+        : 'Ready for Enterprise Mail Traversal (PC & Exchange ➔ Switch ➔ Router ➔ ISP ➔ DNS)',
+      subtitle: lang === 'de'
+        ? `Paketverfolgung: 1. MUA-Einreichung ➔ 2. DNS MX-Abfrage über ISP (8.8.8.8) ➔ 3. MTA-Weiterleitung über ISP WAN ➔ 4. MRA-Abruf!`
+        : `Watch packet: 1. MUA Submission ➔ 2. DNS MX Query via ISP (8.8.8.8) ➔ 3. MTA Relay over ISP WAN ➔ 4. MRA Retrieval!`,
       badge: 'IDLE',
       badgeColor: 'bg-slate-800 text-slate-400 border-slate-700',
       sender: null,
       target: null
     },
     1: {
-      title: '📩 STEP 1: SENDER MUA ➔ LAN SWITCH ➔ EXCHANGE MSA/MTA (PORT 587 STARTTLS)',
-      subtitle: `Sender MUA (Outlook at 12%, 68%) sends mail via LAN Switch (28%, 43%) to Exchange Server (12%, 18%) over SMTP Port 587.`,
+      title: lang === 'de'
+        ? '📩 SCHRITT 1: ABSENDER-MUA ➔ LAN-SWITCH ➔ EXCHANGE MSA/MTA (PORT 587 STARTTLS)'
+        : '📩 STEP 1: SENDER MUA ➔ LAN SWITCH ➔ EXCHANGE MSA/MTA (PORT 587 STARTTLS)',
+      subtitle: lang === 'de'
+        ? `Absender-MUA (Outlook bei 12%, 68%) sendet E-Mail über LAN-Switch (28%, 43%) an Exchange Server (12%, 18%) über SMTP Port 587.`
+        : `Sender MUA (Outlook at 12%, 68%) sends mail via LAN Switch (28%, 43%) to Exchange Server (12%, 18%) over SMTP Port 587.`,
       badge: 'MUA ➔ SWITCH ➔ EXCHANGE (TCP 587)',
       badgeColor: 'bg-amber-950 text-amber-400 border-amber-500 animate-pulse',
       sender: 'CLIENT',
       target: 'MTA_LOCAL',
       payload: {
-        stepName: '1. MUA to MSA Submission (Sender PC ➔ Switch ➔ Exchange)',
+        stepName: lang === 'de' ? '1. MUA zu MSA Einreichung (Absender-PC ➔ Switch ➔ Exchange)' : '1. MUA to MSA Submission (Sender PC ➔ Switch ➔ Exchange)',
         protocol: 'MUA ➔ MSA Submission (RFC 6409 / RFC 5321)',
         l2Header: 'Src MAC: 00:50:56:A1:B2:C3 → Dst MAC: 00:0C:29:88:77:66 (Exchange Server)',
         l3Header: 'Src IP: 192.168.1.105 (Private) → Dst IP: 192.168.1.50 (Exchange Server)',
@@ -69,14 +79,18 @@ export default function MailModule({ appMode = 'clean' }) {
       }
     },
     2: {
-      title: `🔍 STEP 2 (EXTRA STEP): EXCHANGE ➔ SWITCH ➔ ROUTER ➔ ISP ➔ PUBLIC DNS (MX QUERY FOR @${recipientDomain.toUpperCase()})`,
-      subtitle: `Exchange Server sends DNS query via Switch ➔ Local Router ➔ ISP to Public DNS (8.8.8.8) and receives resolved IP ${resolvedMxIp}!`,
+      title: lang === 'de'
+        ? `🔍 SCHRITT 2 (ZUSATZ-SCHRITT): EXCHANGE ➔ SWITCH ➔ ROUTER ➔ ISP ➔ ÖFFENTLICHER DNS (MX-ABFRAGE FÜR @${recipientDomain.toUpperCase()})`
+        : `🔍 STEP 2 (EXTRA STEP): EXCHANGE ➔ SWITCH ➔ ROUTER ➔ ISP ➔ PUBLIC DNS (MX QUERY FOR @${recipientDomain.toUpperCase()})`,
+      subtitle: lang === 'de'
+        ? `Exchange Server sendet DNS MX-Abfrage über Switch ➔ Lokaler Router ➔ ISP zum öffentlichen DNS (8.8.8.8) und erhält aufgelöste IP ${resolvedMxIp}!`
+        : `Exchange Server sends DNS query via Switch ➔ Local Router ➔ ISP to Public DNS (8.8.8.8) and receives resolved IP ${resolvedMxIp}!`,
       badge: `DNS MX RESOLUTION VIA ISP (${recipientDomain} ➔ ${resolvedMxIp})`,
       badgeColor: 'bg-purple-950 text-purple-400 border-purple-500 animate-pulse',
       sender: 'MTA_LOCAL',
       target: 'DNS',
       payload: {
-        stepName: `2. DNS MX Record Lookup via ISP DNS (${recipientDomain})`,
+        stepName: lang === 'de' ? `2. DNS MX-Eintrag Abfrage über ISP DNS (${recipientDomain})` : `2. DNS MX Record Lookup via ISP DNS (${recipientDomain})`,
         protocol: 'DNS Query / Answer (RFC 1035 over UDP Port 53)',
         l2Header: 'Src MAC: 00:0C:29:88:77:66 → Dst MAC: 00:11:22:33:44:01 (Local Router Gateway)',
         l3Header: 'Src IP: 192.168.1.50 (Exchange Server) → Dst IP: 8.8.8.8 (Public DNS Server via ISP)',
@@ -91,13 +105,19 @@ export default function MailModule({ appMode = 'clean' }) {
           `${recipientDomain}. 3600 IN MX 10 ${mxHost}.`,
           `${mxHost}. 3600 IN A ${resolvedMxIp}`,
           '',
-          `Result: Exchange Server receives resolved destination IP ${resolvedMxIp} back via LAN Switch!`
+          lang === 'de'
+            ? `Ergebnis: Exchange Server erhält aufgelöste Ziel-IP ${resolvedMxIp} über LAN-Switch zurück!`
+            : `Result: Exchange Server receives resolved destination IP ${resolvedMxIp} back via LAN Switch!`
         ]
       }
     },
     3: {
-      title: `🌐 STEP 3: EXCHANGE ➔ SWITCH ➔ ROUTER ➔ ISP POP ➔ REMOTE ROUTER ➔ REMOTE MTA (PORT 25)`,
-      subtitle: `Exchange Server sends mail via Switch ➔ Local Router ➔ ISP WAN ➔ Remote Router ➔ Remote MTA (${resolvedMxIp}) over Port 25!`,
+      title: lang === 'de'
+        ? `🌐 SCHRITT 3: EXCHANGE ➔ SWITCH ➔ ROUTER ➔ ISP POP ➔ REMOTER ROUTER ➔ REMOTER MTA (PORT 25)`
+        : `🌐 STEP 3: EXCHANGE ➔ SWITCH ➔ ROUTER ➔ ISP POP ➔ REMOTE ROUTER ➔ REMOTE MTA (PORT 25)`,
+      subtitle: lang === 'de'
+        ? `Exchange Server leitet E-Mail über Switch ➔ Lokalen Router ➔ ISP WAN ➔ Remoten Router ➔ Remoten MTA (${resolvedMxIp}) über Port 25 weiter!`
+        : `Exchange Server sends mail via Switch ➔ Local Router ➔ ISP WAN ➔ Remote Router ➔ Remote MTA (${resolvedMxIp}) over Port 25!`,
       badge: `EXCHANGE ➔ SWITCH ➔ ROUTER ➔ ISP (PORT 25)`,
       badgeColor: 'bg-blue-950 text-blue-400 border-blue-500 animate-pulse',
       sender: 'MTA_LOCAL',
@@ -122,11 +142,19 @@ export default function MailModule({ appMode = 'clean' }) {
     },
     4: {
       title: mailProtocol === 'smtp_imap' 
-        ? `📬 STEP 4: MDA DELIVERS TO ${recipientDomain.toUpperCase()} STORAGE ➔ MRA SERVES RECIPIENT MUA (IMAP4 993)`
-        : `📥 STEP 4: MDA DELIVERS TO ${recipientDomain.toUpperCase()} STORAGE ➔ MRA SERVES RECIPIENT MUA (POP3 995)`,
+        ? (lang === 'de'
+            ? `📬 SCHRITT 4: MDA LIEFERT AN ${recipientDomain.toUpperCase()} SPEICHER ➔ MRA BEDIENT EMPFÄNGER-MUA (IMAP4 993)`
+            : `📬 STEP 4: MDA DELIVERS TO ${recipientDomain.toUpperCase()} STORAGE ➔ MRA SERVES RECIPIENT MUA (IMAP4 993)`)
+        : (lang === 'de'
+            ? `📥 SCHRITT 4: MDA LIEFERT AN ${recipientDomain.toUpperCase()} SPEICHER ➔ MRA BEDIENT EMPFÄNGER-MUA (POP3 995)`
+            : `📥 STEP 4: MDA DELIVERS TO ${recipientDomain.toUpperCase()} STORAGE ➔ MRA SERVES RECIPIENT MUA (POP3 995)`),
       subtitle: mailProtocol === 'smtp_imap'
-        ? `MDA writes mail to ${recipientDomain} storage. Recipient MUA (${recipientEmail}) connects to MRA via IMAP4 Port 993 (IMAPS).`
-        : `MDA writes mail to ${recipientDomain} storage. Recipient MUA (${recipientEmail}) connects to MRA via POP3 Port 995 (POP3S).`,
+        ? (lang === 'de'
+            ? `MDA schreibt E-Mail in den Speicher von ${recipientDomain}. Empfänger-MUA (${recipientEmail}) verbindet sich über IMAP4 Port 993 (IMAPS).`
+            : `MDA writes mail to ${recipientDomain} storage. Recipient MUA (${recipientEmail}) connects to MRA via IMAP4 Port 993 (IMAPS).`)
+        : (lang === 'de'
+            ? `MDA schreibt E-Mail in den Speicher von ${recipientDomain}. Empfänger-MUA (${recipientEmail}) verbindet sich über POP3 Port 995 (POP3S).`
+            : `MDA writes mail to ${recipientDomain} storage. Recipient MUA (${recipientEmail}) connects to MRA via POP3 Port 995 (POP3S).`),
       badge: mailProtocol === 'smtp_imap' ? 'MDA STORE ➔ MRA IMAP4 (PORT 993)' : 'MDA STORE ➔ MRA POP3 (PORT 995)',
       badgeColor: 'bg-emerald-950 text-emerald-400 border-emerald-500',
       sender: 'MTA_REMOTE',

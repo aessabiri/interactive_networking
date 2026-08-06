@@ -29,8 +29,10 @@ import {
 import TerminalLog from '../common/TerminalLog';
 import PacketInspector from '../common/PacketInspector';
 import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function TopologyModule({ appMode = 'clean' }) {
+  const { lang, t } = useLanguage();
   // Start with clean empty canvas (null selected topology as requested)
   const [selectedTopology, setSelectedTopology] = useState(null); 
   const [hybridSelections, setHybridSelections] = useState(['star', 'tree']);
@@ -42,7 +44,7 @@ export default function TopologyModule({ appMode = 'clean' }) {
   const [selectedNode, setSelectedNode] = useState(null);
 
   const [logs, setLogs] = useState([
-    { time: new Date().toLocaleTimeString(), tag: 'TOPOLOGY', message: 'Topology Visualizer initialized. Select a network topology to render canvas.' }
+    { time: new Date().toLocaleTimeString(), tag: 'TOPOLOGY', message: lang === 'de' ? 'Topologie-Visualisierer initialisiert. Wählen Sie eine Netzwerktopologie, um die Leinwand zu rendern.' : 'Topology Visualizer initialized. Select a network topology to render canvas.' }
   ]);
 
   // Comprehensive Topologies Metadata Dictionary (11 Topologies)
@@ -392,12 +394,14 @@ export default function TopologyModule({ appMode = 'clean' }) {
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black bg-cyan-950 text-cyan-300 border border-cyan-800">
-                  TOPOLOGY ENGINE
+                  {lang === 'de' ? 'TOPOLOGIE-ENGINE' : 'TOPOLOGY ENGINE'}
                 </span>
-                <h2 className="text-2xl font-black text-slate-100 tracking-tight">Enterprise Network Topology Visualizer</h2>
+                <h2 className="text-2xl font-black text-slate-100 tracking-tight">
+                  {lang === 'de' ? 'Enterprise Netzwerk-Topologie Visualisierer' : 'Enterprise Network Topology Visualizer'}
+                </h2>
               </div>
               <p className="text-xs text-slate-400 font-mono mt-0.5">
-                Select a topology from the 11 options below to render and analyze network architectures.
+                {lang === 'de' ? 'Wählen Sie eine Topologie aus den 11 Optionen unten, um Netzwerkarchitekturen zu rendern und zu analysieren.' : 'Select a topology from the 11 options below to render and analyze network architectures.'}
               </p>
             </div>
           </div>
@@ -413,7 +417,7 @@ export default function TopologyModule({ appMode = 'clean' }) {
               className="px-4 py-2 rounded-xl bg-slate-950 border border-slate-700 hover:border-cyan-500 text-slate-300 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
             >
               <RotateCcw className="w-4 h-4 text-cyan-400" />
-              <span>Clear Canvas</span>
+              <span>{lang === 'de' ? 'Leinwand löschen' : 'Clear Canvas'}</span>
             </button>
           </div>
         </div>
@@ -422,7 +426,7 @@ export default function TopologyModule({ appMode = 'clean' }) {
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs font-mono text-slate-400">
             <span className="font-bold flex items-center gap-1.5 text-cyan-300">
-              <Layers className="w-4 h-4 text-cyan-400" /> Select Network Topology (11 Options):
+              <Layers className="w-4 h-4 text-cyan-400" /> {lang === 'de' ? 'Netzwerktopologie auswählen (11 Optionen):' : 'Select Network Topology (11 Options):'}
             </span>
           </div>
 
@@ -463,9 +467,9 @@ export default function TopologyModule({ appMode = 'clean' }) {
               <Network className="w-16 h-16 animate-pulse" />
             </div>
             <div className="space-y-1 max-w-md">
-              <h3 className="text-xl font-black text-slate-200">Canvas Stage Ready</h3>
+              <h3 className="text-xl font-black text-slate-200">{lang === 'de' ? 'Leinwand bereit' : 'Canvas Stage Ready'}</h3>
               <p className="text-xs text-slate-400 font-sans leading-relaxed">
-                Click any of the 11 Network Topology selectors above (Star, Tree, Full Mesh, Spine-Leaf, Dual-Ring, etc.) to render and inspect the topology!
+                {lang === 'de' ? 'Klicken Sie auf eine der 11 Netzwerktopologie-Optionen oben (Stern, Baum, Full Mesh, Spine-Leaf, Dual-Ring, etc.), um die Topologie zu rendern und zu untersuchen!' : 'Click any of the 11 Network Topology selectors above (Star, Tree, Full Mesh, Spine-Leaf, Dual-Ring, etc.) to render and inspect the topology!'}
               </p>
             </div>
           </div>

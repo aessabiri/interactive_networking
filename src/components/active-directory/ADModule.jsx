@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { ShieldCheck, Key, Lock, UserCheck, Server, Play, Pause, RotateCcw, FolderTree, Gauge, Mail, ChevronDown, ChevronUp, HelpCircle, FileCode, Terminal, SkipForward, Globe, XCircle, Info, X, Layers, Cpu, Hash, Activity, Zap, HardDrive, Radio, Laptop, Router, Sparkles } from 'lucide-react';
 import TerminalLog from '../common/TerminalLog';
 import { CleanWidget, CleanControlButton, SlideOutInspector } from '../common/EasyCard';
 
 export default function ADModule({ appMode = 'clean' }) {
+  const { lang, t } = useLanguage();
   const [showAnimation, setShowAnimation] = useState(true);
   const [activeStep, setActiveStep] = useState(0); // 0: Idle, 1: AS-REQ, 2: AS-REP, 3: TGS-REQ, 4: TGS-REP & AP-REQ
   const [isPlaying, setIsPlaying] = useState(false);
@@ -317,13 +319,13 @@ export default function ADModule({ appMode = 'clean' }) {
 
       {/* TOP UNIFIED CONTROL & BASIC INFO WIDGET */}
       <CleanWidget
-        title="Active Directory & Kerberos Protocol Analyzer"
-        subtitle="Understand how Windows Domain Controllers log in users securely using encrypted digital tickets"
+        title={lang === 'de' ? 'Active Directory & Kerberos-Protokollanalysator' : 'Active Directory & Kerberos Protocol Analyzer'}
+        subtitle={lang === 'de' ? 'Verstehen Sie, wie Windows-Domänencontroller Benutzer sicher mit verschlüsselten digitalen Tickets anmelden' : 'Understand how Windows Domain Controllers log in users securely using encrypted digital tickets'}
         icon={ShieldCheck}
-        ip="192.168.1.10 (DC01 Domain Controller)"
+        ip={lang === 'de' ? '192.168.1.10 (DC01-Domänencontroller)' : '192.168.1.10 (DC01 Domain Controller)'}
         protocol="Kerberos (TCP/UDP)"
         port="Port 88 (KDC)"
-        status={activeStep >= 2 ? "Ticket Granted" : "Unauthenticated"}
+        status={activeStep >= 2 ? (lang === 'de' ? 'Ticket erteilt' : 'Ticket Granted') : (lang === 'de' ? 'Nicht authentifiziert' : 'Unauthenticated')}
         actionTitle={currentMeta.title}
         actionDesc={currentMeta.subtitle}
         stepNumber={activeStep}
@@ -759,7 +761,7 @@ export default function ADModule({ appMode = 'clean' }) {
       </div>
 
       {/* SIDE-BY-SIDE TICKET CACHE SUMMARY & LOGS */}
-      <SlideOutInspector title="Technical Deep Dive & Kerberos Ticket Cache Logs">
+      <SlideOutInspector title={lang === 'de' ? 'Technischer Deep Dive & Kerberos-Ticket-Cache-Protokolle' : 'Technical Deep Dive & Kerberos Ticket Cache Logs'}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
             
             {/* LEFT: LSA TICKET CACHE SUMMARY */}
@@ -767,13 +769,13 @@ export default function ADModule({ appMode = 'clean' }) {
               <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
                 <div className="flex items-center gap-2 text-purple-400 font-extrabold text-sm">
                   <Lock className="w-4 h-4 text-purple-400" />
-                  <span>Windows LSA Ticket Cache (klist)</span>
+                  <span>{lang === 'de' ? 'Windows-LSA-Ticket-Cache (klist)' : 'Windows LSA Ticket Cache (klist)'}</span>
                 </div>
                 <button
                   onClick={handleReset}
                   className="px-2 py-0.5 rounded text-[10px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 cursor-pointer"
                 >
-                  Purge Cache (klist purge)
+                  {lang === 'de' ? 'Cache leeren (klist purge)' : 'Purge Cache (klist purge)'}
                 </button>
               </div>
 

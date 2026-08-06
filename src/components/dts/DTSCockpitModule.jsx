@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import { 
   ShieldAlert, 
   ShieldCheck, 
@@ -27,6 +28,7 @@ import TerminalLog from '../common/TerminalLog';
 import { CleanWidget, SlideOutInspector } from '../common/EasyCard';
 
 export default function DTSCockpitModule({ appMode = 'clean' }) {
+  const { lang, t } = useLanguage();
   const [activeScenario, setActiveScenario] = useState('ransomware'); // 'ransomware', 'bruteforce', 'phishing', 'dns_exfil', 'ot_intrusion'
   const [isSimulating, setIsSimulating] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
